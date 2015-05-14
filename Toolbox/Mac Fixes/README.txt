@@ -1,0 +1,1 @@
+Basic functionality supported on Intel Mac. Not all functions tested.
