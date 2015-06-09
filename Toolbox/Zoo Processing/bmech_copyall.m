@@ -1,13 +1,12 @@
-function bmech_copyall(fld1,fld2,ext,con)
+function bmech_copyall(fld1,fld2,ext)
 
 % biomech_copyall(fld1,fld2) copies all files from fld1 to fld2
 %
 % ARGUMENTS
-% fld1   ...  folder to copy from
-% fld2   ...  folder to copy to
-% ext    ...  copy only by file extension. Default 'all'
-% con    ...  choice to use folder
-%
+%  fld1   ...  folder to copy from
+%  fld2   ...  folder to copy to
+%  ext    ...  copy only by file extension. Default 'all'
+
 
 % Revision History
 %
@@ -15,6 +14,28 @@ function bmech_copyall(fld1,fld2,ext,con)
 %
 % Updated by Philippe C. Dixon May 2015
 % - small bug fixes
+
+
+% Part of the Zoosystem Biomechanics Toolbox 
+%
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+% 
+% Contact: 
+% philippe.dixon@gmail.com
+%
+% Web: 
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+
+
 
 
 tic
@@ -26,9 +47,6 @@ else
     fl = engine('path',fld1,'extension',ext);
 end
 
-if nargin==3
-    con = 0;
-end
 
 
 % check if copy to folder exists
@@ -45,7 +63,7 @@ end
 
 
 if ~strcmp(fld2(end),slash)
-    fld2 = [fld1, slash];
+    fld2 = [fld2, slash];
 end
 
 
@@ -58,24 +76,18 @@ for i= 1:length(fl)
     [p,f] = fileparts(fl{i});
     ext = extension(fl{i});
     
-    indx_fld1 = strfind(fld1,slash);
-    sfld = p(indx_fld1(end)+1:end);
-    
-    if con ==1
-        cond = p(indx_fld1(end-1)+1:indx_fld1(end)-1);
-        nfl = [fld2,cond,slash,sfld,slash,f,ext];
-        
-        if ~strcmp(cond(end),slash)
-            cond = [cond, slash];
-        end
-        
-    else
-        cond = [];
-        nfl = [fld2,sfld,slash,f,ext];
-    end
+  
+    % find subfolder
+    %
+    last_slash_indx = strfind(fld1,slash);   
+    last_slash_indx = last_slash_indx(end);
+    con = p(last_slash_indx+1:end);
     
     
-    dest = [fld2,cond,sfld];
+    % copy to directory
+    %
+    dest = [fld2,con,slash];
+    nfl =  [dest,f,ext];   
     
     if exist(dest,'dir')==0
         mkdir(dest)

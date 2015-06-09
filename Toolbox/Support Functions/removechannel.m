@@ -1,32 +1,42 @@
 function data= removechannel(data,chrm,section)
 
-% removechannel removes channels from zoo files
+% data= REMOVECHANNEL(data,chrm,section) removes channels from zoo files
 %
 % ARGUMENTS
-% data      ... zoo file
-% chrm      ... channels to remove as cell array of strings
+%  data      ...   zoo file
+%  chrm      ...   channels to remove as cell array of strings
+%  section   ...   section (Video or Analog) where channel resides
+
+
+% Revision History
 %
-% NOTES
-% - standalone function used primarily by BMECH_REMOVECHANNEL
+% Created by Philippe C. Dixon  
+% - extracted from old functions
 %
+% Updated by Philippe C. Dixon May 2015
+% - updated help
+
+
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
-%----------Part of the Zoosystem Biomechanics Toolbox 2006-2014------------------------------%
-%                                                                                            %                
-% MAIN CONTRIBUTORS                                                                          %
-%                                                                                            %
-% Philippe C. Dixon         Dept. of Engineering Science. University of Oxford, Oxford, UK   %
-% JJ Loh                    Medicus Corda, Montreal, Canada                                  %
-% Yannick Michaud-Paquette  Dept. of Kinesiology. McGill University, Montreal, Canada        %
-%                                                                                            %
-% - This toolbox is provided in open-source format with latest version available on          %
-%   GitHub: https://github.com/phild001                                                      %
-%                                                                                            %
-% - Users are encouraged to edit and contribute to functions                                 %
-% - Please reference if used during preparation of manuscripts                               %                                                                                           %
-%                                                                                            %
-%  main contact: philippe.dixon@gmail.com                                                    %
-%                                                                                            %
-%--------------------------------------------------------------------------------------------%
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+% 
+% Contact: 
+% philippe.dixon@gmail.com
+%
+% Web: 
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+
+
 
 
 % error checking

@@ -1,6 +1,14 @@
 function varargout = props(action,varargin)
 
+
+% varargout = PROPS(action,varargin) creates various props used by director
+%
+% Updated by JJ Loh and Philippe C. Dixon June 2015
+% - new case added to load the skate props
+
+
 switch action
+    
     case 'goto'
         mark(varargin{1}); % advaces all props to new position
         
@@ -100,8 +108,7 @@ switch action
         else
             patch('parent',finddobj('axes'),'faces',fc,'vertices',vr,'facecolor',[1 0 0],'edgecolor','none','facelighting','gouraud','clipping','off','tag','net');
         end
-        
-        
+                
     case 'make3d'
         [tp,hnd] = currentobject;
         vr = get(hnd,'vertices');
@@ -111,8 +118,7 @@ switch action
         lvr = length(vr(:,1));
         nfc = fc+lvr;
         set(hnd,'vertices',[vr;nvr],'faces',[fc;nfc],'cdata',[cdata;cdata]);
-        
-        
+              
     case 'makeprop'
         hnd = varargin{1};
         ud.vertices = get(hnd,'vertices');
@@ -271,6 +277,11 @@ switch action
         end
         save([p,f],'object');
         
+    case 'load skates'
+        fl = varargin{1};
+        hnd = props('load',fl);
+        skate(hnd);
+        
     case 'load'
         
         filename = varargin{1};
@@ -301,8 +312,7 @@ switch action
         else
             varargout{1} = createprop(ud,varargin{2});
         end
-        
-        
+               
     case 'load with markers'
         
         [f,p] = uigetfile('*.prop');
@@ -345,8 +355,7 @@ switch action
         end
         
         figure(gcf)
-        
-        
+              
     case 'origin'
         
         if strcmp(get(gcf,'selectiontype'),'alt')
@@ -428,8 +437,7 @@ switch action
             ud.currentorientation = ort;
             set(hnd,'userdata',ud,'vertices',zero2real(ud.vertices,pre,post,ort));
         end
-        
-        
+               
     case 'load pucks'
         
         fld = uigetfolder;
@@ -525,7 +533,6 @@ z = z*(d*.2)+dis(3);
 
 surface('parent',finddobj('axes'),'xdata',x,'ydata',y,'zdata',z,'tag','bomb','userdata',bud,'facecolor',[1 0 0],'clipping','off','edgecolor','none');
 
-
 function r = mindis(vr)
 r = inf;
 for i = 2:length(vr(:,1));
@@ -533,7 +540,6 @@ for i = 2:length(vr(:,1));
     plate = min(sqrt(diag(m*m')));
     r = min(r,plate);
 end
-
 
 function r = findbomb(hnd,varargin)
 bm = findobj(finddobj('axes'),'tag','bomb');
@@ -554,7 +560,6 @@ if nargin == 2
         r(bud.bindex,1) = getfield(bud,varargin{1});
     end
 end
-
 
 function r = findface(fplate,fc)
 
@@ -608,6 +613,16 @@ ax = finddobj('axes');
 if isfield(ud,'cdata');
     cdata = ud.cdata;
     ud = rmfield(ud,'cdata');
+elseif isfield(ud,'bodypart')
+    fc = ud.faces;
+    if isempty(fc)
+        cdata = [];
+    else
+        cdata(1,1:length(fc(:,1)),1) = ud.color(1);
+        cdata(1,1:length(fc(:,1)),2) = ud.color(2);
+        cdata(1,1:length(fc(:,1)),3) = ud.color(3);
+    end
+    
 else
     ud.color = [.8 .8 .8];
     fc = ud.faces;
@@ -1089,14 +1104,6 @@ else
     set(hnd,'vertices',vr);
 end
 
-function r = clean(xyz)
-r = xyz/10;
-indx = find(xyz==0);
-a = zeros(size(xyz));
-a(indx) = 1;
-indx = find(sum(a')==3);
-r(indx,:) = NaN;
-
 function clr = file2clr(flnm)
 flnm = lower(flnm);
 top =  findstr(flnm,'top');
@@ -1156,7 +1163,6 @@ vr = displace(vr,-postdis);
 vr = ctransform([1 0 0;0 1 0;0 0 1],ort,vr);
 vr = displace(vr,-predis);
 
-
 function addjoint(hnd,vindx)
 jhnd = finddobj('props','joint');
 if isempty(jhnd)
@@ -1194,7 +1200,6 @@ if ~found
     ud.joint(ljnt+1).vertices = vindx;
 end
 set(jhnd,'userdata',ud);
-
 
 function [vr,fc,cdata,nvr] = getjointdata(ud)
 vstk = [];
@@ -1235,8 +1240,6 @@ cdata(1,1:length(fc(:,1)),1) = ud.color(1);
 cdata(1,:,2) = ud.color(2);
 cdata(1,:,3) = ud.color(3);
 
-
-
 function r = newvnormal(vr,nvr,vindx)
 r = nvr;
 if length(vindx) == 1
@@ -1247,8 +1250,6 @@ end
 mvr = mean(vr(vindx,:));
 ort = makeunit(displace(vr(vindx,:),-mvr));
 r(vindx,:) = ort;
-
-
 
 function rezerovertices(hnd)
 
@@ -1261,9 +1262,7 @@ vr = vr-delta;
 hud.vertices(:,3) = vr;
 set(hnd,'userdata',hud);
 
-
 function plugingait(c3d)
-
 
 amat = {'PEL','Pelvis';...
     'LFE','LeftFemur';...
@@ -1300,7 +1299,6 @@ for i = 1:length(amat(:,1))
     hud.ort = ort;
     set(hnd,'userdata',hud);
 end
-
 
 function zooplugingait(z)
 
@@ -1360,7 +1358,6 @@ for i = 1:length(amat(:,1))
     set(hnd,'userdata',hud);
 end
 
-
 function [dis,ort] = getdata(data)
 
 dis = data{1}/10;
@@ -1387,7 +1384,6 @@ for i = 1:length(prp)
     insertdata(prp(i),a,c3d);
 end
 forceplate('refresh COP');
-
 
 function zooloadanalog(zdata)
 
@@ -1451,7 +1447,6 @@ for i = 1:length(prp)
 end
 
 % forceplate('refresh COP');  % old code no longer works
-     
 
 function getfpcop(phnd,zdata)
 
@@ -1485,7 +1480,6 @@ pud.cop(:,3) = 0;
 
 set(phnd,'userdata',pud);
 
-
 function setfporientation(phnd,zdata)
 
 fpnum =  get(phnd,'Tag');
@@ -1504,7 +1498,6 @@ elseif isin(fpnum,'3')
 end
 
 set(phnd,'userdata',pud);
-
 
 function insertdata(phnd,ch,c3d)
 pud = get(phnd,'userdata');
@@ -1606,8 +1599,6 @@ end
 function r = DecimateAnalog(vec,num)
 r = vec(1:num:end);
 
-
-
 function r = clean(xyz)
 r = xyz/10;
 indx = find(xyz==0);
@@ -1615,3 +1606,45 @@ a = zeros(size(xyz));
 a(indx) = 1;
 indx = find(sum(a')==3);
 r(indx,:) = NaN;
+
+function skate(hnd)
+
+ud = get(hnd,'userdata');
+
+if isin(ud.bodypart,'R')
+    side = 'Right';
+elseif isin(ud.bodypart,'L')
+    side = 'Left';
+else
+    return
+end
+
+% get displacement of tibia
+or_hd = findobj(finddobj('axes'),'tag',[side,'Tibia']);
+dis = get(or_hd,'userdata');
+dis = dis.dis;   
+
+% get orientation of foot
+%
+hd = findobj(finddobj('axes'),'tag',[side,'Foot']);
+hud = get(hd,'userdata');
+if isempty(hud)
+    return
+elseif isfield(hud,'ort');
+
+    ort = hud.ort;
+    ort = makeunit(ort);
+else
+    return
+end
+
+ort = transform_ort(ort,[3,2,1]);
+ort = transform_ort(ort,[2 -1 3]);
+
+ud.ort = ort;
+ud.dis = dis;
+
+% resize skates
+ud.vertices = ud.vertices./1.2;
+
+set(hnd,'userdata',ud);

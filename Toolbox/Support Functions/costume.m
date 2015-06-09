@@ -1,6 +1,8 @@
 function varargout = costume(action,varargin)
+
 switch action
-    case 'keypress'        
+    
+    case 'keypress'
         [tp,hnd] = currentobject;
         if ~strcmp(tp,'costume');
             return
@@ -18,15 +20,26 @@ switch action
         end
         hud = get(hd,'userdata');
         hud.associateobj = [hud.associateobj;gcbo];
-        set(hd,'userdata',hud);  
+        set(hd,'userdata',hud);
         ud.parent = hd;
         set(gcbo,'userdata',ud);
         
     case 'deletefcn'
-        ud = get(gcbo,'userdata');        
+        ud = get(gcbo,'userdata');
         hud = get(ud.parent,'userdata');
         hud.associateobj = setdiff(hud.associateobj,gcbo);
-        set(ud.parent,'userdata',hud);  
+        set(ud.parent,'userdata',hud);
+    
+%     case 'skate' % PD
+%         if nargin >= 2
+%             hnd = varargin{1};
+%         else
+%             hnd = finddobj('costume');
+%         end
+%         for i = 1:length(hnd)
+%             skate(hnd(i));
+%         end
+%         
     case 'stick'
         if nargin >= 2
             hnd = varargin{1};
@@ -47,7 +60,7 @@ switch action
         vr = get(ud.costume,'vertices');
         indx = closest(cpos,vr);
         if isempty(ud.vindex)
-           ud.vindex = indx;
+            ud.vindex = indx;
         else
             if ud.vindex ~= indx
                 ud.vindex = indx;
@@ -61,20 +74,20 @@ switch action
     case 'buttondown'
         set(finddobj('current object'),'string',get(gcbo,'tag'));
         set(finddobj('highlight'),'ambientstrength',.3);
-        set(gcbo,'ambientstrength',.6);        
+        set(gcbo,'ambientstrength',.6);
         if ~strcmp(currentperson,'costume')
             cameraman('buttondown');
             return
         end
         ptr = finddobj('costume pointer');
         if isempty(ptr)
-           ptr = create(gcbo);
+            ptr = create(gcbo);
         end
         pud = get(ptr,'userdata');
-        pud.costume = gcbo;        
+        pud.costume = gcbo;
         set(ptr,'userdata',pud);
         set(gcbo,'edgecolor',[0 0 1]);
-                        
+        
         
         colordobj(gcbo);
         ismov = cameraman('buttondown');
@@ -94,7 +107,7 @@ switch action
             hd = get(gca,'currentpoint');
             tl = hd(2,:);
             hd = tl+(cpos-ctarg);
-
+            
             pt = get(gcbo,'vertices');
             r = point2line(pt,[tl;hd]);
             ptr = finddobj('costume pointer');
@@ -102,9 +115,9 @@ switch action
             set(ptr,'userdata',pud);
             pud.vindex(1) = r;
             set(ptr,'userdata',pud);
-           
+            
             if strcmp(get(gcf,'selectiontype'),'alt');
-                bomb(r);                
+                bomb(r);
             else
                 deletebombs(2);
             end
@@ -123,7 +136,7 @@ switch action
         hi = finddobj('highlight');
         [tp,hnd] = currentobject;
         switch tp
-            case 'actor'                
+            case 'actor'
                 ac = get(hi,'tag');
                 part = get(hi,'userdata');
                 if isstruct(part)
@@ -142,7 +155,7 @@ switch action
                 costume.faces = get(hi,'faces');
                 costume.bodypart = part;
                 str = ['save the ',part];
-            case 'costume'                
+            case 'costume'
                 ud = get(hi,'userdata');
                 hd = findpart(ud.actor,'head');
                 hud = get(hd,'userdata');
@@ -195,7 +208,7 @@ switch action
                 costume.actor = ac;
                 if ~isfield(costume,'color');
                     costume.color = [.8 .8 .8];
-                end                    
+                end
                 createcostume(costume,nm);
             end
         end
@@ -204,7 +217,7 @@ switch action
         [tp,hnd] = currentobject;
         if ~strcmp(tp,'actor')
             return
-        else           
+        else
             ac = get(hnd(1),'tag');
         end
         flname = varargin{1};
@@ -233,10 +246,25 @@ switch action
             set(findpart(ud.actor,ud.bodypart),'visible','off');
         end
         
+    case 'load skates'
+        flname = varargin{1};
+        t = load(flname,'-mat');
+        
+        ud 
+        
+        
+        hnd = createcostumenew(ud,tg);
+        skate(hnd)
+%         if nargin <= 2
+%             set(findpart(ud.actor,ud.bodypart),'visible','off');
+%         end
+           
+        
     case 'load special'
         loadspecial(varargin{1})
+        
     case 'clean'
-        hnd = varargin{1};
+        hnd = varargin{1};c
         vhnd = finddobj('units','volume');
         ud = get(hnd,'userdata');
         if ~isfield(ud,'vertices')
@@ -259,15 +287,16 @@ switch action
         
     case 'save changes'
         saveobject(varargin{1});
+    
     case 'fabric'
         hi = finddobj('highlight');
         if ~actor('verify',hi);
             return
         end
-        answer = inputdlg({'length (cm)';'width (cm)';'resolution (cm)';'name'},'fabric',1,{'30','20','1','fabric'});        
+        answer = inputdlg({'length (cm)';'width (cm)';'resolution (cm)';'name'},'fabric',1,{'30','20','1','fabric'});
         if isempty(answer);
             return
-        end        
+        end
         createfabric(str2num(answer{1}),str2num(answer{2}),str2num(answer{3}),answer{4},hi);
         
     case 'delete'
@@ -281,15 +310,18 @@ switch action
                 set(finddobj('current object'),'string','');
                 delete(hnd);
         end
-            
+        
 end
+
+
+
 
 
 function stick(hnd)
 
 ud = get(hnd,'userdata');
 hd = findpart(ud.actor,'head');
-if ~isempty(hd)   
+if ~isempty(hd)
     hud = get(hd,'userdata');
     ort = getfield(hud.currentorientation,ud.bodypart);
     dis = getfield(hud.currentposition,ud.bodypart);
@@ -299,13 +331,14 @@ else
     if isempty(hud)
         return
     elseif isfield(hud,'ort');
-        frm = min(finddobj('frame','number'),length(hud.ort));        
+        frm = min(finddobj('frame','number'),length(hud.ort));
         ort = hud.ort{frm};
         dis = hud.dis(frm,:);
     else
         return
     end
 end
+
 if isfield(ud,'movevert') %changing the shape of the costume
     frm = finddobj('frame','number');
     yd = ud.ydata(min(max(frm,1),length(ud.ydata)));
@@ -320,10 +353,12 @@ if isfield(ud,'calort');
     vr = ctransform(ud.calort,gunit,vr);
     vr = displace(vr,ud.caldis);
 end
+
 if isfield(ud,'rort')
-        rort = ctransform(ort,gunit,ud.rort);
-        vr = ctransform(rort,ort,vr);
+    rort = ctransform(ort,gunit,ud.rort);
+    vr = ctransform(rort,ort,vr);
 end
+
 if isfield(ud,'rdis')
     rdis = ctransform(ort,gunit,ud.rdis);
     dis = dis+rdis;
@@ -386,7 +421,7 @@ for i = 1:length(ud.vindex);
     else
         bud = get(bm,'userdata');
         bud.vindex = ud.vindex(i);
-    end    
+    end
     dis = vr(ud.vindex(i),:);
     xd = bud.xdata+dis(1);
     yd = bud.ydata+dis(2);
@@ -395,7 +430,7 @@ for i = 1:length(ud.vindex);
 end
 
 deletebombs(i+1);
-        
+
 
 
 
@@ -412,7 +447,7 @@ vr = get(co,'vertices');
 fc = get(co,'faces');
 
 switch cky
-     case 'q'
+    case 'q'
         vindex = pud.vindex;
         if length(vindex)<3
             return
@@ -432,20 +467,20 @@ switch cky
         vec = ctransform(unt,[1 0 0;0 1 0;0 0 1],vec);
         if ~iswholepatch
             vindex = unique(pud.vindex);
-            if length(vindex) <= 1                
+            if length(vindex) <= 1
                 vr(pud.vindex,1) = vr(pud.vindex,1)+vec(1);
                 vr(pud.vindex,2) = vr(pud.vindex,2)+vec(2);
                 vr(pud.vindex,3) = vr(pud.vindex,3)+vec(3);
-
+                
                 set(co,'vertices',vr);
                 saveobject(co);
             elseif length(vindex) == 2
-                duplicateindex(co,pud.vindex(1),pud.vindex);                
+                duplicateindex(co,pud.vindex(1),pud.vindex);
             else
                 addface(co,vindex(1:3));
                 saveobject(co);
             end
-        else            
+        else
             cud.vertices(:,1) = cud.vertices(:,1)+vec(1);
             cud.vertices(:,2) = cud.vertices(:,2)+vec(2);
             cud.vertices(:,3) = cud.vertices(:,3)+vec(3);
@@ -458,17 +493,17 @@ switch cky
         set(ptr,'userdata',pud);
         refreshpointer;
     case 'w'
-         cdata = get(ptr,'cdata');
-         cdata = zeros(size(cdata));
-        if iswholepatch           
-            cdata(:,:,2) = 1;            
+        cdata = get(ptr,'cdata');
+        cdata = zeros(size(cdata));
+        if iswholepatch
+            cdata(:,:,2) = 1;
         else
             cdata(:,:,[1,3]) = 1;
         end
         set(ptr,'cdata',cdata);
-            
         
-    case 'uparrow'  
+        
+    case 'uparrow'
         if ~iswholepatch
             pud.vindex(1) = nextindex(vr,fc,pud.vindex(1),cky);
             set(ptr,'userdata',pud);
@@ -479,7 +514,7 @@ switch cky
             stick(co);
             return
         end
-            
+        
     case 'downarrow'
         if ~iswholepatch
             pud.vindex(1) = nextindex(vr,fc,pud.vindex(1),cky);
@@ -491,7 +526,7 @@ switch cky
             stick(co);
             return
         end
-    case 'leftarrow'    
+    case 'leftarrow'
         if ~iswholepatch
             pud.vindex(1) = nextindex(vr,fc,pud.vindex(1),cky);
             set(ptr,'userdata',pud);
@@ -501,8 +536,8 @@ switch cky
             set(co,'userdata',cud);
             stick(co);
             return
-        end 
-    case 'rightarrow'                
+        end
+    case 'rightarrow'
         if ~iswholepatch
             pud.vindex(1) = nextindex(vr,fc,pud.vindex(1),cky);
             set(ptr,'userdata',pud);
@@ -512,8 +547,8 @@ switch cky
             set(co,'userdata',cud);
             stick(co);
             return
-        end 
-    case 't'                
+        end
+    case 't'
         if ~iswholepatch
             pud.vindex(1) = nextindex(vr,fc,pud.vindex(1),cky);
             set(ptr,'userdata',pud);
@@ -523,8 +558,8 @@ switch cky
             set(co,'userdata',cud);
             stick(co);
             return
-        end 
-    case 'u'                
+        end
+    case 'u'
         if ~iswholepatch
             pud.vindex(1) = nextindex(vr,fc,pud.vindex(1),cky);
             set(ptr,'userdata',pud);
@@ -534,7 +569,7 @@ switch cky
             set(co,'userdata',cud);
             stick(co);
             return
-        end 
+        end
     case '6'
         rotationkey(ptr,'x',rval);
     case '4'
@@ -543,15 +578,15 @@ switch cky
         rotationkey(ptr,'y',rval);
     case '8'
         rotationkey(ptr,'y',-rval);
-    case 'a'       
+    case 'a'
         rotationkey(ptr,'z',rval);
     case 'backspace'
-        indx = deletevertex(co,pud.vindex(1));        
+        indx = deletevertex(co,pud.vindex(1));
         pud.vindex = min(pud.vindex,indx);
         saveobject(co);
         set(ptr,'userdata',pud);
         refreshpointer;
-            
+        
     otherwise
         r = 0;
 end
@@ -593,8 +628,8 @@ switch action
     case 't'
         r = find(nvr(:,3)==max(nvr(:,3)));
     case 'u'
-        r = find(nvr(:,3)==min(nvr(:,3)));        
-end    
+        r = find(nvr(:,3)==min(nvr(:,3)));
+end
 
 nvr = temp(r(1),:);
 r = intersect(intersect(find(vr(:,1)==nvr(1)),find(vr(:,2)==nvr(2))),find(vr(:,3)==nvr(3)));
@@ -645,11 +680,11 @@ if length(indx) > 4
     indx = indx(1);
     indx = [indx;bindx];
 end
-    
+
 
 if nargout == 0
     pud.vindex = indx;
-    set(ptr,'userdata',pud);    
+    set(ptr,'userdata',pud);
 end
 
 
@@ -703,7 +738,7 @@ vr = [vr;nvert];
 vindex(1) = length(vr(:,1))-2;
 vindex(2) = vindex(1)+1;
 vindex(3) = vindex(2)+1;
-for i = 1:3 
+for i = 1:3
     %adding new face
     switch i
         case 1
@@ -713,12 +748,12 @@ for i = 1:3
         case 3
             nfc = [index(i),vindex(2),vindex(3)];
     end
-    fc = [fc;nfc];    
+    fc = [fc;nfc];
 end
 fc = [fc;makerow(vindex)];
 [vr,fc] = cleanpatch(vr,fc,.2);
 set(hnd,'vertices',vr,'faces',fc);
-    
+
 
 
 function cindx = deletevertex(pch,vindx)
@@ -849,8 +884,8 @@ for i = 1:length(ldata);
         pointer = length(vr(:,1));
     end
 end
-        
-    
+
+
 
 
 function r = iswholepatch
@@ -866,7 +901,7 @@ cp = finddobj('costume pointer');
 for i = 1:length(cp)
     ud = get(cp(i),'userdata');
     if ud.costume == hnd
-        cdata = get(cp(i),'cdata');       
+        cdata = get(cp(i),'cdata');
         if cdata(1,1,1) && cdata(1,1,3)
             r = 1;
         else
@@ -911,14 +946,14 @@ if ~strcmp(ax,'z')
     end
 else
     if iswholepatch
-            cud.vertices = vecrotate(cud.vertices,rval,ax);
-            set(co,'userdata',cud);
-            stick(co);
+        cud.vertices = vecrotate(cud.vertices,rval,ax);
+        set(co,'userdata',cud);
+        stick(co);
     else
         if pud.ort(3,3)== 1
             pud.ort = [1 0 0;0 1 0;0 0 -1];
         else
-
+            
             pud.ort = [1 0 0;0 1 0;0 0 1];
         end
     end
@@ -943,13 +978,24 @@ end
 vr = [vr;vr(index,:)];
 lvr = length(vr(:,1));
 for i = 1:length(findx);
-   j = find(fc(findx(i),:)==index);
-   fc(findx(i),j) = lvr;
+    j = find(fc(findx(i),:)==index);
+    fc(findx(i),j) = lvr;
 end
 ud.faces = fc;
 ud.vertices = vr;
 set(hnd,'userdata',ud);
 stick(hnd);
+
+
+function c = createcostumenew(ud,tg)
+
+ax = finddobj('axes');
+tp = ud.actor;
+
+c = patch('parent',ax,'tag',tg{1},'facecolor',ud.color,'edgecolor','none','buttondownfcn',...
+    'costume(''buttondown'')','vertices',ud.vertices,'faces',ud.faces,'userdata',ud,...
+    'FaceLighting','gouraud','createfcn','costume(''createfcn'')','clipping','off',...
+    'deletefcn','costume(''deletefcn'')');
 
 
 function c = createcostume(ud,tg)
@@ -969,7 +1015,6 @@ c = patch('parent',ax,'tag',tg,'facecolor',ud.color,'edgecolor','none','buttondo
     'deletefcn','costume(''deletefcn'')');
 
 stick(c);
-
 
 function caliper
 bm = finddobj('bomb');

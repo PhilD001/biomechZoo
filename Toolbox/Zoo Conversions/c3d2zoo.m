@@ -1,11 +1,15 @@
-function c3d2zoo(fld,del)
+function data = c3d2zoo(fld,del)
 
 % C3D2ZOO  Converts .c3d files to .zoo format
 %
 % ARGUMENTS
-%  fld  ... path leading to folder to operate on
-%  del  ... option to delete original c3d file after creating zoo file. Default 'no'
+%  fld  ...   path leading to folder to operate on
+%  del  ...   option to delete original c3d file after creating zoo file. Default 'no'
 %
+% RETURNS
+%  data  ...  zoo system data. This return is mostly used by 'director'
+
+
 % NOTES:
 %  - channels with names containing '*' or '#' are removed (these are usually
 %    unlabled trajectories)
@@ -22,6 +26,7 @@ function c3d2zoo(fld,del)
 % Updated by Philippe C. Dixon May 2014
 % - This function has been reintroduced as the main c3d converter after recent update
 %   of the readc3d function by JJ Loh
+% - reintroduction of the 'return' of the function for use with director
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
@@ -41,7 +46,7 @@ function c3d2zoo(fld,del)
 % please reference the paper below if the zoosystem was used in the preparation of a manuscript:
 % Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
 % Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Aduts and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
 % SET DEFAULTS ---------------------------------------------------------------------------
@@ -57,7 +62,7 @@ if nargin==1
     del = 'no';
 end
 
-if isin(fld,'.c3d')      % for a single trial (e.g. loading c3d in director
+if isin(fld,'.c3d')      % for a single trial (e.g. loading c3d in director)
     pth = fileparts(fld);
     fl= {fld};
     fld = pth;

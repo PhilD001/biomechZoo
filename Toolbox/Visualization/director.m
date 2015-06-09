@@ -8,7 +8,6 @@ function director(action,varargin)
 % NOTES
 % - If trials contain force plate data, force plates and ground reaction
 %   force vectors (for up to three plates) will appear in the virual space
-%   Part of the Biomechanics Zoosystem Toolbox, 2005-2014
 % 
 % - Additional objects ('props') can be loaded (see 'cinema objects' sub-folder
 %   of 'Visualization' folder. Limited functionality currently exists for
@@ -34,8 +33,19 @@ function director(action,varargin)
 % Updated by Philippe C. Dixon May 2015
 % - Further compatibility with mac platforms added
 
+% Updated by JJ Loh and Philippe C. Dixon May 2015
+% - Subjects with footwear can be visualized in director. So far the only footwear type 
+%   is 'skates'. Subjects with the field data.zoosystem.Anthro.Feet = 'skates' will be
+%   rendered wearing 'skates' props (found in ~\the zoosystem\Toolbox\Visualization\Cinema objects\skate)
+%   The function bmech_footwear should be run to record the footwear type in the zoo file. 
+%   Alternatively, the user can add the following code in the 'loadfile' function embedded
+%   in 'marker.m' after the loading section (near line 120): data.zoosystem.Anthro.Feet = 'skates'
+%   The handling of the prop is performed in the embedded function 'skate'
+%   of 'props.m'.
+% - New footwear types can be created by following this example
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
+
+% Part of the Zoosystem Biomechanics Toolbox 
 %
 % Main contributors:
 % Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
@@ -52,11 +62,7 @@ function director(action,varargin)
 % please reference the paper below if the zoosystem was used in the preparation of a manuscript:
 % Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
 % Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Aduts and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
-
-
-
-
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 global producer;
 global p;
@@ -174,7 +180,7 @@ switch action
         ax = finddobj('axes');
         delete(findobj(ax,'type','patch'));
         delete(findobj(ax,'type','surface'));
-        
+            
     case 'delete graph'
         
         set(findobj('type','uicontrol','tag','data list'),'Visible','off');
@@ -649,6 +655,7 @@ grips('goto iimage',frm);
 marker('goto',frm);
 specialobject('stick');
 costume('stick');
+
 accessoryfxn('stick');
 grips('random task');
 props('goto',frm);
@@ -814,66 +821,9 @@ elseif cindx <1
 end
 director('person',ordr{cindx});
 
-function openall(pth)
 
-if ~strcmp(pth(end),slash);
-    pth = [pth,slash];
-end
 
-fl = engine('path',pth);
 
-[bodyf,dataf,fl] = separatefiles(fl);
-for i = 1:length(bodyf)
-    [f,p] = partitionfile(bodyf{i});
-    actor('create',bodyf{i},extension(f,''));
-end
-
-fl = [fl;dataf];
-for i = 1:length(fl)
-    filename = fl{i};
-    [f,p] = partitionfile(fl{i});
-    switch lower(extension(filename));
-        case '.ort'
-            actor('load orientation',filename);
-        case '.dis'
-            actor('load displacement',filename);
-        case '.cdata'
-            actor('load cdata',filename);
-        case '.cam'
-            cameraman('load',filename);
-        case '.spo'
-            costume('load special',[p,f]);
-        case '.cos'
-            costume('load',filename,extension(f,''));
-        case '.grip'
-            grips('load',filename);
-        case '.light'
-            lightman('load',filename);
-        case '.prop'
-            props('load',filename);
-            disp(['Loading prop - ',filename])
-        case '.c3d'
-            marker('load c3d',filename);
-        case '.z3d'
-            marker('load z3d',filename);
-            
-    end
-end
-
-function [ac,d,o] = separatefiles(f)
-ac = [];
-o = [];
-d = [];
-for i = 1:length(f)
-    switch extension(f{i})
-        case '.body'
-            ac = [ac;f(i)];
-        case '.c3d'
-            d = [d;f(i)];
-        otherwise
-            o = [o;f(i)];
-    end
-end
 
 function move(d,varargin)
 val = get(finddobj('units','displacement'),'userdata');

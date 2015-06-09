@@ -2,6 +2,12 @@ function ndata = keepchannel(data,chkp)
 
 % stanalone function used primarily by BMECH_REMOVECHANNEL
 
+
+% Revision History
+%
+% Updated by Philippe C. Dixon May 2015
+% - fixed bug with vector size
+
 v_list = cell(size(chkp));
 a_list = cell(size(chkp));
 
@@ -27,6 +33,9 @@ ndata.zoosystem = data.zoosystem;  % copy metainfo
 
 v_list(cellfun(@isempty,v_list)) = [];
 a_list(cellfun(@isempty,a_list)) = [];
+
+v_list = makecolumn(v_list);
+a_list = makecolumn(a_list);
 
 if isempty(v_list)
     ndata.zoosystem.Video.Channels = {};

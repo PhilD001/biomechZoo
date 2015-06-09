@@ -46,7 +46,10 @@ function data =readc3d(fname)
 % Updated by JJ Loh 2014/09/23
 %- c3d files with large amount of channels will store the labels in
 %  multiple locations.  Now this function can consolidate the label names.
-
+%
+% Updated by Philippe C. Dixon 2015/05/19
+% - removed unused embedded function 
+% 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
@@ -365,24 +368,3 @@ for i = 2:3
 end
     
 r = indx;    
-
-function r = validfieldname(fld)
-
-fld = strrep(fld,' ','_');
-fld = strrep(fld,'-','');
-fld = strrep(fld,'(','');
-fld = strrep(fld,')','');
-fld = strrep(fld,'+','');
-fld = strrep(fld,'.','');
-fld = strrep(fld,'\','');
-fld = strrep(fld,'*','');
-fld = strrep(fld,':','');
-fld = strrep(fld,'#','');
-
-for i = 1:length(fld)
-    if isletter(fld(i))
-        fld = fld(i:end);
-        break
-    end
-end
-r = fld;

@@ -37,7 +37,7 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
+% Part of the Zoosystem Biomechanics Toolbox 
 %
 % Main contributors:
 % Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.

@@ -1,14 +1,18 @@
 function exportfig(fld,filename)
 
-% exports figures for use in publications / LateX
+% EXPORTFIG(fld,filename)exports figures for use in publications / LateX
 % see for more details: https://github.com/ojwoodford/export_fig
-%
+
 % NOTES
-% - png is a nice lossless format
-% - 300 pixels per inch is good quality
-% - paint must be OFF for bootstrap bars
+% - 'ghostscript' is required for pdf save 
+% - pdf save is a great choice to obtained a vectorized (lossless) image;
+%   however, some images using non-standard patches do not render correctly
+%   in pdf. This is a known Matlab issue 
+
+
+% Revision History
 %
-% Updated Oct 21st 2014
+% Updated by Philippe C. Dixon Oct 21st 2014
 % -automatically searches for figure name to use as file name
 
 % Updated Oct 30th 2014

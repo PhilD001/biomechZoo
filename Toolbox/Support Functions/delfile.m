@@ -49,6 +49,13 @@ end
 
 for i = 1:length(fl)
     
+    if exist(fl{i},'file')~=2
+        error(fl{i},'file does not exist, check path')
+    else
+        batchdisplay(fl{i},'deleting file')
+    end
+    
+    
     if ispc
         % dos(['erase "',fl{i},'"']);
         delete(fl{i}) 
@@ -56,7 +63,8 @@ for i = 1:length(fl)
         unix(['rm -f -R ' '"' fl{i} '"']);
     end
     
-    batchdisplay(fl{i},'deleting file')
+    
+    
     
 end
 

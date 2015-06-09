@@ -10,13 +10,16 @@ function v3d2zooMat(varargin)
 % NOTES
 % - This function is specific to the requirements of the McGill Ice Hockey
 %   Research Group processing pipelines. Function will need to be updated
-%   for general use
+%   for general use, but can be used as a guide
 
 
 % Revision History
 %
 % Created by Philippe C. Dixon Jan 2015 based on 'Import_data_visual3d'
 % from Shawn Robbins
+%
+% Updated by Philippe C. Dixon May 2015
+% - Improved functionality with events
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
@@ -36,7 +39,7 @@ function v3d2zooMat(varargin)
 % please reference the paper below if the zoosystem was used in the preparation of a manuscript:
 % Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
 % Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Aduts and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
 
@@ -90,7 +93,6 @@ for i = 1:length(fl)
         trial_names = wdata.FILE_NAME;                               % all trial names
         fsamp = wdata.FRAME_RATE;                                    % all sampling rates (should be all same)
         ch = setdiff(fieldnames(wdata),och)';                         % data channels only
-        
         
         % B) EXTRACT DISCRETE EVENT DATA FROM 'Event_TYPE.mat' FILE
         %
@@ -152,19 +154,34 @@ for i = 1:length(fl)
                 evt = ddata.(ech{k});
                 evt = round(evt{j}*fsamp{j}+1);                  % convert event time to frame
                 
-                if isempty(evt)
+                if isempty(evt) 
                     disp(['empty event field for ',ech{k}])
                     evt = 999;
+
+                    if ismember(ech{k},{'ROFF','LOFF','RON','LON'})
+                         data.(ch{indx}).event.([ech{k},'1']) = [evt 0 0 ];
+                    else
+                        data.(ch{indx}).event.(ech{k}) = [evt 0 0 ];                        
+                    end
+
                 else
                     
                     if length(evt)~=1 
-                        disp(['event problem for ',ech{k}])
-                        evt = 999;
+
+                        for m = 1:length(evt)
+                            data.(ch{indx}).event.([ech{k},num2str(m)]) = [evt(m) 0 0 ];
+                        end
+                    
+                    elseif ismember(ech{k},{'ROFF','LOFF','RON','LON'})
+                          data.(ch{indx}).event.([ech{k},'1']) = [evt 0 0 ];
+                        
+                    else
+                        data.(ch{indx}).event.(ech{k}) = [evt 0 0 ];
                     end
                     
                 end
-                
-                data.(ch{indx}).event.(ech{k}) = [evt 0 0 ];
+                    
+ 
             end
             
             
@@ -195,6 +212,107 @@ for i = 1:length(fl)
             save([spth,slash,tname,'.zoo'],'data');
             
         end
+        
+    end
+    
+    if isin(fl{i},'Static_Angles')
+        
+        % A) EXTRACT STATIC ANGLE DATA FROM 'Static_angles.mat' FILE
+        %
+        [spth,name] = fileparts(fl{i});                              % subject subfolder
+        wdata = load(fl{i},'-mat');                                  % load waveform data
+        
+        trial_names = wdata.FILE_NAME;                               % all trial names
+        fsamp = wdata.FRAME_RATE;                                    % all sampling rates (should be all same)
+        ch = setdiff(fieldnames(wdata),och)';                         % data channels only
+        
+        
+      
+        % C) EXTRACT DEMOGRAPHICS DATA FROM 'Demographics.mat' FILE
+        %
+        demo = engine('path',spth,'search file','Demographics.mat');
+        
+        if isempty(demo)
+           error(['no demographics file for ',fl{i}])
+        end
+        
+        if ~exist(demo{1},'file')==2
+            error(['no demographics file for ',fl{i}])
+        end
+        
+        demodata = load(demo{1},'-mat');                                 % load discrete data
+        ach = setdiff(fieldnames(demodata),och);
+        
+        Anthro = struct;
+        for k = 1:length(ach)
+            r = demodata.(ach{k});
+            Anthro.(ach{k}) = r{1};
+        end
+        
+        
+        % D) CREATE ZOOFILES FOR EACH CHUNK FROM WAVE AND DISCRETE FILES
+        %
+        for j=1:length(trial_names)
+            
+            batchdisplay(trial_names{j},'creating zoo file')
+            
+            data = struct;
+            data.zoosystem.Video.Channels = {};
+            
+            for k = 1:length(ch)
+                yd = wdata.(ch{k});
+                yd = yd{j};
+                
+                [r,c] = size(yd);                               % check size of yd for problems
+                if c > 3
+                    yd = yd(:,1:3);
+                end
+                
+                if isin(ch{k},'__')
+                     rr = strrep(ch{k},'__','_');
+                     data = addchannel(data,rr,yd,'Video');       % add physical channel
+                else
+                    data = addchannel(data,ch{k},yd,'Video');       % add physical channels
+                end
+                
+            end
+            
+            data.zoosystem.Video.Indx = (1:1:r)';
+            data.zoosystem.Video.Freq = fsamp{j};
+            data.zoosystem.SourceFile = trial_names{j};
+            
+            data.zoosystem.Anthro = Anthro;
+            data.zoosystem.Units.Height = 'm';
+            data.zoosystem.Units.Mass = 'kg';
+            data.zoosystem.Units.BMI = 'kg/m^2';
+            data.zoosystem.Units.Markers = 'mm';
+
+            
+            data.zoosystem.Codes.Sex.Female = 0;
+            data.zoosystem.Codes.Sex.Male = 1;
+            
+            data.zoosystem.Codes.Level.Rec = 0;
+            data.zoosystem.Codes.Level.Elite = 1;
+            
+            data.zoosystem.Codes.Side.Left = 0;
+            data.zoosystem.Codes.Side.Right = 1;
+                        
+            tname = trial_names{j};
+            indxx = strfind(tname,'\');  % alwayws a PC slash
+            tname = tname(indxx(end)+1:end-4);
+             
+            if isin(tname,'upreme')
+                tname = 'SUPSTATIC01';
+            elseif isin(tname,'apor')
+                tname = 'VAPSTATIC01';
+            else
+                error('bad file name')
+            end
+            
+            save([spth,slash,tname,'.zoo'],'data');
+            
+        end
+        
         
     end
     

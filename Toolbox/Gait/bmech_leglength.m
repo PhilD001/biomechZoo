@@ -34,7 +34,7 @@ function bmech_leglength(fld)
 % please reference the paper below if the zoosystem was used in the preparation of a manuscript:
 % Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
 % Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Aduts and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
 

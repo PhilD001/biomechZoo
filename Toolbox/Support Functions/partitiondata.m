@@ -6,7 +6,7 @@ function data = partitiondata(data,evt1,evt2,ch)
 %  data ...  zoo data file
 %  evt1 ...  name of event for start of partition
 %  evt2 ...  name of event for end of partition
-%  ch   ... list of channels to partition
+%  ch   ... list of channels to partition. Default all channels partitioned
 %
 % RETURNS
 %  data ... partitionned zoo data
@@ -17,17 +17,20 @@ function data = partitiondata(data,evt1,evt2,ch)
 %
 % Created by Philippe C. Dixon based on old code
 %
-% Updated Philippe C. Dixon Feb 2012
+% Updated by Philippe C. Dixon Feb 2012
 % - events with index 1 will keep this index, others will be modifed 
 %
-% Updated Philippe C. Dixon Oct 2012
+% Updated by Philippe C. Dixon Oct 2012
 % - partitionning can occur only for select channels
 %
-% Updated Philippe C. Dixon January 2014
+% Updated by Philippe C. Dixon January 2014
 % - use with 4 arguments fixed
 % 
-% Updated Philippe C. Dixon February 26th 2014
+% Updated by Philippe C. Dixon February 26th 2014
 % - current frame field of zoosystem updated. 
+%
+% Updated by Philippe C. Dixon June 2015
+% - events for outliers (999) are unchanged
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
@@ -47,14 +50,14 @@ function data = partitiondata(data,evt1,evt2,ch)
 % please reference the paper below if the zoosystem was used in the preparation of a manuscript:
 % Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
 % Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Aduts and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
 
 % Set Defaults
 %
 if nargin<4   
-    ch = setdiff(fieldnames(data),{'zoosystem',});
+    ch = setdiff(fieldnames(data),{'zoosystem'});
 end
 
 
@@ -84,20 +87,24 @@ for i = 1:length(ch)
         disp(['the channel ',ch{i}, ' is missing the line field'])
         
     elseif length(data.(ch{i}).line)<(e2(1)-e1(1))
-        disp(['the channel ',ch{i}, 'has insufficient data points for partitionning'])
+        disp(['the channel ',ch{i}, ' has insufficient data points for partitionning'])
         
     else
-        
         r = data.(ch{i}).line(e1(1):e2(1),:);
         data.(ch{i}).line = r;
     end
     event = fieldnames(data.(ch{i}).event);
     
     if ~isempty(event)
-        for e = 1:length(event)
-            
-            if data.(ch{i}).event.(event{e})(1)~=1
-                data.(ch{i}).event.(event{e})(1) = data.(ch{i}).event.(event{e})(1)-e1(1)+1;
+                
+        for e = 1:length(event) 
+           
+            if data.(ch{i}).event.(event{e})(1)==1 
+                continue
+            elseif data.(ch{i}).event.(event{e})(1)==999
+                continue
+            else
+               data.(ch{i}).event.(event{e})(1) = data.(ch{i}).event.(event{e})(1)-e1(1)+1;
             end
         end
     end

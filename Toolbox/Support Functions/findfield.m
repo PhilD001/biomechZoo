@@ -1,22 +1,42 @@
 function [r,chn] = findfield(st,evt)
 
-% Searches through all subbranches in a structured array
-%
-% [r,chn] = findfield(st,evt)
+% [r,chn] = FINDFIELD(st,evt) searches through all subbranches in a structured array
 %
 % ARGUMENTS
-% st        ...  structured array
-% evt       ...  subbranch in structured arraw (st)
+%  st        ...  structured array
+%  evt       ...  subbranch in structured arraw (st)
 %
 % RETURNS
-% r         ...  value of subbranch evt
-% ch        ...   name of branch containing evt
-%
+%  r         ...  value of subbranch evt
+%  ch        ...   name of branch containing evt
+
+
+% Revision History
 %
 % created by JJ Loh 
 %
-% Updated by Phil DixonNovember 2011
+% Updated by Philippe C.  Dixon November 2011
 % - function now also outputs channel containing evt
+
+
+% Part of the Zoosystem Biomechanics Toolbox v1.2
+%
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+%
+% Contact:
+% philippe.dixon@gmail.com
+%
+% Web:
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
 r = [];

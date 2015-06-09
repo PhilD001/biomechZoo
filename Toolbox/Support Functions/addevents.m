@@ -1,29 +1,34 @@
 function data = addevents(data,chs,ename,type)
 
-% This function is called by bmech_addevent to add data to event branches.
+% data = addevents(data,chs,ename,type) called by bmech_addevent to add data to event branches.
 %
 % NOTES
-% - User is encouraged to modify event functions for specific needs
+% - Users are encouraged to modify event functions for specific needs
 % - Not all events have been tested
+
+
+
+% Part of the Zoosystem Biomechanics Toolbox 
 %
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+% 
+% Contact: 
+% philippe.dixon@gmail.com
 %
-%----------Part of the Zoosystem Biomechanics Toolbox 2006-2014------------------------------%
-%                                                                                            %
-% MAIN CONTRIBUTORS                                                                          %
-%                                                                                            %
-% Philippe C. Dixon         Dept. of Engineering Science. University of Oxford, Oxford, UK   %
-% JJ Loh                    Medicus Corda, Montreal, Canada                                  %
-% Yannick Michaud-Paquette  Dept. of Kinesiology. McGill University, Montreal, Canada        %
-%                                                                                            %
-% - This toolbox is provided in open-source format with latest version available on          %
-%   GitHub: https://github.com/phild001                                                      %
-%                                                                                            %
-% - Users are encouraged to edit and contribute to functions                                 %
-% - Please reference if used during preparation of manuscripts                               %                                                                                           %
-%                                                                                            %
-%  main contact: philippe.dixon@gmail.com                                                    %
-%                                                                                            %
-%--------------------------------------------------------------------------------------------%
+% Web: 
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+
+
+
 
 if strcmp(chs{1},'all')
     

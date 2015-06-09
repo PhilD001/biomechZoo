@@ -1,11 +1,9 @@
 function fl = engine(varargin)
 
-% ENGINE is a file searching algorithm
-%
-% fl = engine('path',pathname,'extension',extname,'search file',srchfile,'folder',fldname,'search path',srchpath)
+% fl = ENGINE(varargin) is a file searching algorithm
 %
 % inputs are in pairs where the first element is the property name and the second is a property value
-% The 'path' property is required.  All other properties are optional.
+% The 'path' property is required.  All other properties are optional. All arguments must be strings.
 %
 % ARGUMENTS
 %  'path' or 'fld' ...  folder path to begin the search as string
@@ -16,6 +14,15 @@ function fl = engine(varargin)
 %
 % RETURNS
 %  fl              ...  list of files as cell array of strings  
+%
+% e.g. #1 Return all files in the root folder C:/Users/Public which contain the
+% string 'imba':
+% fl = engine('path','C:/Users/Public','search file','imba')
+%
+% e.g. #2 Return all files in the root folder C:/Users/Public which are
+% located in the subfolder Sample Music: 
+% fld = 'C:/Users/Public';
+% fl = engine('path',fld,'search path','Sample Music')
 
 
 % Revision History
@@ -46,7 +53,9 @@ function fl = engine(varargin)
 % - fixed small bug on MAC platform
 % - Users can select 'extension' and 'search file' simultaneously
 % - extra error checking added
-
+%
+% Updated by Philippe C. Dixon June 2015
+% - improved help with examples
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %

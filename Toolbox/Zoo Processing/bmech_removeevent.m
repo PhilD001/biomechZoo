@@ -1,79 +1,100 @@
-function bmech_removeevent(evt,fld,ch)
+function bmech_removeevent(fld,evt,ch)
 
-% bmech_removeevent(evt)
+% bmech_removeevent(fld,evt,ch)
 % 
 % This m-file will remove events from your data. This step is usually done before final graphing
+% to avoid having to clear your graphs
 %
 % ARGUMENTS
-%  evt  ...   name of event(s) to remove as cell array of strings 
-%             ex {'HS','TO'}. Default is all events
 %  fld  ...   folder to operate on
-%  ch   ...   specific channel to remove
-% 
+%  evt  ...   name of event(s) to remove as cell array of strings e.g.{'HS','TO'}. Default is 'all'
+%  ch   ...   channels from which to remove events. Default is 'all'
+
+
+% Revision History
 %
-% Updated by Phil Dixon July 2009
+% Updated by Philippe C. Dixon July 2009
 %  - You can now specify which channel you wish to remove.
 %    Removal of several (but not all) events at the same is not yet supported  
 %
-% Updated  by Phil Dixon Oct 2009
+% Updated by Philippe C. Dixon Oct 2009
 %  - changed the argument order
 %
-% updated by Phil Dixon Feb 2013
+% Updated by Philippe C. Dixon Feb 2013
 % - can remove all events from a single channel if desired
 %
-%----------Part of the Zoosystem Biomechanics Toolbox 2006-2014------------------------------%
-%                                                                                            %                
-% MAIN CONTRIBUTORS                                                                          %
-%                                                                                            %
-% Philippe C. Dixon         Dept. of Engineering Science. University of Oxford, Oxford, UK   %
-% JJ Loh                    Medicus Corda, Montreal, Canada                                  %
-% Yannick Michaud-Paquette  Dept. of Kinesiology. McGill University, Montreal, Canada        %
-%                                                                                            %
-% - This toolbox is provided in open-source format with latest version available on          %
-%   GitHub: https://github.com/phild001                                                      %
-%                                                                                            %
-% - Users are encouraged to edit and contribute to functions                                 %
-% - Please reference if used during preparation of manuscripts                               %                                                                                           %
-%                                                                                            %
-%  main contact: philippe.dixon@gmail.com                                                    %
-%                                                                                            %
-%--------------------------------------------------------------------------------------------%
+% Updated by Philippe C. Dixon June 2015
+% - changed function arguments
 
+
+
+% Part of the Zoosystem Biomechanics Toolbox 
+%
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+%
+% Contact:
+% philippe.dixon@gmail.com
+%
+% Web:
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+
+
+
+% Set Defaults
+%
 if nargin ==0
-    evt = 'all';
     fld = uigetfolder;
-    cd(fld);
-    ch = '';
-    
+    evt = 'all';
+    ch = 'all';
 end
 
 if nargin ==1
-   fld = uigetfolder;
-   ch = '';
+    evt = 'all';
+    ch = 'all';
 end
 
 if nargin==2
-    ch ='';
+    ch = 'all';
 end
-    
 
+    
+cd(fld);
+
+
+% Batch Process
+%
 fl = engine('path',fld,'extension','zoo');
 
- for i = 1:length(fl)
-    data = load(fl{i},'-mat');
-    disp(['removing events from:',fl{i}]);
-    data = data.data;
+for i = 1:length(fl)
+    data = zload(fl{i});
+    batchdisplay(fl{i},'removing events');
     data = removeevent(data,evt,ch);
-     save(fl{i},'data');
+    save(fl{i},'data');
 end
 
+
+ 
 function data = removeevent(data,evt,ch)
     
 if ~iscell(evt)
     evt = {evt};
 end
 
-if isempty(ch)
+if ~iscell(ch)
+    ch = {ch};
+end
+
+
+if isin(ch,'all') 
     ch = setdiff(fieldnames(data),{'zoosystem'});
 end
 

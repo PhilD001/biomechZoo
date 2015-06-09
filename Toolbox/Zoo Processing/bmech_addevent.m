@@ -13,27 +13,33 @@ function bmech_addevent(fld,ch,ename,type)
 %  type   ... see line 47 ('max' 'min' 'toe off' heel strike'...)string
 %
 % NOTES: 
-%  1) adding events can be done at any point during processing and can be called numerous times 
-%  2) simply add new cases as required to compute new events
+% - adding events can be done at any point during processing and can be called numerous times 
+% - add new cases as required to compute new events in addevents.m
+
+
+% Revision History
 %
+% Created by Philippe C. Dixon 2008
+
+
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
-%----------Part of the Zoosystem Biomechanics Toolbox 2006-2014------------------------------%
-%                                                                                            %                
-% MAIN CONTRIBUTORS                                                                          %
-%                                                                                            %
-% Philippe C. Dixon         Dept. of Engineering Science. University of Oxford, Oxford, UK   %
-% JJ Loh                    Medicus Corda, Montreal, Canada                                  %
-% Yannick Michaud-Paquette  Dept. of Kinesiology. McGill University, Montreal, Canada        %
-%                                                                                            %
-% - This toolbox is provided in open-source format with latest version available on          %
-%   GitHub: https://github.com/phild001                                                      %
-%                                                                                            %
-% - Users are encouraged to edit and contribute to functions                                 %
-% - Please reference if used during preparation of manuscripts                               %                                                                                           %
-%                                                                                            %
-%  main contact: philippe.dixon@gmail.com                                                    %
-%                                                                                            %
-%--------------------------------------------------------------------------------------------%
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+% 
+% Contact: 
+% philippe.dixon@gmail.com
+%
+% Web: 
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
 if fld ==1   % for backwards compatibility
@@ -46,7 +52,6 @@ fl = engine('path',fld,'extension','zoo');
 if ischar(ch)
     ch = {ch};
 end
-
 
 
 for i = 1:length(fl);

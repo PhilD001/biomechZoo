@@ -8,7 +8,7 @@ function bmech_partition(evt1,evt2,fld,folders)
 %  fld      ...   Path leading to files (Optional argument). Default, popup during
 %                 function call
 %  folders  ...   Name of folders as cell array of sttring in which NOT to partition. Default 'all'
-%
+
 
 
 % Revision History
@@ -26,7 +26,7 @@ function bmech_partition(evt1,evt2,fld,folders)
 % - cleaned up code
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
+% Part of the Zoosystem Biomechanics Toolbox 
 %
 % Main contributors:
 % Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.

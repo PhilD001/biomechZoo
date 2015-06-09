@@ -1,5 +1,14 @@
 function r = associatedlg(action,fld1,fld2)
 
+% Main dialog box interface used by ensembler
+
+
+% Set Parameters
+FigColor =  [.8 .8 .8];
+BgColor = [0 0 0];
+FgColor = [1 1 0];   % original [1 1 0]
+
+
 if iscell(action)
     if nargin ==3
         nm = fld2;
@@ -18,11 +27,11 @@ switch action
         spos = [.1 .1 5 9.8];
         asize = [5 10];
         okbutt = [.1 .5 1 1];
-        fig = figure('units','centimeter','position',[midpt(1)-fsize(1)/2 midpt(2)-fsize(2)/2 fsize(1) fsize(2)],'color',[.8 .8 .8],'menubar','none','name',...
-            'associate','closerequestfcn','associatedlg(''exit'')','numbertitle','off','name',nm);
-        uicontrol('style','listbox','units','centimeter','position',spos,'tag','source1','string',fld1,'backgroundcolor',[0 0 0],'foregroundcolor',[1 1 0]);
+        fig = figure('units','centimeter','position',[midpt(1)-fsize(1)/2 midpt(2)-fsize(2)/2 fsize(1) fsize(2)],'color',FigColor,...
+                     'menubar','none','name','associate','closerequestfcn','associatedlg(''exit'')','numbertitle','off','name',nm);
+        uicontrol('style','listbox','units','centimeter','position',spos,'tag','source1','string',fld1,'backgroundcolor',BgColor,'foregroundcolor',FgColor);
         uicontrol('style','listbox','units','centimeter','position',[fsize(1)-spos(1)-spos(3) spos(2) spos(3:4) ],...
-            'tag','source2','string',fld2,'backgroundcolor',[0 0 0],'foregroundcolor',[0 1 0]);
+            'tag','source2','string',fld2,'backgroundcolor',BgColor,'foregroundcolor',[0 1 0]);
         uicontrol('style','pushbutton','units','centimeters','position',[spos(1)+spos(3)+.2,fsize(2)/2-.25 .5 .5],'string','>>','callback','associatedlg(''transfer'')','tag','source1');
         uicontrol('style','pushbutton','units','centimeters','position',[fsize(1)-spos(1)-spos(3)-.2-.5,fsize(2)/2-.25 .5 .5],'string','<<','callback','associatedlg(''transfer'')','tag','source2');
         ax = axes('parent',fig,'units','centimeters','position',[fsize(1)/2-asize(1)/2 0 asize],'box','on','xtick',[],'ytick',[],'box','on','tag','mainaxes',...            

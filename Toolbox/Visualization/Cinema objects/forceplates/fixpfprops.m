@@ -1,7 +1,7 @@
 function fixpfprops
 
 % forceplate2.prop in the original JJ set have some strange behavior
-% with new zoo files. Sinece foreplate1.prop is okay. We make a copy of 
+% with new zoo files. Since foreplate1.prop is okay. We make a copy of 
 % forceplate1.prop, rename it as forceplate2.prop and run this file to
 % change its id from '1' to '2'. The other properties don't matter as they
 % will be filled in with the correct data once a file is loaded

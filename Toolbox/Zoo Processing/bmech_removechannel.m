@@ -1,15 +1,11 @@
 function bmech_removechannel(varargin)
 
-% BMECH_REMOVECHANNEL removes unwanted channels from zoo files 
+% BMECH_REMOVECHANNEL(varargin) removes unwanted channels from zoo files 
 % 
-% data = bmech_removechannnel('chkp',chkp,'chrm',chrm,'fld',fld);
-%
 % ARGUMENTS
 %  chkp         ...    channels to keep as cell array of strings ex.
 %  chrm         ...    channels to remove as cell array of strings
 %  fld          ...    name of folder to operatre on
-%
-%
 %
 % Created 2008
 %
@@ -18,25 +14,27 @@ function bmech_removechannel(varargin)
 %
 % Updated by Philippe C. Dixon February 2014
 % - Removed channels are also removed from zoosystem channel list
+
+
+% Part of the Zoosystem Biomechanics Toolbox 
 %
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
 %
-%----------Part of the Zoosystem Biomechanics Toolbox 2006-2014------------------------------%
-%                                                                                            %                
-% MAIN CONTRIBUTORS                                                                          %
-%                                                                                            %
-% Philippe C. Dixon         Dept. of Engineering Science. University of Oxford, Oxford, UK   %
-% JJ Loh                    Medicus Corda, Montreal, Canada                                  %
-% Yannick Michaud-Paquette  Dept. of Kinesiology. McGill University, Montreal, Canada        %
-%                                                                                            %
-% - This toolbox is provided in open-source format with latest version available on          %
-%   GitHub: https://github.com/phild001                                                      %
-%                                                                                            %
-% - Users are encouraged to edit and contribute to functions                                 %
-% - Please reference if used during preparation of manuscripts                               %                                                                                           %
-%                                                                                            %
-%  main contact: philippe.dixon@gmail.com                                                    %
-%                                                                                            %
-%--------------------------------------------------------------------------------------------%
+% Contact:
+% philippe.dixon@gmail.com
+%
+% Web:
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+
 
 
 chkp = [];
