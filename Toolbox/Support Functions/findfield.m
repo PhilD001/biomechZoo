@@ -1,10 +1,10 @@
-function [r,chn] = findfield(st,evt)
+function [r,chn] = findfield(data,evt)
 
 % [r,chn] = FINDFIELD(st,evt) searches through all subbranches in a structured array
 %
 % ARGUMENTS
-%  st        ...  structured array
-%  evt       ...  subbranch in structured arraw (st)
+%  data        ...  structured array
+%  evt       ...  name of event in structured array as string
 %
 % RETURNS
 %  r         ...  value of subbranch evt
@@ -41,17 +41,17 @@ function [r,chn] = findfield(st,evt)
 
 r = [];
 chn = [];
-if ~isstruct(st)
+if ~isstruct(data)
     return
 else
     
-    ch = fieldnames(st);
+    ch = fieldnames(data);
     indx = find(strcmp(lower(ch),lower(evt)));
     if ~isempty(indx)
-        r = getfield(st,ch{indx});
+        r = getfield(data,ch{indx});
     else
         for i = 1:length(ch)
-            r = findfield(getfield(st,ch{i}),evt);
+            r = findfield(getfield(data,ch{i}),evt);
             if ~isempty(r)               
                  chn = ch{i};
                 break

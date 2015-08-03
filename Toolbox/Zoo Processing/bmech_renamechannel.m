@@ -46,11 +46,11 @@ function bmech_renamechannel(och,nch,fld)
 
 if nargin ==2
     fld = uigetfolder;
-else
-    fl = engine('path',fld,'extension','zoo');
 end
 
 cd(fld);
+
+fl = engine('path',fld,'extension','zoo');
 
 % check for single string instead of cell array of strings
 %

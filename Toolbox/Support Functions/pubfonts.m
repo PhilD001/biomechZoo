@@ -1,85 +1,83 @@
 function pubfonts(FontSize,FontWeight,FontName)
 
-% changes fonts to good fonts for publication or latex
+% PUBFONTS(FontSize,FontWeight,FontName)changes fonts and sizes to 'good' parameters for 
+% publication or latex documents
 %
-% The default weight and name are probably best. The size might be changed. For consistency all parts of figure
-% should have similar font style
-%
-%
-%
-%
-%
-% Created November 2013 by Philippe C. Dixon
+% ARGUMENTS
+%  FontSize    ...  Size of font. Default 14
+%  FontWeight  ...  Weight of font ('normal' or 'bold'). Default 'normal'
+%  FontName    ...  Name of font. Default 'arial'
+
+% NOTES
+% - The default weight and name are probably best. For consistency all parts of a figure
+%   should have similar font style and size
 
 
-%--Prompt for settings
+% Revision History
 %
+% Created by Philippe C. Dixon November 2013 
+%
+% Updated by Philippe C. Dixon June 2015
+% - simplified options
+% - optimized for use in ensembler
 
+
+% Part of the Zoosystem Biomechanics Toolbox 
+%
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+% 
+% Contact: 
+% philippe.dixon@gmail.com
+%
+% Web: 
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+
+
+
+
+% Prompt for settings
+%
 if nargin==0
     prompt={'FontSize','FontWeight','FontName'};
-    
     defaultanswer = {'14','normal','Arial'};
-    
     a = inputdlg(prompt,'axis title',1,defaultanswer);
     
     FontSize = str2double(a{1});
     FontWeight = a{2};
     FontName = a{3};
-    
 end
 
-figs = findobj('type','figure');
 
 
-for i = 1:length(figs)
-    
-    ax = findobj(figs(i),'type','axes');
-    txt = findobj(figs(i),'type','text');
-    
-    for j = 1:length(txt)
-        
-        
-        if  isin(get(get(txt(j),'Parent'),'Tag'),'legend')          % Legend entries
-            set(txt(j),'FontSize',FontSize-2)
-            
-        elseif isin(get(txt(j),'String'),':')                       % Condition comparison box
-            set(txt(j),'FontSize',FontSize-2)
-            
-            
-        else                      % Figure ids a),b),c)
-            set(txt(j),'FontSize',14)
-            
-        end
-        
-        set(txt(j),'FontWeight',FontWeight)
-        set(txt(j),'FontName',FontName)
-        
-        
-    end
-    
-    
-    
-    
-    
-    for k = 1:length(ax)
-        
-        if length(get(get(ax(k),'YLabel'),'String')) ==1    % these are colar bar labels A, B, C
-            
-            set(get(ax(k),'YLabel'),'FontSize',FontSize-2)
-            
-        else
-            
-            set(get(ax(k),'YLabel'),'FontSize',FontSize)
-            
-        end
-        
-        set(get(ax(k),'YLabel'),'FontWeight',FontWeight)
-        set(get(ax(k),'YLabel'),'FontName',FontName)
-        set(get(ax(k),'Title'),'FontSize',FontSize)
-        set(get(ax(k),'Title'),'FontWeight',FontWeight)
-        
-    end
-    
-    
-    
-end
+
+% Find figure elements
+%
+txt = findobj('type','text');
+ebar = findobj('type','hggroup','tag','ebar');
+lg = findobj('type','axes','tag','legend');
+ax = findobj('type','axes');
+ax = setdiff(ax,lg);
+pmt = findobj('tag','prompt');
+
+
+% Set new styles
+%
+set(ebar(1:length(ebar)),'LineWidth',2)
+set(ax(1:length(ax)),'FontSize',FontSize,'FontWeight',FontWeight,'FontName',FontName)
+set(txt(1:length(txt)),'FontSize',FontSize,'FontWeight',FontWeight,'FontName',FontName)
+
+
+% remove figure elements
+%
+delete(pmt)
+
+

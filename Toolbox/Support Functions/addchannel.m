@@ -1,6 +1,6 @@
 function data = addchannel(data,ch,ndata,section)
 
-% data = ADDCHANNEL(data,ch,ndata)
+% data = ADDCHANNEL(data,ch,ndata,section)
 %
 % ARGUMENTS
 %  data     ...  struct containing zoo data
@@ -67,19 +67,25 @@ if c>3
     error('data must be nx1 or nx3')
 end
 
+section = lower(section);
+
+
 %--Add channel to zoo system---------------------------------------------
 data.(ch).line = ndata;
 data.(ch).event = struct;
 
+
+
+
 %--Add channel to appropriate channel list--------------------------------
-if isin(section,'Video')
+if isin(section,'video')
     channels =data.zoosystem.Video.Channels;
     channels{end+1} = ch;
     channels = makecolumn(channels);
     
     data.zoosystem.Video.Channels = channels;
     
-elseif isin(section,'Analog')
+elseif isin(section,'analog')
     channels = data.zoosystem.Analog.Channels;
     channels{end+1} = ch;
     channels = makecolumn(channels);

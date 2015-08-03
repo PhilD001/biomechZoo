@@ -86,10 +86,7 @@ for i=1:length(cons)-1
         mdiffdatastk =[mdiffdatastk; muhat];     % this is not a bootstrap estimate
      end
     
-    
     calphastk = [calphastk; calpha_b];
-        
-    
     SigDiffIndx = ones(1,length(frames));
     
     for k  =1:length(CIlow_b)
@@ -108,8 +105,6 @@ for i=1:length(cons)-1
     end
     
     SigDiffIndxStk = [SigDiffIndxStk; SigDiffIndx];
-    
-
     
     %----match data to color----
     yd = abs(muhat);

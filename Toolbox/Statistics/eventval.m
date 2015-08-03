@@ -89,7 +89,10 @@ function eventval(varargin)
 % Updated November 2013
 % - bugs fixed in complex designs invloving groups/conditons
 % - allows greater flexibility in choosing of condition folders
-
+%
+% Updated June 2015
+% - improved searching location of stats folder
+%  - improved condition/subject seraching
 
 % Part of the Zoosystem Biomechanics Toolbox 
 %
@@ -221,22 +224,34 @@ end
 %c) find name of subjects, Conditions----------
 %
 %
+% s = slash;
+% indx = strfind(fld,s);
+% subfld1 = [fld(1:indx(end)),'Statistics']; % 1st try
+% subfld2 = [fld(1:indx(end-1)),'Statistics']; % 2nd try
+% subfld3 = [fld(1:indx(end-2)),'Statistics']; % 2nd try
+
 s = slash;
 indx = strfind(fld,s);
-subfld1 = [fld(1:indx(end)),'Statistics']; % 1st try
-subfld2 = [fld(1:indx(end-1)),'Statistics']; % 2nd try
-subfld3 = [fld(1:indx(end-2)),'Statistics']; % 2nd try
+subfld = fld(1:indx(end-1)); 
 
+dim_fl = engine('fld',subfld,'search file','dim1');
 
-if exist(subfld1,'dir')==7
-    sfld = subfld1;
-elseif exist(subfld2,'dir')==7
-    sfld = subfld2;
-elseif exist(subfld3,'dir')==7
-    sfld = subfld3;
+if isempty(dim_fl)
+    error('you must create your dim files before running program')
 else
-    sfld = uigetfolder('open stats folder');
+    [sfld,f] =  fileparts(dim_fl{1});
 end
+
+% 
+% if exist(subfld1,'dir')==7
+%     sfld = subfld1;
+% elseif exist(subfld2,'dir')==7
+%     sfld = subfld2;
+% elseif exist(subfld3,'dir')==7
+%     sfld = subfld3;
+% else
+%     sfld = uigetfolder('open stats folder');
+% end
 
 % d) Open Excel Server----------
 %
@@ -336,23 +351,19 @@ for i = 1:length(fl)
     
     % find subject code
     %
-    if isfield(data.zoosystem.Header,'SubName')
-        subject = data.zoosystem.Header.SubName;
-        subject = strrep(subject,' ','');  % fix known problem from vicon
-    else
-        
-        for j = 1:length(subjects)
-            if isin(fl{i},subjects{j})
-                subject = subjects{j};
-            end 
+    for j = 1:length(subjects)
+        if isin(fl{i},subjects{j})
+            subject = subjects{j};
         end
     end
+    
         
     % find subject condition
     %
+    fl_temp = strrep(fl{i},[slash,subject],'');
     for j = 1:length(Conditions)
     
-        if isin(fl{i},Conditions{j})
+        if isin(fl_temp,Conditions{j})
         con = Conditions{j};
         end
         
@@ -380,7 +391,6 @@ for i = 1:length(fl)
             disp(['channel ',chname ,'contains too manu characters: ','reducing'])
             chname = chname(1:31);
         end
-        
         
         xlswrite1(xlsfile,{'SUBJECT'},chname,'A1');
         xlswrite1(xlsfile,{'CONDITION'},chname,'B1');

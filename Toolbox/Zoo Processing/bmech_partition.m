@@ -1,6 +1,6 @@
 function bmech_partition(evt1,evt2,fld,folders)
 
-% BMECH_PARTITION partitions (cuts) files from evt1 and evt2.
+% BMECH_PARTITION(evt1,evt2,fld,folders) partitions (cuts) files from evt1 and evt2.
 %
 % ARGUMENTS
 %  evt1     ...   Name of first event as a string.

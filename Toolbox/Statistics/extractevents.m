@@ -1,12 +1,7 @@
 function r = extractevents(varargin)
 
+% r = extractevents(varargin) extracts events from zoofiles
 
-% ARGUMENTS
-% fld    ... folder to search
-% evt   ...  name of event to search
-% ch     ... channel withing file. Default 'auto'. Algorithm will find channel
-% display ... optional display. Default 'on'
-%
 % RETURNS
 % r    ...  structed array separated by group/cond
 %
@@ -83,7 +78,7 @@ for g = 1:length(groups)
         stk = NaN*ones(length(subjects),1);
         
         for i = 1:length(subjects)
-            file =   engine('path',[fld,slash,groups{g},slash,subjects{i}],'search',conditions{c},'extension','zoo');
+            file =   engine('path',[fld,slash,groups{g},slash,subjects{i}],'search path',conditions{c},'extension','zoo');
             
             if length(file)>1
                 error('more than 1 file per sub/con, run reptrial first')
@@ -91,13 +86,7 @@ for g = 1:length(groups)
             
             if ~isempty(file)
                 data = zload(file{1});
-                subcode = data.zoosystem.SourceFile;
-                indx = strfind(subcode,'\');
-                if isempty(indx)
-                    indx = strfind(subcode,'/');
-                end
-                
-                subcode = subcode(indx(end-1)+1:indx(end)-1);
+                subcode = subjects{i};
                 
                 if isin(ch,'auto')
                     evtval = findfield(data,evt);

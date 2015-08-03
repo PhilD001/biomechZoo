@@ -34,6 +34,10 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 %
 % Updated by Philippe C. Dixon May 2015
 % - improved ability to deal with colors
+%
+% Updated by Philippe C. Dixon June 2015
+% - uses the function 'distinguishable_colors' to choose 
+%   maximally distinct colors using the default mode
 
 
 
@@ -63,6 +67,7 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 barval = makecolumn(barval)';
 [r,c] = size(barval);
 
+[r_col,c_col] = size(colors);
 
 
 if r~=1
@@ -78,17 +83,32 @@ barvals = [barval; z];
 
 h = bar(barvals,0.9,'grouped');
 
+for i = 1:length(h)
+    set(h(i),'tag',conditions{i})
+    set(h(i),'UserData',conditions{i})                      % for display in ensembler
+    set(h(i),'ButtonDownFcn','ensembler(''buttondown'')');  % for display in ensembler
+end
+
 
 %---SET COLORS-------------------------------------------------------
 %    
-if ~isequal(colors(1,:),colors(2,:))
+if ~isequal(colors(1,:),colors(2,:)) && r_col==c
     
     for i = 1:c
         set(h(i),'facecolor',colors(i,:))           % use color codes
     end
     
 else
+    
     disp('using default colors')
+    n_colors = length(barvals);
+    bg = {'w','k'}; % don't use black or white
+    colors = distinguishable_colors(n_colors,bg);
+        
+    for i = 1:c
+        set(h(i),'facecolor',colors(i,:))           % use color codes
+    end
+    
     
 end
     
@@ -144,74 +164,5 @@ end
 %--REMOVE EVIDENCE---------------------------------------------------------
 %
 set(gca,'xtick',[])
-
-
-
-% OLD BAD CODE
-% if c==2
-%     x = [0.86 1.14];
-%     line('xdata',x,'ydata',barval,'LineStyle','none')
-%     hold on
-%
-%     for i=1:length(x)
-%         errorbar(x(i),barval(i),evalue(i),'k')
-%     end
-%
-% elseif c==3
-%
-%     x = [0.77 1 1.23];
-%     line('xdata',x,'ydata',barval,'LineStyle','none')
-%     hold on
-%
-%     for i=1:length(x)
-%         errorbar(x(i),barval(i),evalue(i),'k')
-%     end
-%
-% elseif c==4
-%
-%     x = [0.73 0.91  1.09 1.28];
-%     line('xdata',x,'ydata',barval,'LineStyle','none')
-%     hold on
-%
-%     for i=1:length(x)
-%         errorbar(x(i),barval(i),evalue(i),'k')
-%     end
-%
-%
-% elseif c==5
-%     x = [0.7 0.85 1 1.15 1.3 ];
-%     line('xdata',x,'ydata',barval,'LineStyle','none')
-%     hold on
-%
-%     for i=1:length(x)
-%         errorbar(x(i),barval(i),evalue(i),'k')
-%     end
-%
-% elseif c==6
-%     x = [0.682 0.8 0.94 1.07 1.2 1.33 ];
-%     line('xdata',x,'ydata',barval,'LineStyle','none')
-%     hold on
-%
-%     for i=1:length(x)
-%         errorbar(x(i),barval(i),evalue(i),'k')
-%     end
-%
-% elseif c==9
-%     x = [0.65  0.74  0.82  0.92  1.0  1.09 1.18 1.27 1.36 ];
-%     line('xdata',x,'ydata',barval,'LineStyle','none')
-%     hold on
-%
-%     for i=1:length(x)
-%         errorbar(x(i),barval(i),evalue(i),'k')
-%     end
-%
-%
-%
-% else
-%
-%     error('only bargraphs with 1,2,3, 5, and 6 bars supported')
-%
-% end
-
 
 

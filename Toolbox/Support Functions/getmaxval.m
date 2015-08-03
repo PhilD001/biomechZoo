@@ -87,8 +87,8 @@ for c = 1:length(cons)
         
         con = [part1,'_and_',part2];
         
-        fl1 = engine('path',fld,'extension','zoo','search',part1);
-        fl2 = engine('path',fld,'extension','zoo','search',part2);
+        fl1 = engine('path',fld,'extension','zoo','search path',part1);
+        fl2 = engine('path',fld,'extension','zoo','search path',part2);
         
         fl = intersect(fl1,fl2);
         
@@ -101,6 +101,11 @@ for c = 1:length(cons)
     for i = 1:length(fl)
         
             data = zload(fl{i});
+            
+            if ~isfield(data,ch)
+                batchdisplay(fl{i},'channel does not exist')
+            end
+            
             plate = data.(ch).line';
             stk = [stk; plate];
             

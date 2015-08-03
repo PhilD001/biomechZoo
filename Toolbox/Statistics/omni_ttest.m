@@ -1,17 +1,15 @@
-function [P,t,df,e,md,CIdiff,plus,minus] = omni_ttest(data1,data2,type,alpha,thresh,tail,mode,bonf)
+function [P,t,df,e,md,CIdiff,plus,minus] = omni_ttest(data1,data2,type,alpha,thresh,mode,bonf)
 
-% [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode) performs statistical comparison of
+% [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode,bonf) performs statistical comparison of
 % two groups taking into account parametric assumptions. 
-%
 %
 % ARGUMENTS
 %  data1    ...  first data set.
 %  data2    ...  second data set
-%  type     ...  paired or unpaired analysis
+%  type     ...  'paired' or 'unpaired' analysis
 %  alpha    ...  significance level. Default '0.05'
 %  thresh   ...  threshold for failure of parametric assumptions and use of
-%                nonparametric tests. Default '0.05 
-%  tail     ...  one or two sides test
+%                nonparametric tests. Default '0.05' 
 %  corr     ...  apply bonferroni correction based on n tests. default = 1
 %  mode      ... display information 'full'
 %
@@ -30,10 +28,22 @@ function [P,t,df,e,md,CIdiff,plus,minus] = omni_ttest(data1,data2,type,alpha,thr
 %  - in 'unpaired' design, group 1 is treatment group and group 2 is control
 %  - see 'Medical Statistics' by  Kirkwood and Sterne section 7.6 for comp
 %    details
+%
+% NOTES
+% - for zoo files, data1 and data2 argments can be obtained using
+%   'extractevents.m'. Some editing may be necessary for your project
+% - only two-tailed tests can be performed
 
 % Revision History
 %
 % Created by Philippe C Dixon Feb 2012
+%
+% Updated by Philippe C Dixon June 2015
+% - removed reliace on 'decimals2' function
+% - improved interface
+% - removed option to run 'right' or 'left' sided 
+
+
 
 
 % Part of the Zoosystem Biomechanics Toolbox 
@@ -330,7 +340,8 @@ if isin(mode,'full')
         disp(['Group1: mean CI = ',num2str(xbar1),' [',num2str(CIlo1),',',num2str(CIhi1),']'])
         disp(['Group2: mean CI = ',num2str(xbar2),' [',num2str(CIlo2),',',num2str(CIhi2),']'])
     else
-        disp([m,' difference CI = ',num2str(decimals2(md)),' (',num2str(decimals2(CIdiff(1))),', ',num2str(decimals2(CIdiff(2))),')'])
+        disp([m,' difference CI = ',num2str(sprintf('%.3f',md)),' (',num2str(sprintf('%.3f',CIdiff(1))),...
+              ', ',num2str(sprintf('%.3f',CIdiff(2))),')'])
         
         if p_lil1 <=thresh %|| p_lev < alpha
             disp(['Group1: median CI = ',num2str(xbar1),' (',num2str(CIlo1),',',num2str(CIhi1),')'])
@@ -352,7 +363,7 @@ else
     
     disp(' ')
     disp(['test run: ',type,'---------*'])
-    disp([' p = ',num2str(decimals3(P))])
+    disp([' p = ',num2str(sprintf('%.3f',P))])
     
     
     if isin(type,'paired')

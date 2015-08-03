@@ -73,6 +73,13 @@ function ensembler(action)
 % Updated by Philippe C. Dixon april 2014
 % - improved use of ensemble subject x condition
 % - improved bargraph handling
+%
+% Updated by Philippe C. Dixon June 2015
+% - improved clearing of old data
+% - improved selection of events and line
+% - imrpoved handling of bar graphs
+% - changed interpreter for title to 'none' to display underscore character
+% - bar graphs can be reordered (see case 'reorder bars')
 
 
 % Part of the Zoosystem Biomechanics Toolbox 
@@ -182,7 +189,7 @@ switch action
         
     case 'axisid'
         axisid
-        
+                
     case 'buttondown'
         buttondown
         
@@ -193,10 +200,38 @@ switch action
         clear999outliers
         
     case 'clear all'
-        delete(findobj('type','line'));
-        delete(findobj('type','patch'));
-        delete(findobj('string','\diamondsuit'));
-        delete(findobj('string','\bullet'));
+        
+        lg = findobj('type','axes','tag','legend');
+        
+        if ~isempty(lg)
+            delete(lg)
+        end
+        
+        ax = findobj('type','axes');
+        
+       % delete all objects in graph
+        for i = 1:length(ax)
+            chnd = get(ax(i),'Children');
+            
+            if ~isempty(chnd)
+                delete(chnd)
+            end           
+        end
+                
+        % clear prompt bar     
+        pmt = findobj('tag','prompt');
+        set(pmt,'String','')
+        
+        % reset xaxis label
+        %
+        for i = 1:length(ax)
+            set(ax(i),'XTick',[0 0.5 1])
+            set(ax(i),'XTickLabel',[0 0.5 1]')
+            set(ax(i),'XLim',[0 1])
+            set(ax(i),'XTickLabelMode','auto')
+            set(ax(i),'XLimMode','auto')
+            set(ax(i),'XTickMode','auto')
+        end
         
     case 'clear colorbars'
         clearcolorbars
@@ -380,36 +415,73 @@ switch action
         
     case 'legend'
         
+        % remove existing legend
+        %
         lhnd = findobj(gcf,'type','axes','tag','legend');
-        
         if ~isempty(lhnd)
             delete(lhnd)
             return
         end
         
-        ln = findobj(gcf,'type','line');
-        tg = cell(size(ln));
+        % find existing axes
+        %
+        ax = findobj(gcf,'type','axes');
         
-        for i = 1:length(ln)
-            tg{i} = get(ln(i),'Tag');
+        % determine if we have lines or bar graphs
+        %      
+        ln = findobj(ax(1),'type','line','UserData','average_line');
+        bar = flipud(findobj(ax(1),'type','hggroup','ShowBaseLine','on'));
+                
+        if ~isempty(ln)
+            tg = cell(size(ln));
+            
+            for i = 1:length(ln)
+                tg{i} = get(ln(i),'Tag');
+            end
+            
+            hnd = ln;
+        
+        else
+            tg = cell(size(bar));
+            
+            for i = 1:length(bar)
+                tg{i} = get(bar(i),'Tag');
+            end
+                        
+             hnd = bar;
         end
         
-        tg = setdiff(tg,{'hline','vline'});
-        
-        tg(cellfun(@isempty,tg)) = [];   % That's some hot programming
-        tg = unique(tg);
-           
-        a = associatedlg(tg,{});
-        a = a(:,1);
-        
-        hstk = zeros(size(a));
+        rg = 1:1:length(tg);
 
-        for j = 1:length(a)
-            hstk(j) = ln(j);
+        a = associatedlg(tg,{rg});
+        val = a(:,1);
+        
+        hnd = zeros(length(val),1);
+        for i = 1:length(val)
+            
+            if ~isempty(bar)        
+                hnd(i) = findobj(ax(1),'tag',val{i});
+                
+            else
+                hnd(i) = findobj(ax(1),'tag',val{i},'type','line');
+            end
+            
         end
         
-        legend(hstk,a);
         
+        % display order
+        indx = zeros(length(a),1);
+        
+        for i = 1:length(val)
+           indx(i) = str2num(a{i,2});
+        end
+
+        val = val(indx);
+        hnd = hnd(indx);
+                
+        legend(hnd,val,'interpreter','none');
+        
+       
         
     case 'linestyle'
         tg = get(findobj(gcf,'type','line'),'tag');
@@ -438,6 +510,47 @@ switch action
         for i = 1:length(a(:,1))
             ln = findobj('type','line','tag',a{i,1});
             set(ln,'linewidth',str2double(a{i,2}));
+        end
+        
+    case 'bar color'
+        
+        ax = findobj(gcf,'type','axes');
+        lg = findobj(gcf,'type','axes','tag','legend');
+        ax = setdiff(ax,lg);
+        
+        tg = get(findobj(ax,'type','hggroup'),'tag');
+        tg = setdiff(tg,'ebar');
+     
+        a = associatedlg(tg,{'b','r','g','c','m','k','y','dg','pu','db','lb'});
+        
+        for i = 1:length(a(:,1))
+            br = findobj(ax,'type','hggroup','tag',a{i,1});
+            
+            if length(a{i,2})==1
+                set(br,'FaceColor',a{i,2});
+            else
+                if isin(a{i,2},'dg')
+                    set(br,'FaceColor', [0.1059  0.3098  0.2078]);          % dark green
+                
+                elseif isin(a{i,2},'pu')
+                    set(br,'FaceColor', [0.4235  0.2510  0.3922]);          % purple
+                    
+                elseif isin(a{i,2},'br')
+                    set(br,'FaceColor', [0.4510  0.2627  0.2627]);          % brown
+                    
+                elseif isin(a{i,2},'db')
+                    set(br,'FaceColor', [0       0       0.7000]);          % dark blue
+                    
+                elseif isin(a{i,2},'lb')
+                    set(br,'FaceColor', [ 0.2000    0.6000    1.0000]);     % ligh blue
+                    
+                    
+                    
+                else
+                    
+                end
+                
+            end
         end
         
     case 'linecolor'
@@ -488,6 +601,7 @@ switch action
         cd(fld);
         loaddata(fld,findobj('type','figure'));
         zoom out
+        resize
         
     case 'load single file'
         delete(findobj('type','line'));
@@ -498,8 +612,7 @@ switch action
         loadfile(f,p,findobj('type','figure'));
         zoom out
         cd(p)
-        
-        
+                
     case 'makebar'
         makebar
         
@@ -558,7 +671,7 @@ switch action
             for aindx = 1:length(ax)
                 txt = get(ax(aindx),'title');
                 set(ax(aindx),'tag',a{i,2});
-                set(txt,'string',a{i,2})
+                set(txt,'string',a{i,2},'interpreter','none') % interpreter set to none to show underscore
             end
         end
         
@@ -567,6 +680,9 @@ switch action
         
     case 'resize subfigure'
         resizesub
+        
+    case 'reorder bars'
+        reorder_bars
         
     case 'save fig'
         filemenufcn(gcbf,'FileSaveAs')
@@ -739,7 +855,7 @@ switch action
                 if ~isempty(val)
                     
                     if length(val)==1
-                        defaultanswer{1} = val(1);
+                        defaultanswer(1) = val(1);
                     else
                         defaultanswer= val;
                     end
@@ -841,109 +957,120 @@ end
 %===================BEGIN GUI SETUP====================
 
 
-function startup(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh)
+function startup(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh,i,nfigs)
+
+if nargin < 10
+    i = 1;
+    nfigs = 1;
+end
 
 fig = figure('name',nm,'units','inches','position',[0 0 fw fh],'menubar','none','numbertitle','off','keypressfcn','ensembler(''keypress'')');
 % ,  th = uitoolbar(fig)
 
-mn = uimenu(gcf,'label','File');
-uimenu(mn,'label','restart','callback','ensembler(''restart'')');
-uimenu(mn,'label','load data','callback','ensembler(''load data'')','separator','on');
-uimenu(mn,'label','load single file','callback','ensembler(''load single file'')');
-uimenu(mn,'label','save fig','callback','ensembler(''save fig'')','separator','on');
-uimenu(mn,'label','export','callback','ensembler(''export'')');
-uimenu(mn,'label','exit','callback','ensembler(''exit'')','separator','on');
-
-mn = uimenu(gcf,'label','Edit');
-% uimenu(mn,'label','edit fig names','callback','ensembler(''edit fig names'')');
-uimenu(mn,'label','property editor on','callback','ensembler(''property editor on'')');
-uimenu(mn,'label','property editor off','callback','ensembler(''property editor off'')');
-% uimenu(mn,'label','datacursormode off','callback','ensembler(''datacursormode off'')','separator','on');
-
-mn = uimenu(gcf,'label','Ensembler');
-uimenu(mn,'label','ensemble (SD)','callback','ensembler(''ensemble data (SD)'')');
-uimenu(mn,'label','ensemble (CI)','callback','ensembler(''ensemble data (CI)'')');
-uimenu(mn,'label','ensemble (CB)','callback','ensembler(''ensemble data (CB)'')');
-uimenu(mn,'label','ensemble (subject x conditon) (SD)','callback','ensembler(''ensemble (subject x conditon) (SD)'')','separator','on');
-uimenu(mn,'label','ensemble (subject x conditon) (CI)','callback','ensembler(''ensemble (subject x conditon) (CI)'')');
-uimenu(mn,'label','combine data','callback','ensembler(''combine'')','separator','on');
-uimenu(mn,'label','combine custom','callback','ensembler(''combine custom'')');
-uimenu(mn,'label','combine within data','callback','ensembler(''combine_within'')');
-uimenu(mn,'label','clear outliers','callback','ensembler(''clear outliers'')','separator','on');
-uimenu(mn,'label','clear all','callback','ensembler(''clear all'')');
-
-mn = uimenu(gcf,'label','Insert');
-uimenu(mn,'label','title','callback','ensembler(''title'')');
-uimenu(mn,'label','axis ids (a,b,c,...)','callback','ensembler(''axisid'')');
-uimenu(mn,'label','legend','callback','ensembler(''legend'')');
-uimenu(mn,'label','horizontal line','callback','ensembler(''horizontal line'')','separator','on');
-uimenu(mn,'label','vertical line','callback','ensembler(''vertical line'')');
-uimenu(mn,'label','normative PiG Kinematics','callback','ensembler(''normative PiG Kinematics'')','separator','on');
-uimenu(mn,'label','normative PiG Kinetics','callback','ensembler(''normative PiG Kinetics'')');
-uimenu(mn,'label','normative OFM Angles','callback','ensembler(''normative OFM Kinematics'')');
-uimenu(mn,'label','normative EMG','callback','ensembler(''normative EMG'')');
-
-mn = uimenu(gcf,'label','Axes');
-uimenu(mn,'label','re-tag','callback','ensembler(''retag'')');
-uimenu(mn,'label','xlabel','callback','ensembler(''xlabel'')','separator','on');
-uimenu(mn,'label','ylabel','callback','ensembler(''ylabel'')');
-uimenu(mn,'label','x limit','callback','ensembler(''xlimit'')','separator','on');
-uimenu(mn,'label','y limit','callback','ensembler(''ylimit'')');
-uimenu(mn,'label','x ticks','callback','ensembler(''xticks'')');
-uimenu(mn,'label','y ticks','callback','ensembler(''yticks'')');
-uimenu(mn,'label','axis font size','callback','ensembler(''axis font size'')','separator','on');
-uimenu(mn,'label','resize axis','callback','ensembler(''resize axis'')');
-uimenu(mn,'label','delete single axis','callback','ensembler(''delete single axis'')','separator','on');
-uimenu(mn,'label','clear all empty axes','callback','ensembler(''clear all empty axes'')');
-uimenu(mn,'label','clear titles','callback','ensembler(''clear titles'')');
-
-mn = uimenu(gcf,'label','Line');
-uimenu(mn,'label','line style','callback','ensembler(''linestyle'')');
-uimenu(mn,'label','line style within','callback','ensembler(''linestyle_within'')');
-uimenu(mn,'label','line width','callback','ensembler(''linewidth'')');
-uimenu(mn,'label','line color','callback','ensembler(''linecolor'')');
-uimenu(mn,'label','line color within','callback','ensembler(''linecolor_within'')');
-
-
-mn = uimenu(gcf,'label','Stdev');
-uimenu(mn,'label','visible','callback','ensembler(''std on off'')');
-uimenu(mn,'label','transparency','callback','ensembler(''std shade'')');
-uimenu(mn,'label','stdline','callback','ensembler(''stdline'')');
-uimenu(mn,'label','stcolor','callback','ensembler(''stdcolor'')');
-uimenu(mn,'label','stcolor within','callback','ensembler(''stdcolor within'')');
-
-mn = uimenu(gcf,'label','Events');
-uimenu(mn,'label','clear all events','callback','ensembler(''clear all events'')');
-uimenu(mn,'label','clear event by type','callback','ensembler(''clear event by type'')');
-uimenu(mn,'label','delete all events','callback','ensembler(''delete all events'')','separator','on');
-uimenu(mn,'label','delete event by type','callback','ensembler(''delete event by type'')');
-uimenu(mn,'label','delete single event','callback','ensembler(''delete single event'')');
-uimenu(mn,'label','add other channel event','callback','ensembler(''add other channel event'')','separator','on');
-% uimenu(mn,'label','add manual event','callback','ensembler(''add manual event'')','separator','on');
-uimenu(mn,'label','add max event','callback','ensembler(''add max event'')','separator','on');
-uimenu(mn,'label','add min event','callback','ensembler(''add min event'')');
-
-
-mn = uimenu(gcf,'label','Zoom');
-uimenu(mn,'label','zoom on','callback','ensembler(''zoom on'')');
-uimenu(mn,'label','zoom off','callback','ensembler(''zoom off'')');
-uimenu(mn,'label','zoom restore','callback','ensembler(''zoom restore'')');
-
-
-mn = uimenu(gcf,'label','Processing');
-uimenu(mn,'label','filter','callback','ensembler(''filter'')');
-uimenu(mn,'label','partition','callback','ensembler(''partition'')','separator','on');
-uimenu(mn,'label','normalize','callback','ensembler(''normalize'')','separator','on');
-
-
-mn = uimenu(gcf,'label','Analysis');
-uimenu(mn,'label','bar graph','callback','ensembler(''makebar'')');
-uimenu(mn,'label','coupling angles','callback','ensembler(''coupling angles'')','separator','on');
-uimenu(mn,'label','relative angles','callback','ensembler(''relative phase'')','separator','on');
-uimenu(mn,'label','continuous stats','callback','ensembler(''continuous stats'')','separator','on');
-uimenu(mn,'label','clear colorbars','callback','ensembler(''clear colorbars'')');
-
-
+if i == nfigs % only the master gets uimenu
+    
+    mn = uimenu(gcf,'label','File');
+    uimenu(mn,'label','restart','callback','ensembler(''restart'')');
+    uimenu(mn,'label','load data','callback','ensembler(''load data'')','separator','on');
+    uimenu(mn,'label','load single file','callback','ensembler(''load single file'')');
+    uimenu(mn,'label','save fig','callback','ensembler(''save fig'')','separator','on');
+    uimenu(mn,'label','export','callback','ensembler(''export'')');
+    uimenu(mn,'label','exit','callback','ensembler(''exit'')','separator','on');
+    
+    mn = uimenu(gcf,'label','Edit');
+    % uimenu(mn,'label','edit fig names','callback','ensembler(''edit fig names'')');
+    uimenu(mn,'label','property editor on','callback','ensembler(''property editor on'')');
+    uimenu(mn,'label','property editor off','callback','ensembler(''property editor off'')');
+    % uimenu(mn,'label','datacursormode off','callback','ensembler(''datacursormode off'')','separator','on');
+    
+    mn = uimenu(gcf,'label','Ensembler');
+    uimenu(mn,'label','ensemble (SD)','callback','ensembler(''ensemble data (SD)'')');
+    uimenu(mn,'label','ensemble (CI)','callback','ensembler(''ensemble data (CI)'')');
+    uimenu(mn,'label','ensemble (CB)','callback','ensembler(''ensemble data (CB)'')');
+    uimenu(mn,'label','ensemble (subject x conditon) (SD)','callback','ensembler(''ensemble (subject x conditon) (SD)'')','separator','on');
+    uimenu(mn,'label','ensemble (subject x conditon) (CI)','callback','ensembler(''ensemble (subject x conditon) (CI)'')');
+    uimenu(mn,'label','combine data','callback','ensembler(''combine'')','separator','on');
+    uimenu(mn,'label','combine custom','callback','ensembler(''combine custom'')');
+    uimenu(mn,'label','combine within data','callback','ensembler(''combine_within'')');
+    uimenu(mn,'label','clear outliers','callback','ensembler(''clear outliers'')','separator','on');
+    uimenu(mn,'label','clear all','callback','ensembler(''clear all'')');
+    
+    mn = uimenu(gcf,'label','Insert');
+    uimenu(mn,'label','title','callback','ensembler(''title'')');
+    uimenu(mn,'label','axis ids (a,b,c,...)','callback','ensembler(''axisid'')');
+    uimenu(mn,'label','legend','callback','ensembler(''legend'')');
+    uimenu(mn,'label','horizontal line','callback','ensembler(''horizontal line'')','separator','on');
+    uimenu(mn,'label','vertical line','callback','ensembler(''vertical line'')');
+    uimenu(mn,'label','normative PiG Kinematics','callback','ensembler(''normative PiG Kinematics'')','separator','on');
+    uimenu(mn,'label','normative PiG Kinetics','callback','ensembler(''normative PiG Kinetics'')');
+    uimenu(mn,'label','normative OFM Angles','callback','ensembler(''normative OFM Kinematics'')');
+    uimenu(mn,'label','normative EMG','callback','ensembler(''normative EMG'')');
+    
+    mn = uimenu(gcf,'label','Axes');
+    uimenu(mn,'label','re-tag','callback','ensembler(''retag'')');
+    uimenu(mn,'label','xlabel','callback','ensembler(''xlabel'')','separator','on');
+    uimenu(mn,'label','ylabel','callback','ensembler(''ylabel'')');
+    uimenu(mn,'label','x limit','callback','ensembler(''xlimit'')','separator','on');
+    uimenu(mn,'label','y limit','callback','ensembler(''ylimit'')');
+    uimenu(mn,'label','x ticks','callback','ensembler(''xticks'')');
+    uimenu(mn,'label','y ticks','callback','ensembler(''yticks'')');
+    uimenu(mn,'label','axis font size','callback','ensembler(''axis font size'')','separator','on');
+    uimenu(mn,'label','resize axis','callback','ensembler(''resize axis'')');
+    uimenu(mn,'label','delete single axis','callback','ensembler(''delete single axis'')','separator','on');
+    uimenu(mn,'label','clear all empty axes','callback','ensembler(''clear all empty axes'')');
+    uimenu(mn,'label','clear titles','callback','ensembler(''clear titles'')');
+    
+    mn = uimenu(gcf,'label','Line');
+    uimenu(mn,'label','line style','callback','ensembler(''linestyle'')');
+    uimenu(mn,'label','line style within','callback','ensembler(''linestyle_within'')');
+    uimenu(mn,'label','line width','callback','ensembler(''linewidth'')');
+    uimenu(mn,'label','line color','callback','ensembler(''linecolor'')');
+    uimenu(mn,'label','line color within','callback','ensembler(''linecolor_within'')');
+    
+    
+    mn = uimenu(gcf,'label','Bar Graph');
+    uimenu(mn,'label','bar graph','callback','ensembler(''makebar'')');   
+    uimenu(mn,'label','bar color','callback','ensembler(''bar color'')');
+    uimenu(mn,'label','reorder bars','callback','ensembler(''reorder bars'')');
+    
+    mn = uimenu(gcf,'label','Stdev');
+    uimenu(mn,'label','visible','callback','ensembler(''std on off'')');
+    uimenu(mn,'label','transparency','callback','ensembler(''std shade'')');
+    uimenu(mn,'label','stdline','callback','ensembler(''stdline'')');
+    uimenu(mn,'label','stcolor','callback','ensembler(''stdcolor'')');
+    uimenu(mn,'label','stcolor within','callback','ensembler(''stdcolor within'')');
+    
+    mn = uimenu(gcf,'label','Events');
+    uimenu(mn,'label','clear all events','callback','ensembler(''clear all events'')');
+    uimenu(mn,'label','clear event by type','callback','ensembler(''clear event by type'')');
+    uimenu(mn,'label','delete all events','callback','ensembler(''delete all events'')','separator','on');
+    uimenu(mn,'label','delete event by type','callback','ensembler(''delete event by type'')');
+    uimenu(mn,'label','delete single event','callback','ensembler(''delete single event'')');
+    uimenu(mn,'label','add other channel event','callback','ensembler(''add other channel event'')','separator','on');
+    % uimenu(mn,'label','add manual event','callback','ensembler(''add manual event'')','separator','on');
+    uimenu(mn,'label','add max event','callback','ensembler(''add max event'')','separator','on');
+    uimenu(mn,'label','add min event','callback','ensembler(''add min event'')');
+    
+    
+    mn = uimenu(gcf,'label','Zoom');
+    uimenu(mn,'label','zoom on','callback','ensembler(''zoom on'')');
+    uimenu(mn,'label','zoom off','callback','ensembler(''zoom off'')');
+    uimenu(mn,'label','zoom restore','callback','ensembler(''zoom restore'')');
+    
+    
+    mn = uimenu(gcf,'label','Processing');
+    uimenu(mn,'label','filter','callback','ensembler(''filter'')');
+    uimenu(mn,'label','partition','callback','ensembler(''partition'')','separator','on');
+    uimenu(mn,'label','normalize','callback','ensembler(''normalize'')','separator','on');
+    
+    
+    mn = uimenu(gcf,'label','Analysis');
+    uimenu(mn,'label','coupling angles','callback','ensembler(''coupling angles'')','separator','on');
+    uimenu(mn,'label','relative angles','callback','ensembler(''relative phase'')','separator','on');
+    uimenu(mn,'label','continuous stats','callback','ensembler(''continuous stats'')','separator','on');
+    uimenu(mn,'label','clear colorbars','callback','ensembler(''clear colorbars'')');
+    
+end
 
 fpos = get(fig,'position');
 uicontrol('units','inches','style','text','position',[0 fpos(4)-.5 fpos(3) .25],'tag','prompt','backgroundcolor',get(gcf,'color'));
@@ -1662,28 +1789,23 @@ end
 
 function makebar
 
-disp('for sensible order make sure you are on figure 1 in list')
 
 ax = findobj(gcf,'type','axes');
 
-lg=1; % draw legend
+lg=0; %don't draw legend
 
 for i = 1:length(ax)
     
-    ehnd = findobj(ax(i),'type','text');
     ebar = findobj(ax(i),'type','line','linewidth',1.12);
-    ln = findobj(ax(i),'type','line','UserData', 'average_line');% sort in sensible order
-        
-    ehnd = fliplr(ehnd')';
-    ebar = fliplr(ebar')';
-    ln = fliplr(ln')';
     
     if ~isempty(ebar)
         
+        ehnd = findobj(ax(i),'type','text');
+        ln = findobj(ax(i),'type','line','UserData', 'average_line');
         
         barvaluestk = ones(size(ehnd));
         groupnames = cell(size(ehnd));
-
+        
         errorstk = [];
         
         for j = 1:length(ehnd)
@@ -1720,16 +1842,105 @@ for i = 1:length(ax)
         
         axes(ax(i)); % makes ax(i) current
         
-        
         lg= mybar(barvaluestk,errorstk,groupnames,groupcolors,ax(i),lg);
         
+        hnd = xlabel('bar graph');
+        resize % make a first attempt at resizing
+        delete(hnd)
+        
     end
-    
-    hnd = xlabel('bar graph');
-    resize % make a first attempt at resizing
-    delete(hnd)
-    
+  
 end
+
+
+
+function reorder_bars
+
+ax = gca;
+
+% get error bars
+%
+ehnd = sort(findobj(ax,'type','hggroup','tag','ebar'));
+evals = zeros(size(ehnd));
+
+for i = 1:length(ehnd)
+   evals(i) = get(ehnd(i),'UData'); 
+end
+
+
+% get bar handles 
+%
+bhnd = sort(findobj(ax,'type','hggroup'));
+
+for i = 1:length(bhnd)
+    tag = get(bhnd(i),'tag');
+    
+if isempty(tag) || isin(tag,'ebar')
+    bhnd(i) = 0;
+end
+
+end
+
+indx = find(bhnd==0);
+bhnd(indx) = [];
+
+
+% find bar tags and values
+%
+btags = cell(size(bhnd)); 
+bvals = zeros(length(bhnd),2);
+bcols = zeros(length(bhnd),3);
+
+cmap = colormap; % retrieve current color map
+
+for i = 1:length(bhnd)
+    btags{i} = get(bhnd(i),'Tag'); 
+    bvals(i,:) = get(bhnd(i),'YData');
+    bcols(i,:) = get(bhnd(i),'FaceColor');
+end
+bvals = bvals(:,1);
+
+
+% get user choice 
+%
+nums = 1:1:length(btags);
+a = associatedlg(btags,{nums});
+
+indx = str2num(char(a(:,2)));
+
+
+% decide if user changed left or right column
+%
+if isequal(indx,nums')     % user modified left column
+    error('please modify number order in right column')
+end
+
+
+% check if user reused numbers
+%
+if ~isequal(sort(indx),nums')
+    error('numbers reused twice, please select unique order')
+end
+
+
+
+% reoder bargraph elements
+%
+bvals(indx) = bvals;
+evals(indx) = evals;
+btags(indx) = btags;
+bcols(indx,:) = bcols;
+
+bwidth = get(bhnd(1),'BarWidth');
+
+% delete existing bar graph
+%
+delete(bhnd)
+delete(ehnd)
+
+mybar(bvals,evals,btags,bcols,ax,0)
+
+
 
 
 function ensembledata(vartype)
@@ -1760,13 +1971,11 @@ for i = 1:length(ax)
             continue
         end
         
-        
         ehnd = findobj(ax(i),'string','\diamondsuit');
         meanehnd = findobj(ax(i),'string','\bullet');
         
         mn = nanmean(lstk);
         [r,c] = size(lstk);
-        
         
         if isin(nm,'+') % fix for grouping conditions to get correct CI
             r = r/2;
@@ -1792,8 +2001,7 @@ for i = 1:length(ax)
             case 'CB (w stats)'
                 userdata = [];
                 [Cc, ~,~,~,~,~,~,~,sehat_b,sehat] = bootstrap_t(lstk,1000,0.05,[nm,' ',ch]);
-                Var = Cc*sehat_b;
-                
+                Var = Cc*sehat_b; 
         end
         
         bd = get(ax(i),'buttondownfcn');
@@ -1847,14 +2055,11 @@ for i = 1:length(ax)
                         
                     case {'CI','CB'} % can't make bands out of discrete points
                         spos = 1.96*nanstd(estk)./sqrt(r);
-                       
+                        
                 end
                 
-      
-                text('parent',ax(i),'position',[round(mpos(1)) mpos(2)],...
-                    'tag',nm,'string','\bullet','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
-                    'color',[1 0 0],'buttondownfcn',get(ax(i),'buttondownfcn'),'userdata',mnhnd);
                 hold(ax(i),'on')
+                
                 errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',1.12) % mean event has special width
                 
                 %--horizontal error bar---
@@ -1864,7 +2069,10 @@ for i = 1:length(ax)
                 y = mpos(2)*ones(size(x));
                 line(x,y,'parent',ax(i),'LineWidth',1.1)
                 
-                
+                text('parent',ax(i),'position',[round(mpos(1)) mpos(2)],...
+                     'tag',[tg{k},'_av_',nm],'string','\bullet','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
+                    'color',[1 0 0],'buttondownfcn',get(ax(i),'buttondownfcn'),'userdata',mnhnd);
+            
             end
             
             delete(ehnd);
@@ -2250,10 +2458,24 @@ switch get(gcf,'selectiontype')
         if ischar(get(gcbo,'userdata'))
             txt = findensobj('prompt',gcf);
             set(txt,'string',get(gcbo,'userdata'));
-            set(findensobj('highlight'),'color',[0 0 0]);
-            set(findobj('string','\diamondsuit'),'color',[0 0 0]);
-            set(gcbo,'color',[0 0 .98])
-            set(findobj('userdata',gcbo),'color',[0 0 .98]);
+            set(findobj('string','\diamondsuit'),'color',[1 0 0]); % set back to red
+            set(findobj('type','line'),'color',[0 0 0]); % set back to red
+            
+            ax = findobj(gcf,'type','axes');
+            for i = 1:length(ax)
+                
+                if ~isin( get(ax(i),'tag'),'legend')  
+                    set(findobj(ax(i),'type','hggroup'),'LineStyle','-')
+                end
+                
+            end
+            
+            if ~isin(get(hnd,'type'),'hggroup')
+                set(gcbo,'color',[0 0 .98])
+            else
+                set(gcbo,'LineStyle',':')
+            end
+            
         elseif isnumeric(get(gcbo,'userdata'));
             
             if strcmp(get(gcbo,'type'),'patch') || strcmp(get(gcbo,'type'),'axes')
@@ -2261,12 +2483,15 @@ switch get(gcf,'selectiontype')
             end
             
             txt = findensobj('prompt',gcf);
-            
             set(txt,'string',get(gcbo,'tag'));
-            set(findensobj('highlight'),'color',[0 0 0]);
-            set(findobj('string','\diamondsuit'),'color',[0 0 0]);
+            %  set(findensobj('highlight'),'color',[0 0 0]);
+            
+            set(findobj('string','\bullet'),'color',[1 0 0]);
+            set(findobj('string','\diamondsuit'),'color',[1 0 0]);
+            set(findobj('type','line'),'color',[0 0 0]); % set back to red
+            
             set(gcbo,'color',[0 0 .98])
-            set(findobj('userdata',gcbo),'color',[0 0 .98]);
+            %   set(findobj('userdata',gcbo),'color',[0 0 .98]);
         end
 end
 
@@ -3320,43 +3545,58 @@ for a = 1:length(ax)
     min_sstk = [];
     
     
-    if isin(xlabel,'bar graph')
+    if isin(xlabel,'bar graph') || isempty(get(gca,'Xtick'))
         
-        bars  = findobj('Barlayout','grouped');
-        err = findobj('type','hggroup','MarkerSize',6,'Color',[0 0 0]);
-        
+        bars  = findobj('Tag','ebar');        
         disp('resizing for bar graphs')
         
         for j = 1:length(bars)   % extract x-values
             
-            x = get(get(bars(j),'Children'),'XData');
-            x = x(:,1);
+            x = get(bars(j),'XData');
+            y = get(bars(j),'YData');
+            u = get(bars(j),'UData'); % half width of error bar
+            
+            x = x(:,1);         
+            y = y(:,1);
+            
+            if y > 0 
+                y = y+u;
+            else
+                y = y-u;
+            end
             
             x_max = max(x);
             x_min = min(x);
             
+            y_max = max(y);
+            y_min = min(y);
+            
             max_xstk = [max_xstk x_max];
-            min_xstk = [min_xstk x_min];
+            max_ystk = [max_ystk y_max];
             
         end
         
-        %         for j = 1:length(err)
-        %             y_max =  get(err(1),'YData')+ get(err(1),'UData');
-        %             max_ystk = [max_ystk y_max];
-        %         end
-        
         x_max = max(max_xstk);
-        x_min = min(min_xstk);
+        x_min = min(max_xstk);
         
-        %         y_max = max(max_ystk);
-        %         y_min = get(gca,'YLim');
-        %         y_min = y_min(1);
-        if isin(computer,'MACI')
-          set(ax(a),'Xlim', [x_min-0.05*x_min x_max+0.05*x_max] )  % mac fix for std patch overlap with axis
-        %         set(ax(a),'Ylim',[y_min y_max+0.05*y_max]);
-        end 
+        y_max = max(max_ystk);
+        y_min = min(max_ystk);
         
+        % set new limits
+        %
+        set(gca,'Xlim', [x_min-0.2*x_min x_max+0.2*x_max] )        
+
+        if y_min > 0
+            y_min = 0;
+            set(gca,'Ylim', [y_min y_max+0.2*y_max] )
+                        
+        elseif y_max <0
+            y_max = 0;
+            set(gca,'Ylim', [y_min-0.2*y_min y_max] )
+        end
         
+       
+
     else    % ensembled lines
         
         xlim = get(gca,'XLim');
@@ -3404,7 +3644,7 @@ for a = 1:length(ax)
                 if isin(computer,'MAC')
                     set(ax(a),'Xlim', [x_min-1 x_max+1] )  % mac fix for std patch overlap with axis
                 else
-                    set(ax(a),'Xlim', [x_min x_max] )  % mac fix for std patch overlap with axis
+                    set(ax(a),'Xlim', [x_min x_max] ) 
                 end
                 
                 
@@ -3538,9 +3778,13 @@ if strcmp(a{9},'even')
 else
     yspace = str2double(a{9});
 end
+
 nm = partitionname(a{1});
+
+nfigs = length(nm);
+
 for i = 1:length(nm)
-    startup(nm{i},nrows,ncols,xwid,ywid,xspace,yspace,fwid,fheig)
+    startup(nm{i},nrows,ncols,xwid,ywid,xspace,yspace,fwid,fheig,i,nfigs)
 end
 
 
@@ -3773,6 +4017,8 @@ for i = 1:length(fl)
     data = normalizedata(data,datalength);
     save(fl{i},'data');
 end
+
+
 
 
 

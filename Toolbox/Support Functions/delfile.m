@@ -19,6 +19,9 @@ function delfile(fl)
 %
 % Updated by Philippe C. Dixon May 2015
 % - ability to delete hidden files implemented for PC platform 
+%
+% Updated by Philippe C. Dixon June 2015
+% - bug fix with user display
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
@@ -49,11 +52,9 @@ end
 
 for i = 1:length(fl)
     
-    if exist(fl{i},'file')~=2
-        error(fl{i},'file does not exist, check path')
-    else
+    if exist(fl{i},'file')==2
         batchdisplay(fl{i},'deleting file')
-    end
+    
     
     
     if ispc
@@ -63,8 +64,9 @@ for i = 1:length(fl)
         unix(['rm -f -R ' '"' fl{i} '"']);
     end
     
-    
-    
+    else
+       batchdisplay(fl{i},'file not found')    
+    end
     
 end
 

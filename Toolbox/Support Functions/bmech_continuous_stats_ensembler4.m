@@ -181,6 +181,7 @@ for i=1:length(compcons)
     
     patch('Faces',faces,'Vertices',verts,'FaceColor','flat','FaceVertexCData',av_color,'EdgeAlpha',0);
     
+ 
     tx = {'A','B','C','D','E','F','G','H','I','J','K','L'};
     
     if i>length(tx)

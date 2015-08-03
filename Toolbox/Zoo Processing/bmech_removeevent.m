@@ -1,4 +1,4 @@
-function bmech_removeevent(fld,evt,ch)
+function bmech_removeevent(evt,fld,ch)
 
 % bmech_removeevent(fld,evt,ch)
 % 
@@ -6,8 +6,8 @@ function bmech_removeevent(fld,evt,ch)
 % to avoid having to clear your graphs
 %
 % ARGUMENTS
-%  fld  ...   folder to operate on
 %  evt  ...   name of event(s) to remove as cell array of strings e.g.{'HS','TO'}. Default is 'all'
+%  fld  ...   folder to operate on
 %  ch   ...   channels from which to remove events. Default is 'all'
 
 
@@ -22,9 +22,6 @@ function bmech_removeevent(fld,evt,ch)
 %
 % Updated by Philippe C. Dixon Feb 2013
 % - can remove all events from a single channel if desired
-%
-% Updated by Philippe C. Dixon June 2015
-% - changed function arguments
 
 
 

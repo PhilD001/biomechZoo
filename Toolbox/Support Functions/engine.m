@@ -330,6 +330,48 @@ for i = 1:length(fl);
 end
 
 
+function reorder_bars
+
+
+% get error bars
+%
+ehnd = findobj('type','hggroup','tag','ebar');
+
+
+% get bars
+%
+bhnd = findobj('type','hggroup');
+for i = 1:length(bhnd)
+    tag = get(bhnd(i),'tag');
+    
+if isempty(tag) || isin(tag,'ebar')
+    bhnd(i) = 0;
+end
+
+end
+
+indx = find(bhnd==0);
+bhnd(indx) = [];
+
+
+% find bar tags
+%
+btags = cell(size(bhnd)); 
+
+for i = 1:length(bhnd)
+    btags{i} = get(bhnd(i),'Tag'); 
+end
+
+% get user choice 
+nums = 1:1:length(btags);
+a = associatedlg(btags,nums);
+
+
+% reoder bargraph
+bhnd(a) = bhnd;
+
+bwidth = get(bhnd(1),'BarWidth');
+h = bar(barvals,bwidth,'grouped');
 
 
 
