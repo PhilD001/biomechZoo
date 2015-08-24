@@ -26,30 +26,33 @@ function data =readc3d(fname)
 
 % Revision History
 %
-% Created by JJ Loh  2006/09/10
+% Created by JJ Loh  Sept 10th 2006
 %
-% Updated by JJ loh 2008/03/08
+% Updated by JJ loh March 8th 2008
 % -video channels can handle NaN's
 %
-% Updated by JJ Loh 2008/04/10
+% Updated by JJ Loh April 10th 2008
 % -header can be outputed alone
 %
-% Updated by JJ Loh 2014/04/30
+% Updated by JJ Loh April 30th 2014
 % - header input variable removed
 % - clean field names so that it is compatible with matlab structured arrays
 % - default analog format is signed integer
 %
-% Updated by Philippe C. Dixon 2014/05/03
+% Updated by Philippe C. Dixon May 3rd 2014
 % - cleaning of fieldnames via existing 'makevalidfield' function
 % (validfieldname embedded function remains, but is unused)
 %
-% Updated by JJ Loh 2014/09/23
+% Updated by JJ Loh Sept 23rd 2014
 %- c3d files with large amount of channels will store the labels in
 %  multiple locations.  Now this function can consolidate the label names.
 %
-% Updated by Philippe C. Dixon 2015/05/19
+% Updated by Philippe C. Dixon May 19th 2015
 % - removed unused embedded function 
 % 
+% Updated by Philippe C. Dixon Aug 24th 2015
+% - Fixed bug in the 'GEN_SCALE' field experienced by some users 
+
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
@@ -202,7 +205,13 @@ if isfield(data.Parameter,'ANALOG')
     numAnalogue = data.Parameter.ANALOG.USED.data;
     Alabels = cellstr(data.Parameter.ANALOG.LABELS.data');
     Ascale = data.Parameter.ANALOG.SCALE.data;
-    Gscale = data.Parameter.ANALOG.GEN_SCALE.data;
+    
+    if isfield(data.Parameter.ANALOG,'EN_SCALE')
+       Gscale = data.Parameter.ANALOG.EN_SCALE.data;
+    else
+       Gscale = data.Parameter.ANALOG.GEN_SCALE.data;
+    end
+    
     Aoffset = data.Parameter.ANALOG.OFFSET.data;
     if isfield(data.Parameter.ANALOG,'FORMAT')
         issigned = data.Parameter.ANALOG.FORMAT.data';

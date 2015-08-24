@@ -31,8 +31,6 @@ switch action
         %createmarker(name,size,position,color)
         varargout{1} = createmarker(varargin{1},varargin{2},varargin{3},varargin{4});
         
-  
-        
     case 'load z3d' % obsolete ?
         delete(finddobj('marker'));
         loadz3d(varargin{1});
@@ -122,9 +120,9 @@ else
     error('unknown file type')
 end
     
-% Hard code footwear type
+% Hard code footwear type (Uncomment to show skates)
 %
-data.zoosystem.Anthro.Feet = 'skates';
+% data.zoosystem.Anthro.Feet = 'skates';
 
 % Extract all channels in file
 %

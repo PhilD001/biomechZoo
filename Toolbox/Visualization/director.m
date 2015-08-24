@@ -39,7 +39,7 @@ function director(action,varargin)
 %   rendered wearing 'skates' props (found in ~\the zoosystem\Toolbox\Visualization\Cinema objects\skate)
 %   The function bmech_footwear should be run to record the footwear type in the zoo file. 
 %   Alternatively, the user can add the following code in the 'loadfile' function embedded
-%   in 'marker.m' after the loading section (near line 120): data.zoosystem.Anthro.Feet = 'skates'
+%   in 'marker.m' after the loading section (near line 125): data.zoosystem.Anthro.Feet = 'skates'
 %   The handling of the prop is performed in the embedded function 'skate'
 %   of 'props.m'.
 % - New footwear types can be created by following this example
