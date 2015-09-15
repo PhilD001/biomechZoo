@@ -1,6 +1,6 @@
 function bmech_removeevent(evt,fld,ch)
 
-% bmech_removeevent(fld,evt,ch)
+% bmech_removeevent(evt,fld,ch)
 % 
 % This m-file will remove events from your data. This step is usually done before final graphing
 % to avoid having to clear your graphs
@@ -22,14 +22,17 @@ function bmech_removeevent(evt,fld,ch)
 %
 % Updated by Philippe C. Dixon Feb 2013
 % - can remove all events from a single channel if desired
+%
+% Updated by Philippe C. Dixon Sept 2015
+% - implements the new 'zsave' procedure in which the processing information
+%   is saved to the zoo file in the branch 'data.zoosystem.processing'
+% - fixed bug in channel selection
 
-
-
-% Part of the Zoosystem Biomechanics Toolbox 
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
 %
 % Contact:
@@ -75,7 +78,13 @@ for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'removing events');
     data = removeevent(data,evt,ch);
-    save(fl{i},'data');
+    
+    if isin(ch,'all')
+        zsave(fl{i},data,['removed ',evt,' from all channels'])
+    else
+        zsave(fl{i},data,['removed ',evt,' from channel ',ch])
+    end
+    
 end
 
 
@@ -91,7 +100,7 @@ if ~iscell(ch)
 end
 
 
-if isin(ch,'all') 
+if isin(ch{1},'all') 
     ch = setdiff(fieldnames(data),{'zoosystem'});
 end
 

@@ -14,13 +14,17 @@ function bmech_renameevent(fld,evt,nevt)
 %
 % updated by Philippe C. Dixon, Oct 2009
 % - old event is also deleted 
+%
+% Updated by Philippe C. Dixon Sept 2015
+% - implements the new 'zsave' procedure in which the processing information
+%   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
-% Part of the Zoosystem Biomechanics Toolbox 
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
 % 
 % Contact: 
@@ -45,7 +49,7 @@ for i = 1:length(fl)
     batchdisplay(fl{i},['renaming event from ',evt,' to ',nevt])
     data = zload(fl{i});
     data = renameevent(data,evt,nevt,fl{i});
-    save(fl{i},'data');
+    zsave(fl{i},data);
 end
 
 

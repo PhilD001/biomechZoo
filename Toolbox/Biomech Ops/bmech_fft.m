@@ -24,8 +24,9 @@ function [mean_freq,max_freq,cut] = bmech_fft(data,fsamp,thresh,graph)
 % t = (0:0.001:1);   
 % x = sin(20*pi*t);  
 % bmech_fft(x,1000)
-%
-%  
+
+  
+% Revision History
 %
 % created by Phil Dixon. Nov 2006
 %   
@@ -38,11 +39,26 @@ function [mean_freq,max_freq,cut] = bmech_fft(data,fsamp,thresh,graph)
 %
 % Updated by Phil Dixon June 2012
 % - added estimation of cut off frequency
-%
-%
-% © Part of the Biomechanics Toolbox, Copyright ©2008, 
-% Phil Dixon, Montreal, Qc, CANADA
 
+
+% Part of the Zoosystem Biomechanics Toolbox v1.2
+%
+% Main contributors:
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+% 
+% Contact: 
+% philippe.dixon@gmail.com
+%
+% Web: 
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 %-------DEFAULTS-----
 if nargin ==2

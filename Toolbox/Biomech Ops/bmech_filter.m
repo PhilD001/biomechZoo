@@ -29,22 +29,22 @@ function bmech_filter(varargin)
 % Updated by Philippe C Dixon Oct 2007
 % - improved functionality
 %
-% Updated by Phil Dixon Nov 2008
+% Updated by Philippe C. Dixon Nov 2008
 % - increased choice of parameters
 %
-% Updated by Phil Dixon June 2010
+% Updated by Philippe C. Dixon June 2010
 % - when using zoo files, fsamp is extracted from the zoosystem channel
 %
-% updated by Phil August 2010
+% updated by Philippe C. Dixon August 2010
 % - fixed small bug in 'zoodata' mode.
 %
-% updated by Phil Dixon June 2012
+% updated by Philippe C. Dixon June 2012
 % - added possibility of filtering via fft algorithm
 %
-% Updated by Phil Dixon August 2013
+% Updated by Philippe C. Dixon August 2013
 % - fixed sampling frequency bug when processing using a folder
 %
-% Updated by Phil Dixon September 2013
+% Updated by Philippe C. Dixon September 2013
 % - checking of frequency using zoo v1.2 functionality
 % - filter setting can be input using a struct called 'filt'
 %
@@ -53,13 +53,17 @@ function bmech_filter(varargin)
 % - simplified inputs
 % - 'filterline' made as standalone function
 % - upgraded to zoosystem v.1.2 (no backwards compatibility)
+%
+% Updated by Philippe C. Dixon Sept 2015
+% - implements the new 'zsave' procedure in which the processing information
+%   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
 % 
 % Contact: 
@@ -125,7 +129,8 @@ for i = 1:length(fl)
     data = zload(fl{i});    
     batchdisplay(fl{i},'filtering:')
     data = filterprocess(data,chfilt,filt);
-    save(fl{i},'data');
+    msg = [filt.ftype,' ',num2str(filt.cutoff),'Hz ',num2str(filt.pass),' ',num2str(filt.forder),'th order'];
+    zsave(fl{i},data,msg);
 end
 
 

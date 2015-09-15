@@ -28,14 +28,19 @@ function bmech_reversepol(fld,ch)
 % Updated by Philippe C. Dixon June 2015
 % - events of type 'rom' will not be reversed
 % - improved error checking
+%
+% Updated by Philippe C. Dixon Sept 2015
+% - implements the new 'zsave' procedure in which the processing information
+%   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
-% Part of the Zoosystem Biomechanics Toolbox 
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
+% 
 % 
 % Contact: 
 % philippe.dixon@gmail.com
@@ -63,6 +68,9 @@ end
 
 cd(fld);
 
+if ischar(ch)
+    ch = {ch};
+end
 
 
 % Batch process
@@ -72,9 +80,16 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'reversing polarity'); 
+    batchdisplay(fl{i},'reversing polarity');
     data = reversepol(data,ch);
-    save(fl{i},'data');
+    zsave(fl{i},data);
+    
+    if isin(ch{1},'all')
+        zsave(fl{i},data,'for all channels')
+    else
+        zsave(fl{i},data,['for channel ',strjoin(ch)])
+    end
+    
 end
 
 
@@ -84,10 +99,8 @@ end
 function data = reversepol(data,ch)
 
 
-if isin(ch,'all')
+if isin(ch{1},'all')
     ch = setdiff(fieldnames(data),'zoosystem');
-elseif ~iscell(ch)
-    ch = {ch};
 end
 
 

@@ -83,6 +83,6 @@ for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'computing velocity'); 
     data = velocity(data,ch,method);
-    save(fl{i},'data');
+    zsave(fl{i},data,['for channel ',ch]);
 end
 

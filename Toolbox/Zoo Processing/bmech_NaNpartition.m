@@ -17,16 +17,18 @@ function bmech_NaNpartition(fld)
 % Revision History
 %
 % Created by Phil Renaud and Philippe C. Dixon June 2015
+%
+% Updated by Philippe C. Dixon Sept 2015
+% - implements the new 'zsave' procedure in which the processing information
+%   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
-
-% Part of the Zoosystem Biomechanics Toolbox 
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
-% 
 % Contact: 
 % philippe.dixon@gmail.com
 %
@@ -59,7 +61,7 @@ for i = 1:length(fl)
     batchdisplay(fl{i},'NaNpartition');
     data = NaNpartition(data);
     data = partitiondata(data,'data_start','data_end');
-    save(fl{i},'data');
+    zsave(fl{i},data);
 end
 
 

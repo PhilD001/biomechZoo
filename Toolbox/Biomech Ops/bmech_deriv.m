@@ -50,7 +50,7 @@ function deriv = bmech_deriv(data,fsamp,f,cut)
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
 % Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
 % 

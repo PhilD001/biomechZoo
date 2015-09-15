@@ -27,13 +27,17 @@ function data = c3d2zoo(fld,del)
 % - This function has been reintroduced as the main c3d converter after recent update
 %   of the readc3d function by JJ Loh
 % - reintroduction of the 'return' of the function for use with director
+%
+% Updated by Philippe C. Dixon Sept 2015
+% - implements the new 'zsave' procedure in which the processing information
+%   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
 % 
 % Contact: 
@@ -76,8 +80,6 @@ cd(fld)
 
 % FIND AND LOAD .C3D FILES-----------------------------------------------------------------
 %
-
-
 for i = 1:length(fl)
     
     % Extract info from c3d file
@@ -312,7 +314,8 @@ for i = 1:length(fl)
     % Save all finto to file
     %
     if sf==1
-        save(zfl,'data');
+        % save(zfl,'data');  % original save
+        zsave(zfl,data)
     end
     
     if isin(del,'yes') || isin(del,'on')

@@ -20,13 +20,17 @@ function v3d2zooMat(varargin)
 %
 % Updated by Philippe C. Dixon May 2015
 % - Improved functionality with events
+%
+% Updated by Philippe C. Dixon Sept 2015
+% - implements the new 'zsave' procedure in which the processing information
+%   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
+% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
 % 
 % Contact: 
@@ -209,7 +213,10 @@ for i = 1:length(fl)
             indxx = strfind(tname,'\');  % alwayws a PC slash
             tname = tname(indxx(end)+1:end-4);
              
-            save([spth,slash,tname,'.zoo'],'data');
+            zfl = [spth,slash,tname,'.zoo'];
+            zsave(zfl,data)
+            
+%             save([spth,slash,tname,'.zoo'],'data');
             
         end
         
