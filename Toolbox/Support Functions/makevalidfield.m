@@ -1,11 +1,10 @@
 function ch = makevalidfield(ch)
 
-% This function fixes common invalid field names
+% ch = makevalidfield(ch) fixes common invalid field names for structed
+% arrays
 % 
-% ch = makevalidfield(ch)
-%
 % ARGUMENTS
-%   ch    ...   name of channel as stting
+%   ch    ...   name of channel as string
 %   
 % RETURNS
 %   ch    ...   new name of channel as string with invalid fieldnames removed
@@ -27,9 +26,6 @@ function ch = makevalidfield(ch)
 % - added new cases
 % - use of 'strrep' to clean code
 %
-
-
-
 
 
 
@@ -70,7 +66,8 @@ elseif ~isempty(strfind(ch,'*'))
     ch = makevalidfield(ch);
 
 elseif ~isempty(strfind(ch,'#'))
-    ch = 'numbersign';
+    ch = strrep(ch,'#','numbersign');
+%     ch = 'numbersign';
     ch = makevalidfield(ch);
 
 elseif ~isempty(strfind(ch,':'))

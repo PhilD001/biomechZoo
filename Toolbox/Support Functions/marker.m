@@ -135,11 +135,10 @@ if ~isempty(intersect(ch,{'PELO'})) && ~isempty(findobj(finddobj('props'),'tag',
     props('zoo plugin gait',data);
 end
 
-% Loads force plates
+% Loads force plates (if any)
 %
-if ismember('Fx1',data.zoosystem.Analog.Channels)    
-    props('load analog zoo',data);  % inserts force plates
-end
+props('load analog zoo',data);  
+
 
 
 % Attempt to limit marker list to 'true' markers

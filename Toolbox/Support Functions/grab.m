@@ -1,25 +1,29 @@
 % function data = grab
-% GRAB is the lazyman's way to open zoo data, don't type three lines of
+% GRAB is the easy way to open zoo data, don't type three lines of
 % code, type grab!!
+
+
+% Revision History
 %
-% Created by Phil Dixon June 2008 
+% Created by Philippe C. Dixon June 2008 
 %
-% Updated Dec 2008
+% Updated by Philippe C. Dixon Dec 2008
 %  -Grab can now grab .c3d , .xls, and .csv files
 % 
-% Updated Feb 2010
+% Updated by Philippe C. Dixon Feb 2010
 % -Grad should now work on Mac and PC platforms
 %
-% Updated November 2011
+% Updated by Philippe C. Dixon November 2011
 % - works on mac and pc (xp and 7) platforms
 %
-% Updated September 2013
+% Updated by Philippe C. Dixon September 2013
 % - clear all variables except 'data' to avoid confusion in existing
 %   workspace
 %
-% Part of the Biomechanics Toolbox. 2008-2013 
-% Philippe C. Dixon
-% philippe.dixon@gmail
+% Updated by Philippe C. Dixon September 2015
+% - relies on 'readc3d' function to read c3d files instead of the
+%  c3d reader from BTK
+
 
 
 
@@ -38,7 +42,7 @@ switch ext
 
     case '.c3d'
 
-        data = readc3dBtk([p,f]);
+        data = readc3d([p,f]);
 
     case '.xls'
 

@@ -1945,6 +1945,12 @@ mybar(bvals,evals,btags,bcols,ax,0)
 
 function ensembledata(vartype)
 
+prmt = findobj('Tag','prompt');
+
+if ~isempty(prmt)
+    delete(prmt)
+end
+
 ax = findensobj('axes');
 
 for i = 1:length(ax)

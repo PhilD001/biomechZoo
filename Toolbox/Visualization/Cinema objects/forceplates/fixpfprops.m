@@ -9,20 +9,17 @@ function fixpfprops
 d = which('director'); % returns path to ensemlber
 path = pathname(d) ;  % local folder where director resides
 
-f2 = 'forceplate2.prop';
-f3 = 'forceplate3.prop';
 
-% fix fp2
-t = load([path,'Cinema objects',slash,'forceplates',slash,f2],'-mat');
-object = t.object;
-object.id = '2';
+% fix force plates
 
-save([path,'Cinema objects',slash,'forceplates',slash,f2],'object')
-
-
-% fix fp3
-t = load([path,'Cinema objects',slash,'forceplates',slash,f3],'-mat');
-object = t.object;
-object.id = '3';
-
-save([path,'Cinema objects',slash,'forceplates',slash,f3],'object')
+for i = 2:9
+    
+    fp = ['forceplate',num2str(i),'.prop'];
+    
+    t = load([path,'Cinema objects',slash,'forceplates',slash,fp],'-mat');
+    object = t.object;
+    object.id = num2str(i);
+    
+    save([path,'Cinema objects',slash,'forceplates',slash,fp],'object')
+    
+end

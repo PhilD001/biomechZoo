@@ -21,7 +21,7 @@ function data = c3d2zoo(fld,del)
 % Created by JJ Loh 2006
 %
 % Updated by Philippe C. Dixon Nov 2008
-% - reorganised to mach zoo system
+% - reorganised to match zoo system
 %
 % Updated by Philippe C. Dixon May 2014
 % - This function has been reintroduced as the main c3d converter after recent update
@@ -31,6 +31,17 @@ function data = c3d2zoo(fld,del)
 % Updated by Philippe C. Dixon Sept 2015
 % - implements the new 'zsave' procedure in which the processing information
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
+% - c3d files with no 'EVENT' information can now be read without error
+% - updated algorithm to find force plate locations. Unlimited number of
+%   force plates can now be used
+%
+% Updated by Philippe C. Dixon Oct 2015
+% - bug fix for c3d files with two or more channels with same labels. 
+%   e.g. If a marker set has channels 'RKNE' and 'RKNEjointcenter', the c3d file saves
+%        both channel labels as 'RKNE' (First four characters only). This led to a deletion
+%        of the first channel in the c3d2zoo function. Now c3d2zoo will append the channel number
+%        to the nth channel with a repeated label. In this example the channels would be 'RKNE' and
+%        'RKNEn' where n is the channel number from the c3d file
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
@@ -39,18 +50,18 @@ function data = c3d2zoo(fld,del)
 % Dr. Philippe C. Dixon, Harvard University. Boston, USA.
 % Yannick Michaud-Paquette, McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
-% 
-% Contact: 
+%
+% Contact:
 % philippe.dixon@gmail.com
 %
-% Web: 
+% Web:
 % https://github.com/PhilD001/the-zoosystem
 %
 % Referencing:
 % please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
 % SET DEFAULTS ---------------------------------------------------------------------------
@@ -96,19 +107,22 @@ for i = 1:length(fl)
     
     % Add video channels to data struct
     %
+    
     for v = 1:length(vfld)
         
         lbl = makevalidfield(r.VideoData.(vfld{v}).label);                                      % fixes invalid fieldnames
         
-        if ~ismember(lbl,{'numbersign''star'})
-            
-            data.(lbl).line = [makecolumn(r.VideoData.(vfld{v}).xdata),...
-                makecolumn(r.VideoData.(vfld{v}).ydata),...
-                makecolumn(r.VideoData.(vfld{v}).zdata)];
-            
-            data.(lbl).event = struct;
-            vlbl{v} = lbl;
+        if isfield(data,lbl)
+            disp(['WARNING: Repeated channel name ',lbl, ' to be renamed ',lbl,num2str(v)])
+            lbl = [lbl,num2str(v)];  
         end
+        
+        data.(lbl).line = [makecolumn(r.VideoData.(vfld{v}).xdata),...
+            makecolumn(r.VideoData.(vfld{v}).ydata),...
+            makecolumn(r.VideoData.(vfld{v}).zdata)];
+        
+        data.(lbl).event = struct;
+        vlbl{v} = lbl;
         
     end
     
@@ -120,11 +134,14 @@ for i = 1:length(fl)
             
             lbl = makevalidfield(r.AnalogData.(afld{a}).label);                                  % fixes all invalid fieldnames
             
-            if ~ismember(lbl,{'numbersign''star'})
-                data.(lbl).line = makecolumn(r.AnalogData.(afld{a}).data);
-                data.(lbl).event = struct;
-                albl{a} = lbl;
+            if isfield(data,lbl)
+                disp(['WARNING: Repeated channel name ',lbl, ' to be renamed ',lbl,num2str(v)])
+                lbl = [lbl,num2str(v)];
             end
+            
+            data.(lbl).line = makecolumn(r.AnalogData.(afld{a}).data);
+            data.(lbl).event = struct;
+            albl{a} = lbl;
         end
         
     end
@@ -208,28 +225,44 @@ for i = 1:length(fl)
         a= reshape(a,3,[]);
         ln = length(a);
         
-        if ln==4
-            b(:,:,1) = a(:,:);
+        b = zeros(3,4,ln/4);
+        
+        for j = 1:ln/4
+           
+            if j ==1
+                b(:,:,1) = a(:,1:4);
+            else
+                b(:,:,j) = a(:,4*(j-1)+1:4*j);
+            end
             
-        elseif ln==8
-            b(:,:,1) = a(:,1:ln/2);
-            b(:,:,2) = a(:,ln/2+1:end);
-            
-        elseif ln==12;
-            b(:,:,1) = a(:,1:ln/3);
-            b(:,:,2) = a(:,ln/3+1:2*ln/3);
-            b(:,:,3) = a(:,2*ln/3+1:end);
-        else
-            disp('unknown number of force plates')
-            b = [];
+          
         end
+        
+        % original code
+%         if ln==4
+%             b(:,:,1) = a(:,:);
+%             
+%         elseif ln==8
+%             b(:,:,1) = a(:,1:ln/2);
+%             b(:,:,2) = a(:,ln/2+1:end);
+%             
+%         elseif ln==12;
+%             b(:,:,1) = a(:,1:ln/3);
+%             b(:,:,2) = a(:,ln/3+1:2*ln/3);
+%             b(:,:,3) = a(:,2*ln/3+1:end);
+%         else
+%             disp('unknown number of force plates')
+%             b = [];
+%         end
         
         if ~isempty(b)
             data.zoosystem.Analog.FPlates.CORNERS = b;
             data.zoosystem.Analog.FPlates.LOCALORIGIN = r.Parameter.FORCE_PLATFORM.ORIGIN.data;
+            data.zoosystem.Analog.FPlates.NUMUSED = r.Parameter.FORCE_PLATFORM.USED.data;
         else
             data.zoosystem.Analog.FPlates.CORNERS = [];
             data.zoosystem.Analog.FPlates.LOCALORIGIN = [];
+            data.zoosystem.Analog.FPlates.NUMUSED = 0;
         end
     end
     
@@ -264,46 +297,50 @@ for i = 1:length(fl)
     
     % Add events metainformation (if available) to zoosystem branch of data struct
     %
-    if isfield(r.Parameter.EVENT,'TIMES')
+    if isfield(r.Parameter,'EVENT')
         
-        if ~isempty(r.Parameter.EVENT.TIMES.data)
-        
-        times = r.Parameter.EVENT.TIMES.data(2,:);
-        sides = r.Parameter.EVENT.CONTEXTS.data;
-        type =  r.Parameter.EVENT.LABELS.data;
-        
-        [rows,cols] = size(sides);
-        
-        stk = zeros(1,cols);
-        events = struct;
-        
-        for s = 1:cols
-            ech = [sides(:,s)','_',type(:,s)'];
-            ech = strrep(ech,' ','');
-            events.(ech).lines(s) = times(s);
-        end
-        
-        ech = fieldnames(events);
-        
-        for e = 1:length(ech)
-            temp = sort(events.(ech{e}).lines);
-            indx = find(temp==0);
-            temp(indx) = [];
-            events.(ech{e}) = temp;   % this output should match  btkGetEvents(H)
+        if isfield(r.Parameter.EVENT,'TIMES')
             
-            for j = 1:length(events.(ech{e}))
+            if ~isempty(r.Parameter.EVENT.TIMES.data)
                 
-                frame = round(events.(ech{e})(j)*vidFreq) - data.zoosystem.Video.ORIGINAL_START_FRAME(1) +1;
-                if ~isfield(data,'SACR')
-                    data.(vlbl{1}).event.([ech{e},num2str(j)]) = [frame 0 0];
-                else
-                    data.SACR.event.([ech{e},num2str(j)]) = [frame 0 0];
+                times = r.Parameter.EVENT.TIMES.data(2,:);
+                sides = r.Parameter.EVENT.CONTEXTS.data;
+                type =  r.Parameter.EVENT.LABELS.data;
+                
+                [rows,cols] = size(sides);
+                
+                stk = zeros(1,cols);
+                events = struct;
+                
+                for s = 1:cols
+                    ech = [sides(:,s)','_',type(:,s)'];
+                    ech = strrep(ech,' ','');
+                    events.(ech).lines(s) = times(s);
                 end
                 
+                ech = fieldnames(events);
+                
+                for e = 1:length(ech)
+                    temp = sort(events.(ech{e}).lines);
+                    indx = find(temp==0);
+                    temp(indx) = [];
+                    events.(ech{e}) = temp;   % this output should match  btkGetEvents(H)
+                    
+                    for j = 1:length(events.(ech{e}))
+                        
+                        frame = round(events.(ech{e})(j)*vidFreq) - data.zoosystem.Video.ORIGINAL_START_FRAME(1) +1;
+                        if ~isfield(data,'SACR')
+                            data.(vlbl{1}).event.([ech{e},num2str(j)]) = [frame 0 0];
+                        else
+                            data.SACR.event.([ech{e},num2str(j)]) = [frame 0 0];
+                        end
+                        
+                    end
+                    
+                end
             end
-            
         end
-        end
+        
     end
     
     % Empty field for computed meta data in matlab
