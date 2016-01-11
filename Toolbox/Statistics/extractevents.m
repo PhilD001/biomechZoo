@@ -1,139 +1,67 @@
-function r = extractevents(varargin)
+function r = extractevents(fld,cons,subjects,ch,evt)
 
-% r = extractevents(varargin) extracts events from zoofiles
-
+% R = EXTRACTEVENTS(FLD,SUBJECTS,CONS,CH,EVT) extracts event data from zoo file
+%
+% ARGUMENTS
+%  fld         ...    Folder to operate on as string 
+%  cons        ...    List of conditions (cell array of strings)
+%  subjects    ...    List of subject names (cell array of strings)
+%  ch          ...    Channel to analyse (string)
+%  evt         ...    Event to analyse (string)
+%
 % RETURNS
-% r    ...  structed array separated by group/cond
+%  r           ...    Event data by condition (structured array)
+
+
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
+% Main contributors:
+% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
+% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
+% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
 %
-% Created August 2014
+% Contact:
+% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
 %
-% Updated September 2014
-% - Can search specific channel via 'ch' argument
+% Web:
+% https://github.com/PhilD001/the-zoosystem
 %
-% Updated October 6th 2014
-% - 'r' also includes subject order
-%
-% Updated October 15th 2014
-% - can search for global events
-%
-% Updated March 31st 2015
-% - migrated to varargin style 
+% Referencing:
+% please reference the conference abstract below if the zoosystem was used in the 
+% preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
+% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
+% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
-
-
-groups = [];
-subs = [];
-conditions = {''};
-display = 'on';
-ch = [];
-
-for i = 1:2:nargin
-    
-    switch varargin{i}
-        
-        case 'fld'
-            fld = varargin{i+1};
-           
-        case 'groups'
-            groups = varargin{i+1};
-            
-        case 'condition'
-            conditions = varargin{i+1};
-            
-        case 'subjects'
-            subs =  varargin{i+1};
-            
-        case 'display'
-            display = varargin{i+1};
-            
-        case 'events'
-            evt = varargin{i+1};
-            
-        case 'channel'
-            ch = varargin{i+1};
-
-    end
-end
-
-
-
-cd(fld)
 
 r = struct;
+s = slash;                                                      % determines slash direction
 
-for g = 1:length(groups)
+for i = 1:length(cons)
+    estk = ones(length(subjects),1);
     
-    
-    for c = 1:length(conditions)
-        
-        substk = cell(size(subs));
-        
-        if isin(display,'on')
-            disp(['extracting events for group ',groups{g}, ', condition ', conditions{c},' and event ',evt])
-        end
-        
-        subjects = extract_filestruct([fld,slash,groups{g}]);
-        
-        stk = NaN*ones(length(subjects),1);
-        
-        for i = 1:length(subjects)
-            file =   engine('path',[fld,slash,groups{g},slash,subjects{i}],'search path',conditions{c},'extension','zoo');
+    for j = 1:length(subjects)
+        file =   engine('path',[fld,s,subjects{j},s,cons{i}]);
+               
+            data = zload(file{1});                              % load zoo file
+            evtval = findfield(data.(ch),evt);                  % searches for local event
             
-            if length(file)>1
-                error('more than 1 file per sub/con, run reptrial first')
+            if isempty(evtval)                                  % searches for global event
+                evtval = findfield(data,evt);                   % if local event is not
+                evtval(2) = data.(ch).line(evtval(1));          % found
+            end
+                        
+            if evtval(2)==999                                   % check for outlier
+                evtval(2) = NaN;
             end
             
-            if ~isempty(file)
-                data = zload(file{1});
-                subcode = subjects{i};
-                
-                if isin(ch,'auto')
-                    evtval = findfield(data,evt);
-                elseif isempty(ch)
-                    evtval = findfield(data,evt);
-                else
-                    evtval = findfield(data.(ch),evt);
-                    
-                end
-                
-                
-                if isempty(evtval)
-                    disp(['event ',evt, ' not found in ch ',ch,' searching global event'])
-                    evtval = findfield(data,evt);
-                    evtval(2) = data.(ch).line(evtval(1));
-                    
-                elseif isstruct(evtval)
-                    evtval = evtval.event.(evt);
-                    
-                elseif length(evtval)==1
-                    evtval = [evtval evtval];
-                end
-                
-                evtval = evtval(2);
-                
-                if evtval==999
-                    evtval = NaN;
-                end
-                
-                stk(i) = evtval;
-                substk{i} = subcode;
-                
-            end
-        end
-        
-        substk(cellfun(@isempty,substk)) = [];   % That's some hot programming
-        
-        
-        r.([groups{g},conditions{c}]).line = stk;
-        r.([groups{g},conditions{c}]).subjects = substk;
-        
-        
-        
-        
+            estk(j) = evtval(2);                                % add to event stk       
     end
     
+    r.(cons{i})= estk;                                          % save to struct
 end
+
+
 
 
 

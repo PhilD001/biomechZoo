@@ -5,7 +5,9 @@ function varargout = props(action,varargin)
 %
 % Updated by JJ Loh and Philippe C. Dixon June 2015
 % - new case added to load the skate props
-
+%
+% Updated by Philippe C. Dixon October 2015
+% - improved handling of force plate data via 'computecopDirector'
 
 switch action
     

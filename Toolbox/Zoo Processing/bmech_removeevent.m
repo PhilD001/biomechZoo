@@ -28,24 +28,26 @@ function bmech_removeevent(evt,fld,ch)
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
 % - fixed bug in channel selection
 
+
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
-% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
-% JJ Loh, Medicus Corda. Montreal, Canada.
+% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
+% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
+% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
 %
 % Contact:
-% philippe.dixon@gmail.com
+% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
 %
 % Web:
 % https://github.com/PhilD001/the-zoosystem
 %
 % Referencing:
-% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in
-% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+% please reference the conference abstract below if the zoosystem was used in the 
+% preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
+% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
+% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
 

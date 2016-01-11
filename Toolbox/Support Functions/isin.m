@@ -1,11 +1,11 @@
-function r= isin(str,a)
+function r= isin(str,substr)
 
-% r = isin(str,a) verifies is substring 'a' is in string or cell array of
+% r = isin(str,a) verifies is substring 'substr' is in string or cell array of
 % strings 'str'
 %
 % ARGUMENTS
 % str ...  string or cell array of strings
-% a   ...  substrignt
+% substr   ...  substring
 %
 % RETURN
 % r   ...  logical 0 or 1 
@@ -19,12 +19,12 @@ function r= isin(str,a)
 % - can accept cell array of srings for multiple comparisons
 
 
-if iscell(a)
+if iscell(substr)
     
-    rstk = NaN*ones(size(a));
+    rstk = NaN*ones(size(substr));
     
-    for i = 1:length(a)
-        rstk(i) = ~isempty(strfind(str,a{i}));
+    for i = 1:length(substr)
+        rstk(i) = ~isempty(strfind(str,substr{i}));
     end
     
     if sum(rstk)==0
@@ -35,5 +35,5 @@ if iscell(a)
     
     
 else
-    r = ~isempty(strfind(str,a));
+    r = ~isempty(strfind(str,substr));
 end

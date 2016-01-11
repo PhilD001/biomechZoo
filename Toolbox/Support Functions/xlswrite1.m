@@ -21,7 +21,8 @@ function xlswrite1(file,data,sheet,range)
 % Excel.delete
 % clear Excel 
 
-
+% by Matt Swartz
+% http://www.mathworks.com/matlabcentral/fileexchange/10465-xlswrite1
 
 Excel=evalin('caller','Excel');
 % Set default values.

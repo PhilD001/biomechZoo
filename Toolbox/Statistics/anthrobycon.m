@@ -24,25 +24,25 @@ function r = anthrobycon(fld,name,display)
 % - fixed bug when missing anthro info
 
 
-% Part of the Zoosystem Biomechanics Toolbox 
+% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
-% JJ Loh, Medicus Corda. Montreal, Canada.
-% 
-% Contact: 
-% philippe.dixon@gmail.com
+% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
+% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
+% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
 %
-% Web: 
+% Contact:
+% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
+%
+% Web:
 % https://github.com/PhilD001/the-zoosystem
 %
 % Referencing:
-% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
-
+% please reference the conference abstract below if the zoosystem was used in the 
+% preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
+% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
+% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
 % Set defauls
@@ -52,15 +52,17 @@ if nargin==2
 end
 
 
-% Extract files and subject names
+% Extract files
 %
 fl = engine('path',fld,'folder',name);
-subnames = extract_filestruct([fld,slash,name]);  
+
+
 
 
 % Set anthro variables
 %
-n          = length(subnames);
+n          = length(fl);
+subnames   = cell(n,1);
 age        = NaN*zeros(n,1);
 height     = NaN*zeros(n,1);
 leg_length = NaN*zeros(n,1);
@@ -68,6 +70,14 @@ mass       = NaN*zeros(n,1);
 sex        = cell(n,1);
 Male = 0;
 Female =0;
+
+% Extract subject names
+%
+for i = 1:length(fl)
+    data = zload(fl{i});
+    subnames{i} = strrep(data.zoosystem.Header.SubName,' ','');
+end
+
 
 % Extract and group anthro data
 %
@@ -81,15 +91,7 @@ for j = 1:length(subnames)
             
             data = zload(fl{i});
             
-            if isfield(data.zoosystem.Header,'TrialName')
-                disp('running old btk version of zoo')
-                SubName = data.zoosystem.Header.TrialName;
-            else
-                SubName = data.zoosystem.Header.SubName;
-            end
-            
-            SubName = strrep(SubName,' ','');
-            disp(['collecting anthro info for subject ',SubName, 'subject code ', subnames{j}])
+            disp(['collecting anthro info for subject ', subnames{j}])
             
             if isfield(data.zoosystem.Anthro,'Age')
                 age(j) = data.zoosystem.Anthro.Age;
@@ -127,10 +129,6 @@ for j = 1:length(subnames)
 end
 
 
-% convert height and leg-length to cm
-%
-height = height*100;
-leg_length = leg_length/10;
 
 % add to struct for export
 r.samplesize = n;

@@ -10,7 +10,7 @@ function bmech_filter(varargin)
 %  order     ...   Order of filter (number). Default is 4
 %  pass      ...   frequencies to pass (string) from the following list:
 %                 ('lowpass', 'highpass', 'bandpass','notch'). Default is lowpass
-%  ch        ...   channel to filter as cell arrawy of strings. e.g. {'ch1','ch2','ch3'}
+%  chfilt    ...   channel to filter as cell arrawy of strings. e.g. {'ch1','ch2','ch3'}
 %
 %
 % NOTES
@@ -57,26 +57,32 @@ function bmech_filter(varargin)
 % Updated by Philippe C. Dixon Sept 2015
 % - implements the new 'zsave' procedure in which the processing information
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
+%
+% Updated by Philippe C. Dixon Nov 2015
+% - Fixed bug with selection of specific channels to filter
+% - Added display of filter settings summary
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
 % Main contributors:
-% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
-% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
-% JJ Loh, Medicus Corda. Montreal, Canada.
-% 
-% Contact: 
-% philippe.dixon@gmail.com
+% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
+% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
+% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
 %
-% Web: 
+% Contact:
+% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
+%
+% Web:
 % https://github.com/PhilD001/the-zoosystem
 %
 % Referencing:
-% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% please reference the conference abstract below if the zoosystem was used in the 
+% preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
+% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
+% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+
 
 
 
@@ -121,9 +127,24 @@ if isempty(fld)
     fld = uigetfolder;
 end
 
+
+
+
 cd(fld)
 
 fl = engine('fld',fld,'extension','zoo');
+
+% Filter summary
+%
+disp('----------------Filter settings------------')
+disp(['Filter type:             ',filt.ftype])  
+disp(['Filter Order:            ',num2str(filt.forder)])
+disp(['Filter Pass Range:       ',filt.pass]);
+disp(['Filter Cutoff Frequency: ', num2str(filt.cutoff)])
+disp(' ')
+disp('Channels to be filtered:')
+disp(makecolumn(chfilt));
+
 
 for i = 1:length(fl)
     data = zload(fl{i});    
