@@ -25,7 +25,9 @@ function bmech_renamechannel(och,nch,fld)
 % Updated by Philippe C. Dixon Sept 2015
 % - implements the new 'zsave' procedure in which the processing information
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
-
+%
+% Updated by Philippe C. Dixon Jan 2016
+% - Uses standard sub-function renamechannel.m
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
@@ -85,7 +87,7 @@ disp(' ')
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'renaming channels')
-    data = renamech(data,och,nch);
+    data = renamechannel(data,och,nch);
     zsave(fl{i},data);
 end
 
