@@ -56,6 +56,11 @@ function fl = engine(varargin)
 %
 % Updated by Philippe C. Dixon June 2015
 % - improved help with examples
+%
+% Updated by Philippe C. Dixon Jan 2016
+% - replaced call to function 'slash' with Matlab embedded 
+%   function 'filesep'
+
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
@@ -101,7 +106,7 @@ for i = 1:2:nargin
         case 'folder'
             fld = varargin{i+1};
             
-        case 'search path'
+        case {'search','search path'}
             src = varargin{i+1};
   
         otherwise
@@ -138,7 +143,7 @@ end
 
 function fl =fldengine(pth,fld,src,other)
 
-s = slash; % dtermine slash direction based on computer type
+s = filesep;    % determine slash direction based on computer type
 
 if ~strcmp(pth(end),s);
     pth = [pth,s];
@@ -164,7 +169,7 @@ end
 
 function fl = srcengine(pth,src,other)
 
-s = slash;
+s = filesep;
 
 if ~strcmp(pth(end),s);
     pth = [pth,s];
@@ -229,80 +234,13 @@ end
  
 
 
-
-
-% function fl = initiatefxn(pth,filename,other)
-% 
-% % fl ={};
-% 
-% if isempty(other)
-%     fl = concatfiles(pth,filename);
-% else
-%     
-%     fl1 = {};
-%     fl2 = {};
-%     
-%     [r,c] = size(other);
-%             
-%     for i =1:r
-%         
-%         switch other{i,1}
-%             
-%             case 'extension'
-%                 fl1 = findextension(pth,filename,other{i,2});                 %filename can be a cell array of filenames
-%                 
-% %             case 'partner'
-% %                 fl = findpartner(pth,filename,other{i,2}{1},other{i,2}{2}); % please double check
-%                 
-%             case 'search file'
-%                 fl2 = searchfile(pth,filename,other{i,2});
-%                                              
-%         end
-%         
-%     end
-%     
-%     if ~isempty(fl1) && ~isempty(fl2)
-%         fl = intersect(fl1,fl2);
-%     elseif isempty(fl1) && ~isempty(fl2)
-%         fl = fl2;
-%     else  
-%         fl = fl1;      
-%     end
-%     
-%     
-% end
-
-
-
-
-
-
 function r = concatfiles(pth,fls)
 r = [];
 for i = 1:length(fls)
     r = [r;{concatfile(pth,fls{i})}];
 end
 
-function r = findpartner(pth,fl,ext1,ext2)
-r = [];
-fl1 = findextension(pth,fl,ext1);
-fl2 = findextension(pth,fl,ext2);
-% if length(fl1) == 1 && length(fl2)~=1
-%     r = [fl1,{fl2}];
-% elseif length(fl1) ~= 1 && length(fl2)==1
-%     r = [{fl1},fl2];
-% elseif length(fl1) == 1 && length(fl2)==1
-%     r = [fl1,fl2];
-% end
-if isempty(fl1) || isempty(fl2)
-    return
-end
-nfl = fl1;
-if length(fl2) > 1
-    fl2 = {fl2};
-end
-nfl(:) = fl2;
-r = [fl1,nfl];
+
 
 
 function r = findextension(pth,fl,ext)
@@ -330,48 +268,7 @@ for i = 1:length(fl);
 end
 
 
-function reorder_bars
 
-
-% get error bars
-%
-ehnd = findobj('type','hggroup','tag','ebar');
-
-
-% get bars
-%
-bhnd = findobj('type','hggroup');
-for i = 1:length(bhnd)
-    tag = get(bhnd(i),'tag');
-    
-if isempty(tag) || isin(tag,'ebar')
-    bhnd(i) = 0;
-end
-
-end
-
-indx = find(bhnd==0);
-bhnd(indx) = [];
-
-
-% find bar tags
-%
-btags = cell(size(bhnd)); 
-
-for i = 1:length(bhnd)
-    btags{i} = get(bhnd(i),'Tag'); 
-end
-
-% get user choice 
-nums = 1:1:length(btags);
-a = associatedlg(btags,nums);
-
-
-% reoder bargraph
-bhnd(a) = bhnd;
-
-bwidth = get(bhnd(1),'BarWidth');
-h = bar(barvals,bwidth,'grouped');
 
 
 

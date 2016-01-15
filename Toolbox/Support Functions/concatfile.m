@@ -3,12 +3,14 @@ function r = concatfile(varargin)
 
 % Updated by Phil Dixon Oct 2011
 % - works on mac platform
+%
+% Updated by Philippe C. Dixon Jan 2016
+% - replaced call to function 'slash' with Matlab embedded 
+%   function 'filesep'
 
-s = slash;
 
+s = filesep;
 r = [];
-
-
 
 for i = 1:nargin
     f = varargin{i};
