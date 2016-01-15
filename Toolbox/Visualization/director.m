@@ -327,11 +327,12 @@ switch action
         marker('load zoo',[p,f])
         
     case 'load bones'
-        
+        s = filesep;    % determine slash direction based on computer type
+
         d = which('director'); % returns path to ensemlber
         path = pathname(d) ;  % local folder where director resides
         
-        bones = [path,'Cinema objects',slash,'bones',slash,'golembones'];
+        bones = [path,'Cinema objects',s,'bones',s,'golembones'];
         openall(bones);
         
         director('first position');

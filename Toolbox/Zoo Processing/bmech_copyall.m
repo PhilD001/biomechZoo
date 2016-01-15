@@ -40,6 +40,10 @@ function bmech_copyall(fld1,fld2,ext)
 
 
 tic
+
+s = filesep;    % determine slash direction based on computer type
+
+
 % Get files from database
 %
 if nargin==2
@@ -56,15 +60,15 @@ if exist(fld2,'dir')==0
     mkdir(fld2)
 end
 
-% check if paths end with slash
+% check if paths end with s
 %
-if ~strcmp(fld1(end),slash)
-    fld1 = [fld1, slash];
+if ~strcmp(fld1(end),s)
+    fld1 = [fld1, s];
 end
 
 
-if ~strcmp(fld2(end),slash)
-    fld2 = [fld2, slash];
+if ~strcmp(fld2(end),s)
+    fld2 = [fld2, s];
 end
 
 
@@ -80,14 +84,14 @@ for i= 1:length(fl)
   
     % find subfolder
     %
-    last_slash_indx = strfind(fld1,slash);   
+    last_slash_indx = strfind(fld1,s);   
     last_slash_indx = last_slash_indx(end);
     con = p(last_slash_indx+1:end);
     
     
     % copy to directory
     %
-    dest = [fld2,con,slash];
+    dest = [fld2,con,s];
     nfl =  [dest,f,ext];   
     
     if exist(dest,'dir')==0

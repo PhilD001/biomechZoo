@@ -2,9 +2,10 @@ function openall(pth)
 
 
 % standalone function used by director
+s = filesep;    % determine slash direction based on computer type
 
-if ~strcmp(pth(end),slash);
-    pth = [pth,slash];
+if ~strcmp(pth(end),s);
+    pth = [pth,s];
 end
 
 fl = engine('path',pth);

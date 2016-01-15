@@ -6,6 +6,8 @@
 
 file = which('schwartz2mat.m');
 [pth,file] = fileparts(file);
+s = filesep;    % determine slash direction based on computer type
+
 
 normdata =[];
 anglelist=[];
@@ -132,6 +134,6 @@ end   %i
 normdata.anglelist = anglelist;
 
 % save to mat file
-save([pth,slash,'norm_schwartz'], 'normdata');
+save([pth,s,'norm_schwartz'], 'normdata');
     
   

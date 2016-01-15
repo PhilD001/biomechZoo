@@ -24,7 +24,6 @@ disp(' ')
 selection = num2str(input('please make a selection for further instructions '));
 
 
-
 while selection ~= 0
     
     switch selection

@@ -52,6 +52,7 @@ function v3d2zooMat(varargin)
 %
 tic
 del = 'off';
+s = filesep;    % determine slash direction based on computer type
 
 for i = 1:2:nargin
     
@@ -74,8 +75,8 @@ indx = 1;                                                           % store even
 
 % Error checking
 %
-if ~isin(fld(end),slash)
-    fld = [fld,slash];
+if ~isin(fld(end),s)
+    fld = [fld,s];
 end
 
 cd(fld)
@@ -214,10 +215,10 @@ for i = 1:length(fl)
             indxx = strfind(tname,'\');  % alwayws a PC slash
             tname = tname(indxx(end)+1:end-4);
              
-            zfl = [spth,slash,tname,'.zoo'];
+            zfl = [spth,s,tname,'.zoo'];
             zsave(zfl,data)
             
-%             save([spth,slash,tname,'.zoo'],'data');
+%             save([spth,s,tname,'.zoo'],'data');
             
         end
         
@@ -317,7 +318,7 @@ for i = 1:length(fl)
                 error('bad file name')
             end
             
-            save([spth,slash,tname,'.zoo'],'data');
+            save([spth,s,tname,'.zoo'],'data');
             
         end
         

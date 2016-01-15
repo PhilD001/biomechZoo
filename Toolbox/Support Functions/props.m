@@ -1391,6 +1391,9 @@ end
 
 function zooloadanalog(zdata)
 
+s = filesep;    % determine slash direction based on computer type
+
+
 d = which('director'); % returns path to ensemlber
 path = pathname(d) ;  % local folder where director resides
 
@@ -1433,7 +1436,7 @@ if ~isempty(fpch)
     
     for i = 1:nplates
         f = ['forceplate',num2str(i),'.prop'];
-        props('load',[path,'Cinema objects',slash,'forceplates',slash,f]);
+        props('load',[path,'Cinema objects',s,'forceplates',s,f]);
     end
     
     %     if ismember('Fx1',fpch)

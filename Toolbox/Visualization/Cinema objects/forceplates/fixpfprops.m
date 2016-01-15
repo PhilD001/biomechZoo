@@ -8,6 +8,7 @@ function fixpfprops
 
 d = which('director'); % returns path to ensemlber
 path = pathname(d) ;  % local folder where director resides
+s = filesep;    % determine slash direction based on computer type
 
 
 % fix force plates
@@ -16,10 +17,10 @@ for i = 2:9
     
     fp = ['forceplate',num2str(i),'.prop'];
     
-    t = load([path,'Cinema objects',slash,'forceplates',slash,fp],'-mat');
+    t = load([path,'Cinema objects',s,'forceplates',s,fp],'-mat');
     object = t.object;
     object.id = num2str(i);
     
-    save([path,'Cinema objects',slash,'forceplates',slash,fp],'object')
+    save([path,'Cinema objects',s,'forceplates',s,fp],'object')
     
 end

@@ -105,6 +105,7 @@ mark(finddobj('frame','number'));
 
 function data = loadfile(filename)
 
+s = filesep;    % determine slash direction based on computer type
 
 % Determine file type for processing
 %
@@ -179,7 +180,7 @@ if isfield(data.zoosystem.Anthro,'Feet')
     
     d = which('director'); % returns path to ensemlber
     p = pathname(d) ;  % local folder where director resides
-    p = [p,slash,'Cinema objects',slash,'skate'];
+    p = [p,s,'Cinema objects',s,'skate'];
     
     skate_fl = engine('fld',p,'extension','prop');
     

@@ -19,9 +19,9 @@ end
 
 function [p1,p2] = parse(filename)
 
-sl = slash;
+s = filesep;    % determine slash direction based on computer type
 
-indx = strfind(filename,sl);
+indx = strfind(filename,s);
 if isempty(indx)
     p1 = '';
     p2 = filename;

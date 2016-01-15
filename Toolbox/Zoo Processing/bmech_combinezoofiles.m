@@ -57,6 +57,7 @@ function bmech_combinezoofiles(fld1,fld2,method)
 % Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
 % Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
+s = filesep;    % determine slash direction based on computer type
 
 if nargin==0
     fld1 = uigetfolder('Select Folder 1');
@@ -79,7 +80,7 @@ fl2 = engine('path',fld2,'extension','zoo');
 stk1 = cell(size(fl1));
 
 for k = 1:length(fl1)
-    indx1 = strfind(fl1{k},slash);
+    indx1 = strfind(fl1{k},s);
     indx1 = indx1(end-2);
     
     stk1{k} = fl1{k}(indx1:end);
@@ -89,7 +90,7 @@ end
 stk2 = cell(size(fl2));
 
 for l = 1:length(fl2)
-    indx1 = strfind(fl2{l},slash);
+    indx1 = strfind(fl2{l},s);
     indx1 = indx1(end-2);
     
     stk2{l} = fl2{l}(indx1:end);
@@ -126,10 +127,10 @@ for i = 1:length(fl1)
     data = zload(fl2{i});
     data2 = data;
     
-    indx1 = strfind(fl1{i},slash);
+    indx1 = strfind(fl1{i},s);
     indx1 = indx1(end-1);
     
-    indx2 = strfind(fl2{i},slash);
+    indx2 = strfind(fl2{i},s);
     indx2 = indx2(end-1);
     
     disp('combining...')

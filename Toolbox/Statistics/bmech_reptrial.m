@@ -51,6 +51,7 @@ function bmech_reptrial(fld,chrp)
 % Set defaults
 %
 recycle('on')    % move deleted files to recycling bin
+s = filesep;    % determine slash direction based on computer type
 
 if nargin==0
     fld = uigetfolder;
@@ -79,7 +80,7 @@ for i = 1:length(sub)
         tsubs{i} = sub{i};
     end
     
-    slash_num(i) = length(strfind(sub{i},slash));
+    slash_num(i) = length(strfind(sub{i},s));
     
 end
 
@@ -125,7 +126,7 @@ end
 
 % Create summary table
 %
-indx = length(strfind(sub{1},slash));
+indx = length(strfind(sub{1},s));
 
 disp(' ')
 disp('Reptrial summary table')
@@ -133,7 +134,7 @@ disp(' ')
 disp('CONDITION/# OF TRIALS')
 for i = 1:length(tsubs)
     tsub = tsubs{i};
-    slash_indx = strfind(tsub,slash);
+    slash_indx = strfind(tsub,s);
     tsub = tsub(slash_indx(indx):end);
     disp([tsub,' ',num2str(tstk(i))])
 end

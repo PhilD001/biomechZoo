@@ -1,6 +1,6 @@
 function ensembledatabysubject(vartype)
 
-s = slash;
+s = filesep;    % determine slash direction based on computer type
 ax = findensobj('axes');
 
 

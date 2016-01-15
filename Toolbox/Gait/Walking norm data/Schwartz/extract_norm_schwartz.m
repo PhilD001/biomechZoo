@@ -13,9 +13,10 @@ function extract_norm_schwartz
 file = which('extract_norm_schwartz.m');
 pth = fileparts(file);
 file = 'norm_schwartz.mat';
+s = filesep;    % determine slash direction based on computer type
 
 
-data = load([pth,slash,file],'-mat');
+data = load([pth,s,file],'-mat');
 data = data.normdata;
 
 Velocities = {'Very Slow'  'Slow'  'Free'  'Fast'  'Very Fast'}; 
@@ -47,7 +48,7 @@ for i = 1:length(Velocities)
         disp(['for speed:  ',Vel,' writing ',ch]) 
 
         
-        save([pth,slash,ch,'_',Vel, '.mat'],'p')
+        save([pth,s,ch,'_',Vel, '.mat'],'p')
         
         
     end

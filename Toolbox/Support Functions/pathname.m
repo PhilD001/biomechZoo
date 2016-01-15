@@ -13,7 +13,7 @@
 % © Part of the Biomechanics Toolbox, Copyright ©2008-2010 
 % Phil Dixon, Montreal, Qc, CANADA
 %
-s = slash;
+s = filesep;    % determine slash direction based on computer type
 
 indx = strfind(fl,s);
 sslash= indx(end);
