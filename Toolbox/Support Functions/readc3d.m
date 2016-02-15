@@ -1,27 +1,20 @@
 function data =readc3d(fname)
 
-% This function will read a .C3D file and output the data in a structured array
-%
-% data = readc3d(fname)
+% DATA = READC3D(FNAME) will read a .c3d file and output the data in a structured array
 %
 % ARGUMENTS
 % fname     ... the c3d file and path (as a string) eg: 'c:\documents\myfile.c3d'
 % 
 % RETURNS
 % data      ...  structured array
-% 
-% see also writec3d.m
 %
-% CAUTION: machinetype variable may not be correct for intel or MIPS C3D files.
-% This m-file needs to be tested with C3D files of these types.
-% This m-file was tested and passed with DEC (VAX PDP-11) C3D files
-%
-% CAUTION: only character, integer, and real numbers have been tested.
-% see http://www.c3d.org/HTML/default.htm for information
-%
-% CAUTION: residuals of 3D data are not handled
-
-
+% Notes
+% - Machinetype variable may not be correct for intel or MIPS C3D files.
+%   This m-file needs to be tested with C3D files of these types.
+%   This m-file was tested and passed with DEC (VAX PDP-11) C3D files
+% - Only character, integer, and real numbers have been tested.
+%   see http://www.c3d.org/HTML/default.htm for information
+% - Residuals of 3D data are not handled
 
 
 % Revision History

@@ -41,7 +41,6 @@ function bmech_removechannel(varargin)
 % Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
-
 chkp = [];
 chrm = [];
 fld = [];
@@ -66,8 +65,9 @@ if isempty(fld)
     fld = uigetfolder('select zoo processed)');
 end
 
-fl = engine('path',fld,'extension','zoo');
+cd(fld)
 
+fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});

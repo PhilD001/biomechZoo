@@ -1,6 +1,6 @@
 function bmech_normalize(fld,datalength,intmethod)
 
-% BMECH_NORMALIZE(fld,datalength) will normalize data to a given data length
+% BMECH_NORMALIZE(FLD,DATALENGTH,INTMETHOD) will normalize data to a given data length
 %
 % ARGUMENTS
 %  fld          ...   Folder to operate on
@@ -8,7 +8,7 @@ function bmech_normalize(fld,datalength,intmethod)
 %                     datalength+1 frames. Default 101 frames
 %  intmethod    ...   method to interpolate data. Default 'linear'.
 %                     See interp1 for more options
-
+%
 % NOTES
 % - If no arguments are supplied, the function will ask for a folder to
 %   operate on and normalize to 101 frames
@@ -21,14 +21,14 @@ function bmech_normalize(fld,datalength,intmethod)
 
 % Revision history: 
 %
-% Updated Jan 2010
+% Updated by Philippe C. Dixon Jan 2010
 % - this function now normalizes event data as well
 % - function only runs in batch file mode, 
 %
-% Updated June 2010
+% Updated by Philippe C. Dixon June 2010
 % -Event normalization verified and improved. 
 %
-% Updated May 2015
+% Updated by Philippe C. Dixon May 2015
 % - Help improved
 %
 % Updated by Philippe C. Dixon Sept 2015
@@ -61,8 +61,6 @@ function bmech_normalize(fld,datalength,intmethod)
 % Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
-
-
 % Set defaults
 %
 if nargin==0
@@ -78,8 +76,7 @@ end
 if nargin ==1
     disp(['normalizing to 100%, using folder ',fld]);
     datalength=100;
-   intmethod = 'linear';
-
+    intmethod = 'linear';
 end
 
 if nargin ==2
@@ -91,6 +88,7 @@ end
 
 % Batch process
 %
+cd(fld)
 fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)

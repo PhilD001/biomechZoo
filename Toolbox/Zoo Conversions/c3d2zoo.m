@@ -1,6 +1,6 @@
 function data = c3d2zoo(fld,del)
 
-% C3D2ZOO  Converts .c3d files to .zoo format
+% C3D2ZOO(FLD,DEL) Converts .c3d files to .zoo format
 %
 % ARGUMENTS
 %  fld  ...   path leading to folder to operate on
@@ -11,9 +11,8 @@ function data = c3d2zoo(fld,del)
 
 
 % NOTES:
-%  - channels with names containing '*' or '#' are removed (these are usually
-%    unlabled trajectories)
-%  - attempts to fix invalid fielnames (see makevalidfield.m)
+% - The zoosystem c3d reader performs the actual conversion (readc3d.m) 
+% - The function attempts to fix invalid fielnames via the makevalidfield.m function
 
 
 % Revision History
@@ -111,7 +110,7 @@ for i = 1:length(fl)
     
     for v = 1:length(vfld)
         
-        lbl = makevalidfield(r.VideoData.(vfld{v}).label);                                      % fixes invalid fieldnames
+        lbl = makevalidfield(r.VideoData.(vfld{v}).label);                 % fixes invalid fieldnames
         
         if isfield(data,lbl)
             disp(['WARNING: Repeated channel name ',lbl, ' to be renamed ',lbl,num2str(v)])

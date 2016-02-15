@@ -24,7 +24,7 @@ function eventval2mixedANOVA(varargin)
 % Updated by Philippe C. Dixon October 2014
 % - Added summary sheet called 'alldata'
 %
-% Updated Philippe C. Dixon Jan 2016
+% Updated by Philippe C. Dixon Jan 2016
 % - full functionality on mac OS platform and platforms without excel installed
 %   thanks to xlwrite by Alec de Zegher's (uses java POI)
 %   see: http://www.mathworks.com/matlabcentral/fileexchange/38591-xlwrite--generate-xls-x
@@ -33,7 +33,9 @@ function eventval2mixedANOVA(varargin)
 %   This approach is faster than using java fix thanks to 'xlswrite1 by Matt Swartz
 %   see: http://www.mathworks.com/matlabcentral/fileexchange/10465-xlswrite1
 % - Additional summary sheet 'info' added. This sheet records processing info about files
-
+%
+% Updated by Philippe C. Dixon Jan 2016
+% - use 'raw' output from xlsread to avoid bug with certain sheets being read with NaNs
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
@@ -168,12 +170,20 @@ end
 
 for j = 1:length(ch)
     count = 1;
-    [xlsdata,txt] = xlsread([p,f],ch{j});
+%     [rr,txt,raw] = xlsread([p,f],ch{j},'basic'); % basic is default on mac
+    [num,txt,xlsdata] = xlsread([p,f],ch{j},'basic'); % basic is default on mac
+
+    [~,dcols] = size(num);                             % dcols = number of data columns
+    
+    xlsdata = xlsdata(4:end,4:end);
+    xlsdata = cell2mat(xlsdata);
+    xlsdata = xlsdata(:,1:dcols); 
     
     events = txt(2,4:end);
     events(cellfun(@isempty,events)) = [];   % cell array of strings for evts for ch j
     
-    txt = txt(4:end,:);
+    txt = txt(4:end,1:3);                    % ignore meta data rows
+    
     conditions = unique(txt(:,2));           % cell array of strings for con names for ch j
     subjects = unique(txt(:,1));             % cell array of strings for sub names for ch j
     
@@ -181,7 +191,7 @@ for j = 1:length(ch)
     
     for a = 1:length(conditions)
         r = conditions{a};
-        indx = strfind(r,'\');
+        indx = strfind(r,filesep);
         cons{a} = r(indx(1)+1:end);
     end
     
@@ -197,7 +207,7 @@ for j = 1:length(ch)
                 sub_stk = [sub_stk;plate];     % stack of data for each subject
                 grp = txt(n,2);
                 grp = grp{1};
-                indxx = strfind(grp,'\');
+                indxx = strfind(grp,filesep);
                 grp = grp(1:indxx(1)-1);
             end
         end

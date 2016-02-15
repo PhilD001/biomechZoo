@@ -1,7 +1,6 @@
 function bmech_addevent(fld,ch,ename,type)
 
-       
-% bmech_addevent(fld,ch,ename,type,cut) is used to add information to the
+% bmech_addevent(fld,ch,ename,type) is used to add information to the
 % event banch of a given channel
 %
 % ARGUMENTS
@@ -10,7 +9,7 @@ function bmech_addevent(fld,ch,ename,type)
 %  ch     ... name of channel to add events to as string. ex Choose 'fz1'
 %              or'fz2' or 'all' for all channels
 %  ename  ... the name of new event branch in zoo file as string
-%  type   ... see line 47 ('max' 'min' 'toe off' heel strike'...)string
+%  type   ... see line 47 ('max' 'min' 'toe off' heel strike'...) string
 %
 % NOTES: 
 % - adding events can be done at any point during processing and can be called numerous times 

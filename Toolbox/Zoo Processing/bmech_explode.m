@@ -1,6 +1,6 @@
 function bmech_explode(fld,ch)
 
-% bmech_explode(fld,ch) is used to split n x 3 data into three n x 1
+% BMECH_EXPLODE(FLD,CH) is used to split n x 3 data into three n x 1
 % channels. New channels have a dimension suffix (e.g. '_x', '_y', and '_z'
 % for the 1st, 2nd, and 3rd columns of the matrix, respectively). 
 % 
@@ -42,6 +42,7 @@ function bmech_explode(fld,ch)
 % Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
 % Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
 % Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+
 
 if nargin ==0
     fld = uigetfolder('select folder containing data to explode');

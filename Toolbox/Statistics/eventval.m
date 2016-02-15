@@ -75,7 +75,12 @@ function evalFile = eventval(varargin)
 % - Additional summary sheet 'info' added. This sheet records processing info about files
 % - localevents that are not found in a local event are skipped. Previous
 %   version wrote full columns of 999 to spreadsheet. Update speeds up processing
-% - 'anthro' events automatically added  
+% - 'anthro' events automatically added
+%
+% Updated by Philippe C. Dixon Feb 2016
+% - Bug fix: Anthro data was appearing in eventval.xls as cell {yd}. This caused a problem
+% with eventval2mixedANOVA reading 999 (empty)
+
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
 %
@@ -155,6 +160,8 @@ if strcmp(excelserver,'on') && isin(computer,'MACI')
     excelserver = 'off';
 end
 
+conditions = strrep(conditions,'/',filesep);
+conditions = strrep(conditions,'\',filesep);
 
 
 % == LOADING REQUIRED INFO==================================================================
@@ -202,7 +209,7 @@ end
 fl = engine('path',fld,'extension','zoo');
 
 
-% load channels 
+% load channels
 %
 data = zload(fl{2});       % load any file (all same struct)
 
@@ -267,8 +274,7 @@ end
 % Load anthro events
 %
 if isempty(anthroevts) && isfield(data.zoosystem,'Anthro')
-    
-    aev = data.zoosystem.Anthro;
+    aev = fieldnames(data.zoosystem.Anthro);
     anthroevtnames = listdlg('liststring',aev,'name','anthro events','ListSize',[300 300]);
     anthroevtnames = aev(anthroevtnames);
     
@@ -421,41 +427,41 @@ for i = 1:length(fl)
         end
         
         % Write local events
-        %  
+        %
         offset = length(globalevtnames);
-
+        
         for n = 1:length(localevtnames)            %LOCAL EVENTS: All channels should have this event
             
             if isfield(data.(chnames{j}).event,localevtnames{n})
                 evt = data.(chnames{j}).event.(localevtnames{n});
                 xd = evt(1);
                 yd = evt(2);
-                          
-            if isnan(yd)
-                yd =999;
-            end
-            
-            if strcmp(excelserver,'on')
-                xlswrite1(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
-                xlswrite1(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
-                xlswrite1(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
-                xlswrite1(evalFile,xd,chname,[ecell1{n+offset},num2str(3+i)]);
-                xlswrite1(evalFile,yd,chname,[ecell2{n+offset},num2str(3+i)]);
-            else
-                xlwrite(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
-                xlwrite(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
-                xlwrite(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
-                xlwrite(evalFile,xd,chname,[ecell1{n+offset},num2str(3+i)]);
-                xlwrite(evalFile,yd,chname,[ecell2{n+offset},num2str(3+i)]);
                 
-            end
-            
+                if isnan(yd)
+                    yd =999;
+                end
+                
+                if strcmp(excelserver,'on')
+                    xlswrite1(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
+                    xlswrite1(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
+                    xlswrite1(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
+                    xlswrite1(evalFile,xd,chname,[ecell1{n+offset},num2str(3+i)]);
+                    xlswrite1(evalFile,yd,chname,[ecell2{n+offset},num2str(3+i)]);
+                else
+                    xlwrite(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
+                    xlwrite(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
+                    xlwrite(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
+                    xlwrite(evalFile,xd,chname,[ecell1{n+offset},num2str(3+i)]);
+                    xlwrite(evalFile,yd,chname,[ecell2{n+offset},num2str(3+i)]);
+                    
+                end
+                
             else
                 disp(['no event ',localevtnames{n},' in channel ',chnames{j}])
                 
                 offset = offset-1;
                 
-               
+                
             end
             
         end
@@ -464,56 +470,59 @@ for i = 1:length(fl)
     
     % Write Anthro data
     %
-    initialpos = 0;
-    chname = 'Anthro';
-    
-    if strcmp(excelserver,'on')
-        xlswrite1(evalFile,{'SUBJECT'},chname,'A1');
-        xlswrite1(evalFile,{'CONDITION'},chname,'B1');
-        xlswrite1(evalFile,{'TRIAL'},chname,'C1');
-        xlswrite1(evalFile,{'EVENT'},chname,'F1');
-        xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
-        xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
-        xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
-    else
-        xlwrite(evalFile,{'SUBJECT'},chname,'A1');
-        xlwrite(evalFile,{'CONDITION'},chname,'B1');
-        xlwrite(evalFile,{'TRIAL'},chname,'C1');
-        xlwrite(evalFile,{'EVENT'},chname,'F1');
-        xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
-        xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
-        xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
-    end
-    
-    for k = 1:length(anthroevtnames)
-        
-        evt = findfield(data,anthroevtnames{k});          % 1st found is right one
-        
-        if isempty(evt)
-            error(['missing ',anthroevtnames{k},' event']);
-        end
-        
-        xd = 1;
-        yd = evt;
-        
-        if ~isnumeric(yd)
-            yd = 999;
-        end
+    if ~isempty(anthroevtnames)
+        initialpos = 0;
+        chname = 'Anthro';
         
         if strcmp(excelserver,'on')
-            xlswrite1(evalFile,{anthroevtnames(k)},chname,[ecell1{k},'2']);
-            xlswrite1(evalFile,{'xdata'},chname,[ecell1{k},'3']);
-            xlswrite1(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-            xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
-            xlswrite1(evalFile,{yd},chname,[ecell2{k},num2str(3+i)]);
+            xlswrite1(evalFile,{'SUBJECT'},chname,'A1');
+            xlswrite1(evalFile,{'CONDITION'},chname,'B1');
+            xlswrite1(evalFile,{'TRIAL'},chname,'C1');
+            xlswrite1(evalFile,{'EVENT'},chname,'F1');
+            xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
+            xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
+            xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
         else
-            xlwrite(evalFile,{anthroevtnames(k)},chname,[ecell1{k},'2']);
-            xlwrite(evalFile,{'xdata'},chname,[ecell1{k},'3']);
-            xlwrite(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-            xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
-            xlwrite(evalFile,{yd},chname,[ecell2{k},num2str(3+i)]);
+            xlwrite(evalFile,{'SUBJECT'},chname,'A1');
+            xlwrite(evalFile,{'CONDITION'},chname,'B1');
+            xlwrite(evalFile,{'TRIAL'},chname,'C1');
+            xlwrite(evalFile,{'EVENT'},chname,'F1');
+            xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
+            xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
+            xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
         end
-           
+        
+        for k = 1:length(anthroevtnames)
+            
+            evt = findfield(data,anthroevtnames{k});          % 1st found is right one
+            
+            if isempty(evt)
+                error(['missing ',anthroevtnames{k},' event']);
+            end
+            
+            xd = 1;
+            yd = evt;
+            
+            if ~isnumeric(yd)
+                yd = 999;
+            end
+            
+            if strcmp(excelserver,'on')
+                xlswrite1(evalFile,{anthroevtnames(k)},chname,[ecell1{k},'2']);
+                xlswrite1(evalFile,{'xdata'},chname,[ecell1{k},'3']);
+                xlswrite1(evalFile,{'ydata'},chname,[ecell2{k},'3']);
+                xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
+                xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+i)]); % edit {yd}
+            else
+                xlwrite(evalFile,{anthroevtnames(k)},chname,[ecell1{k},'2']);
+                xlwrite(evalFile,{'xdata'},chname,[ecell1{k},'3']);
+                xlwrite(evalFile,{'ydata'},chname,[ecell2{k},'3']);
+                xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
+                xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+i)]); % edit {yd}
+            end
+            
+        end
+        
     end
     
 end

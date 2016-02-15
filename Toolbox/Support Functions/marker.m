@@ -5,6 +5,9 @@ function varargout = marker(action,varargin)
 %
 % Updated by JJ Loh and Philippe C. Dixon June 2015
 % - new case added to load the skate props
+%
+% Updated by Philippe C. Dixon Jan 2016
+% - Bug fixes for backwards comp
 
 
 switch action
@@ -127,8 +130,13 @@ end
 
 % Extract all channels in file
 %
-ch = data.zoosystem.Video.Channels;
-
+% Extract all channels in file
+%
+if ~isfield(data.zoosystem.Video,'Channels')
+    ch = setdiff(fieldnames(data),'zoosystem');
+else
+    ch = data.zoosystem.Video.Channels;
+end
 
 % Load Plug-in Gait bones
 %
