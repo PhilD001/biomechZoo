@@ -36,10 +36,12 @@
 %
 % Created by Philippe C. Dixon November 2013 
 %
-% Updated by Philippe C. Dixon February 14th 2016
+% Updated by Philippe C. Dixon February 22nd 2016
 % - Improved user interface and help
 % - Improved statistical analysis section
-
+%
+% see https://github.com/PhilD001/the-zoosystem for more info
+ 
 
 %% Step 1: Conversion to the Zoosystem format-----------------------------------------------
 %
@@ -126,7 +128,7 @@ bmech_addevent(fld,'RHipAngles_y','max','max')                             % max
 
 %% Step 5: Normalizing the data-------------------------------------------------------------
 %
-% - This steps normalizes the data to a given length of 101 frames (0-100% of the stance 
+% - This step normalizes the data to a given length of 101 frames (0-100% of the stance 
 %   phase)
 % - User should create a copy of folder '4-addevents' called '5-normalize'
 % - Different interpolation methods can be implemented in bmech_normalize via an optional
@@ -205,7 +207,7 @@ bmech_normalize(fld,nlength)
 %  (2) Select Ensembler --> Ensemble (CI) then Ensembler, combine data to show a mean and 
 %      confidence interval (CI) curve for each condition on a single axis. 
 %  (3) Select 'Bar Graph' --> 'bar graph' to display these discrete data. 
-%  (4) Finalize, and save graphs using steps 8?10 from the time-series graphing instructions
+%  (4) Finalize, and save graphs using steps 8-10 from the time-series graphing instructions
 
 
 %% Step 7: Statistical analysis ------------------------------------------------------------
@@ -215,18 +217,21 @@ bmech_normalize(fld,nlength)
 %
 % METHOD A: Exporting to spreadsheet (using the eventval function)
 %
-fld = uigetfolder;                                                         % 'Step 4' folder
-levts = 'max';                                                             % local events                                            
-gevts = 'Right_FootOff1';                                                  % global events                                       
-aevts = {'none'};                                                          % anthro events
-ch = {'RGroundReactionForce_x','RHipAngles_y','RKneeAngles_x'};            % channels
-dim1 = {'Straight','Turn'};                                                % conditions
-dim2 = {'HC002D','HC003B','HC021A','HC030A','HC032A','HC034A',...          % subjects
+fld = uigetfolder;                                                       % 'Step 4' folder
+levts = 'max';                                                           % local events                                            
+gevts = 'Right_FootOff1';                                                % global events                                       
+aevts = {'none'};                                                        % anthro events
+ch = {'RGroundReactionForce_x','RHipAngles_y','RKneeAngles_x'};          % channel to search
+dim1 = {'Straight','Turn'};                                              % conditions
+dim2 = {'HC002D','HC003B','HC021A','HC030A','HC032A','HC034A',...        % subjects
         'HC038A','HC039A','HC042A','HC050A','HC055A'};
-    
-eventval('fld',fld,'dim1',dim1,'dim2',dim2,'localevts',levts,...
-         'globalevts',gevts,'anthroevts',aevts,'ch',ch,'excelserver','on','ext','.xlsx')   
+excelserver = 'on';                                                      % use java
+extension = '.xls';                                                      % preferred ext
 
+eventval('fld',fld,'dim1',dim1,'dim2',dim2,'localevts',levts,...
+         'globalevts',gevts,'anthroevts',aevts,'ch',ch,'excelserver',excelserver,...
+         'ext',extension) 
+     
 % User notes:
 % - If you run into problems take a look at the exisiting 'eventval.xls' file
 % - Non-existant events (e.g. 'max' for RKneeAngles_x') and outliers will show as 999 values 
@@ -261,10 +266,3 @@ evt = 'Right_FootOff1';
 r = extractevents(fld,dim1,dim2,ch,evt);
 [~,pval_Knee_FLX] = ttest(r.Straight,r.Turn,0.05,'both');
 disp(['p-value for Knee_FLX = ',num2str(pval_Knee_FLX)])
-
-
-
-
-
-
-

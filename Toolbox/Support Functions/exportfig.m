@@ -63,6 +63,8 @@ else
     export_fig(filename{1}, '-png', '-transparent','-r150')     % cannot vectorize colorbars
 end
 
+
+
 % save backup matlab figure
 %
 saveas(gcf,[filename{1},'.fig'])

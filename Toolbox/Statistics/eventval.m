@@ -12,7 +12,7 @@ function evalFile = eventval(varargin)
 % 'globalevts'   ... list of global events as cell array of strings
 % 'ext'          ... Spreadsheet file type .xls, .xlsx, and .csv are possible.
 %                    Default is .xls
-% 'excelserver'  ... Choice to use excel server
+% 'excelserver'  ... Choice to use excel server. Default 'off'
 %
 % RETURNS
 % evalFile       ... Path leading to exported spreadsheet
@@ -79,7 +79,8 @@ function evalFile = eventval(varargin)
 %
 % Updated by Philippe C. Dixon Feb 2016
 % - Bug fix: Anthro data was appearing in eventval.xls as cell {yd}. This caused a problem
-% with eventval2mixedANOVA reading 999 (empty)
+%   with eventval2mixedANOVA reading 999 (empty)
+% - Clean up for input arguments
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
@@ -109,12 +110,12 @@ tic  % start calculation timer
 %
 fld = '';                                      % if not included in arguments will be empty
 ch = '';
-localevts = '';
-globalevts = '';
-anthroevts = '';
+localevts = '';                                % manual selection window appears
+globalevts = '';                               % manual selection window appears
+anthroevts = {'none'};                         % no manual selection window appears           
 ext = '.xls';                                  % default extension for eventval spreadsheet
 s = filesep;                                   % slash direction based on platform
-excelserver = 'off';                           % users with excel server can speed up process
+excelserver = 'off';                           % users with excel can speed up process
 
 for i = 1:2:nargin
     
@@ -123,11 +124,11 @@ for i = 1:2:nargin
             fld = varargin{i+1};
         case 'ch'
             ch = varargin{i+1};
-        case {'localevts','local'}
+        case {'localevts','local','localevents'}
             localevts = varargin{i+1};
-        case {'globalevts','global'}
+        case {'globalevts','global','globalevents'}
             globalevts = varargin{i+1};
-        case {'anthroevts','anthro'}
+        case {'anthroevts','anthro','anthroevents'}
             anthroevts = varargin{i+1};
         case 'dim1'
             conditions = varargin{i+1};
@@ -175,21 +176,32 @@ if ~exist(pth,'dir')
     disp(['Creating folder for stats: ',pth])
     mkdir(pth)
 end
+
+
+% Check if file exists
+%
 evalFile=[pth,s,'eventval',ext];    % name of eventval file
+
+if exist(evalFile,'file')
+   [~,evalFileShort] = fileparts(evalFile);
+   answer=questdlg(['Stats file: ',evalFile,' already exists'], 'overwrite?','Yes','No','No');
+
+   if strcmp(answer,'No')
+      evalFile=inputdlg('new stats file name','Enter new name',1,{[evalFileShort,'_new',extension(evalFile)]});
+      evalFile = [pth,s,evalFile{1}];
+   end
+
+end
+
 
 % Load excel server or java path
 %
 if strcmp(excelserver,'on')
     disp('loading excel server')
     Excel = actxserver ('Excel.Application');
-    
-    if exist(evalFile,'file')
-        error('excel file already exists in current location')
-    else
-        ExcelWorkbook = Excel.workbooks.Add;
-        ExcelWorkbook.SaveAs(evalFile,1);
-        ExcelWorkbook.Close(false);
-    end
+    ExcelWorkbook = Excel.workbooks.Add;
+    ExcelWorkbook.SaveAs(evalFile,1);
+    ExcelWorkbook.Close(false);
     invoke(Excel.Workbooks,'Open',evalFile);
     
 else
@@ -221,19 +233,21 @@ else
     chnames = ch;
 end
 
+
 % load local events
 %
 if isempty(localevts)
     lev = [];
     for i = 1:length(chnames)
         plate = fieldnames(data.(chnames{i}).event);
-        lev = [lev; plate];
+        lev = [lev; plate];                             %#ok<AGROW>
     end
+    lev = unique(lev);
     
     if isempty(lev)
         localevtnames = '';
     else
-        localevtnames = listdlg('liststring',lev,'name','local events','ListSize',[300 300]);
+        localevtnames = listdlg('liststring',lev,'name','select local events','ListSize',[300 300]);
         localevtnames = lev(localevtnames);
     end
     
@@ -251,10 +265,14 @@ end
 %
 if isempty(globalevts)
     gev = [];
-    for i = 1:length(ch)
-        plate = fieldnames(data.(ch{i}).event);
-        gev = [gev; plate];
+    chn = setdiff(fieldnames(data),'zoosystem');
+    
+    for i = 1:length(chn)
+        plate = fieldnames(data.(chn{i}).event);
+        gev = [gev; plate];                              %#ok<AGROW>
     end
+    
+    gev = unique(gev);
     
     globalevtnames = listdlg('liststring',gev,'name','global events','ListSize',[300 300]);
     globalevtnames = gev(globalevtnames);

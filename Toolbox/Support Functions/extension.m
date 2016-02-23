@@ -1,5 +1,9 @@
 function varargout = extension(f,ext)
 
+% varargout = extension(f,ext) returns file extension. File extension can be changed if
+% second argument is provided
+%
+%
 % updated by Philippe C. Dixon August 2013
 % - changed to strfind from findstr at line 6
 
