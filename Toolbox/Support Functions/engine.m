@@ -100,7 +100,7 @@ for i = 1:2:nargin
 
     switch varargin{i}
           
-        case {'path','fld'}
+        case {'pth','path','fld'}
             pth = varargin{i+1};
         
         case 'folder'

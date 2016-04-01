@@ -44,7 +44,7 @@ end
 
 
 for i = 1:length(ch);
-    
+
     if isfield(data,ch{i})
 
         cname = ch{i};

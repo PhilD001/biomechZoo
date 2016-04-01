@@ -1,6 +1,6 @@
-% function data = grab
-% GRAB is the easy way to open zoo data, don't type three lines of
-% code, type grab!!
+% GRAB is the easy way to open .zoo and .c3d files. Simply type 'grab' and select
+% the file you want to open.
+
 
 
 % Revision History
@@ -23,12 +23,15 @@
 % Updated by Philippe C. Dixon September 2015
 % - relies on 'readc3d' function to read c3d files instead of the
 %  c3d reader from BTK
+%
+% Updated By Philippe C. Dixon March 2016
+% - Support for other file types removed. Grab only reads zoo and c3d files
+% - Users can include other files types as required
 
+% catch some possible errors
+clear extension
 
-
-
-
-[f,p]=uigetfile({'*.zoo';'*.c3d';'*.xls';'*.csv'});
+[f,p]=uigetfile({'*.zoo';'*.c3d'});
 cd(p);
 
 ext = extension(f);
@@ -36,36 +39,19 @@ ext = extension(f);
 switch ext
 
     case '.zoo'
-
         data=load([p,f],'-mat');
         data=data.data;
 
     case '.c3d'
-
         data = readc3d([p,f]);
-
-    case '.xls'
-
-        data = xlsread([p,f]);
-       
-    case '.csv'
-        
-        data = xlsread([p,f]);
-        
+  
 end
 
-type = computer;
 
-switch type
-    
-    case {'PCWIN','PCWIN64'}
-        indx = strfind(p,'\');
-        
-    case {'MACI','MAC','MACI64'}
-        indx = strfind(p,'/');
-end
-
-[r,c] = size(indx);
+% Shorten file path for display 
+%
+indx = strfind(p,filesep);
+[~,c] = size(indx);
 disp(' ')
 disp('loaded data for:');
 disp(' ')
@@ -76,7 +62,7 @@ disp(' ')
 
 clear p f ext indx slash r c type
 
-data
+disp(data)
 
 
 

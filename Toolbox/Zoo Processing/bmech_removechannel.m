@@ -1,7 +1,7 @@
 function bmech_removechannel(varargin)
 
-% BMECH_REMOVECHANNEL(varargin) removes unwanted channels from zoo files 
-% 
+% BMECH_REMOVECHANNEL(varargin) removes unwanted channels from zoo files
+%
 % ARGUMENTS
 %  chkp         ...    channels to keep as cell array of strings ex.
 %  chrm         ...    channels to remove as cell array of strings
@@ -20,25 +20,9 @@ function bmech_removechannel(varargin)
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+% More info: type 'zooinfo' in the command prompt
 
 
 chkp = [];
@@ -48,9 +32,9 @@ fld = [];
 %-------Default settings----
 
 for i = 1:2:nargin
-
+    
     switch varargin{i}
-
+        
         case 'chkp'
             chkp = varargin{i+1};
         case 'chrm'
@@ -69,12 +53,20 @@ cd(fld)
 
 fl = engine('path',fld,'extension','zoo');
 
+
+% error checking
+%
+
+
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'removing channel');
     
     if ~isempty(chrm)    % you've selected channels to remove
         data = removechannel(data,chrm);
+        if ~iscell(chrm)
+            chrm = {chrm};
+        end
         nch = length(chrm);
     end
     
@@ -83,10 +75,16 @@ for i = 1:length(fl)
         nch = length(setdiff(allch,chkp));
         data = keepchannel(data,chkp);
     end
-     
-    zsave(fl{i},data, ['removed ',num2str(nch),' channels']);
-end
     
+    if length(nch)==1
+        suff = 'channel';
+    else
+        suff = 'channels';
+    end
+    
+    zsave(fl{i},data, ['removed ',num2str(nch),' ',suff]);
+end
+
 
 
 

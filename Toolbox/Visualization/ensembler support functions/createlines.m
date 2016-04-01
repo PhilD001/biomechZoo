@@ -1,5 +1,3 @@
-
-
 function createlines(fig,data,fl)
 
 ch = fieldnames(data);

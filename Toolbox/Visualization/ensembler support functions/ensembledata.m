@@ -3,10 +3,15 @@ function ensembledata(vartype)
 prmt = findobj('Tag','prompt');
 
 if ~isempty(prmt)
-    delete(prmt)
+    set(prmt,'string','')
 end
 
+
 ax = findensobj('axes');
+
+ln = findobj('type','line'); % return all lines to common state
+set(ln,'linewidth',0.5)
+
 
 for i = 1:length(ax)
     lstk = [];
@@ -36,7 +41,7 @@ for i = 1:length(ax)
         meanehnd = findobj(ax(i),'string','\bullet');
         
         mn = nanmean(lstk);
-        [r,c] = size(lstk);
+        [r,~] = size(lstk);
         
         if isin(nm,'+') % fix for grouping conditions to get correct CI
             r = r/2;
@@ -72,14 +77,18 @@ for i = 1:length(ax)
             delete(findobj(ax(i),'type','patch'))
         end
         
-        mnhnd = line('parent',ax(i),'xdata',xdata,'ydata',mn,'color',[0 0 0],'linewidth',1,'buttondownfcn',bd,'tag',...
-            nm,'userdata','average_line');
+        mnhnd = line('parent',ax(i),'xdata',xdata,'ydata',mn,'color',[0 0 0],'linewidth',1,...
+                     'buttondownfcn',bd,'tag',nm,'userdata',['average_line ',get(ax(i),'tag')]);
         
         if isin(computer,'MAC')
-            pch = patch('parent',ax(i),'vertices',vr,'faces',fc,'facecolor',[.8 .8 .8],'facealpha',1,'edgecolor','none','buttondownfcn',bd,'tag',nm,'userdata',userdata); %,'userdata',evt,'tag',nm);
+            patch('parent',ax(i),'vertices',vr,'faces',fc,'facecolor',[.8 .8 .8],...
+                  'facealpha',1,'edgecolor','none','buttondownfcn',bd,'tag',nm,...
+                  'userdata',['average_',vartype,' ',get(ax(i),'tag')]); %,'userdata',evt,'tag',nm);
             
         else
-            pch = patch('parent',ax(i),'vertices',vr,'faces',fc,'facecolor',[.8 .8 .8],'facealpha',.5,'edgecolor','none','buttondownfcn',bd,'tag',nm,'userdata',userdata); %,'userdata',evt,'tag',nm);
+            patch('parent',ax(i),'vertices',vr,'faces',fc,'facecolor',[.8 .8 .8],...
+                  'facealpha',.5,'edgecolor','none','buttondownfcn',bd,'tag',nm,...
+                  'userdata',['average_',vartype,' ',get(ax(i),'tag')]); %,'userdata',evt,'tag',nm);
         end
         
         

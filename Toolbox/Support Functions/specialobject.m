@@ -1,4 +1,10 @@
 function varargout = specialobject(action,varargin)
+
+% Updated by Philippe C. Dixon March 30th 2016
+% - uses general function 'angle' for calculation of angle instead of 
+%   embedded function
+
+
 switch action
     case 'setup'
         str = {'angle','angle minus 90','global angle','bargraph','groot suntay (global)','groot suntay (local)','skeleton','orientation'};
@@ -757,7 +763,7 @@ ort = ort*coeff;
 vr = tw;
 fc = tfc;
 
-function [vr,fc] = pie(vec,dis,coeff);
+function [vr,fc] = pie(vec,dis,coeff)
 vec = makeunit(vec)*coeff;
 
 ang = angle(vec(1,:),vec(2,:));
@@ -790,23 +796,22 @@ fc(:,3) = fc(:,2)+1;
 
 
 
-function r = angle(m1,m2)
-
-dotp = diag(m1*m2');
-
-mag1 = sqrt(diag(m1*m1'));
-mag2 = sqrt(diag(m2*m2'));
-
-r = acos(dotp./(mag1.*mag2));
-
-r = r*180;
-r = r/pi;
-
-
+% function r = angle(m1,m2)
+% 
+% dotp = diag(m1*m2');
+% 
+% mag1 = sqrt(diag(m1*m1'));
+% mag2 = sqrt(diag(m2*m2'));
+% 
+% r = acos(dotp./(mag1.*mag2));
+% 
+% r = r*180;
+% r = r/pi;
 
 
 
-function [vr,fc,cdata] = orientation(ort,dis,rdis,coeff);
+
+function [vr,fc,cdata] = orientation(ort,dis,rdis,coeff)
 
 
 
@@ -839,17 +844,6 @@ cdata3(:,:,2) = zeros(1,length(f3(:,1)));
 cdata = [cdata1,cdata2,cdata3];
 
 
-function r = angle(m1,m2)
-
-dotp = diag(m1*m2');
-
-mag1 = sqrt(diag(m1*m1'));
-mag2 = sqrt(diag(m2*m2'));
-
-r = acos(dotp./(mag1.*mag2));
-
-r = r*180;
-r = r/pi;
 
 function [vr,fc] = skeleton(ac,coeff)
 

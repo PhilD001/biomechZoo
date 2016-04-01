@@ -1,9 +1,11 @@
 function ndata = resamp_nofilter(data,factor)
 
-% resamp_nofilter takes column vector of any length and normalizes it
-% according to factor
+% ndata = resamp_nofilter(data,factor) takes column vector of any length and 
+% normalizes it according to factor
 %
-% ndata = resamp_nofilter(data,ndatalength)
+% NOTES
+% - normalizeline is the same code. This will be depreciated in future
+%   releases
 %
 % ARGUMENTS
 %   data      ...  column vector

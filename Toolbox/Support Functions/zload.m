@@ -4,5 +4,10 @@ function data = zload(fl)
 %
 % Created by Philippe C. Dixon January 2012
 
+
+if ~exist(fl,'file')
+    error(['file :',fl,' does not exist'])
+end
+
  data = load(fl,'-mat');
  data = data.data;

@@ -1,5 +1,14 @@
-
 function buttondown
+
+% BUTTONDOWN controls behavior of button clicks in ensembler
+%
+
+% Created by JJ Loh 2006
+%
+% Updated bu Philippe C. Dixon March 2016
+% - improved behavior for ensembled lines
+% - improved contrast of selected line
+
 hnd = gcbo;
 
 switch get(gcf,'selectiontype')
@@ -27,22 +36,42 @@ switch get(gcf,'selectiontype')
         if ischar(get(gcbo,'userdata'))
             txt = findensobj('prompt',gcf);
             set(txt,'string',get(gcbo,'userdata'));
-            set(findobj('string','\diamondsuit'),'color',[1 0 0]); % set back to red
-            set(findobj('type','line'),'color',[0 0 0]); % set back to red
             
-            ax = findobj(gcf,'type','axes');
-            for i = 1:length(ax)
+            if isempty(strfind(get(gcbo,'userdata'),'average_'))
+                set(findobj('string','\diamondsuit'),'color',[1 0 0]); % set back to red
                 
-                if ~isin( get(ax(i),'tag'),'legend')  
-                    set(findobj(ax(i),'type','hggroup'),'LineStyle','-')
+
+                lns = findobj(gca,'type','line','linestyle','-');
+                lns = setdiff(lns,gcbo);
+                
+                if isempty(lns)
+                    return
+                end
+                ln = lns(1);
+                normalWidth = get(ln,'LineWidth');
+                normalColor = get(ln,'Color');
+                normalStyle = get(ln,'LineStyle');
+                
+                % reset all lines
+                set(findobj('type','line','ButtonDownFcn','ensembler(''buttondown'')'),...
+                            'color',normalColor,'LineWidth',normalWidth,...
+                            'LineStyle',normalStyle); % set back to oroginal
+                %set(findobj('type','line','MarkerSize',6),'color',[0 0 0])
+                ax = findobj(gcf,'type','axes');
+                for i = 1:length(ax)
+                    
+                    if ~isin( get(ax(i),'tag'),'legend')
+                        set(findobj(ax(i),'type','hggroup'),'LineStyle','-')
+                    end
+                    
                 end
                 
-            end
-            
-            if ~isin(get(hnd,'type'),'hggroup')
-                set(gcbo,'color',[0 0 .98])
-            else
-                set(gcbo,'LineStyle',':')
+                if ~isin(get(hnd,'type'),'hggroup')
+                    set(gcbo,'color',[0 0 .98],'LineWidth',2,'LineStyle','--')
+                else
+                    set(gcbo,'LineStyle',':')
+                end
+                
             end
             
         elseif isnumeric(get(gcbo,'userdata'));

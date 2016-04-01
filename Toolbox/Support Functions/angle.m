@@ -7,7 +7,8 @@ function r = angle(m1,m2,ref)
 % ARGUMENTS    
 %  m1    ...      1st nx3 vector
 %  m2    ...      2nd nx3 vector
-%  ref   ...      string: 'deg' for degrees or 'rad' for radians. Default is degrees.
+%  ref   ...      string: 'deg' for degrees or 'rad' for radians. 
+%                 Default is degrees.
 %
 % OUTPUTS
 %  r    ...       angle 

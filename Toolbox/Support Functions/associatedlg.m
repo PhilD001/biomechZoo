@@ -1,13 +1,18 @@
 function r = associatedlg(action,fld1,fld2)
 
 % Main dialog box interface used by ensembler
+%
+% Created by JJ Loh 2006
+%
+% Updated by Philippe C. Dixon March 2016
+% - improved sizing (larger fonts and box)
 
 
 % Set Parameters
 FigColor =  [.8 .8 .8];
 BgColor = [0 0 0];
 FgColor = [1 1 0];   % original [1 1 0]
-
+Settings.FontSize = 14;
 
 if iscell(action)
     if nargin ==3
@@ -19,27 +24,39 @@ if iscell(action)
     fld1 = action;    
     action = 'start';
 end
+
 switch action
+    
     case 'start'
         ss = screensize('centimeters');
         midpt = ss(3:4)/2;
-        fsize = [18 10];
-        spos = [.1 .1 5 9.8];
-        asize = [5 10];
+        fsize = [24 12];            % total figure
+        spos = [.1 .1 6 9.8];
+        asize = [8 10];             % middle
         okbutt = [.1 .5 1 1];
+        but = [0.7 0.7]; % arrow button size
         fig = figure('units','centimeter','position',[midpt(1)-fsize(1)/2 midpt(2)-fsize(2)/2 fsize(1) fsize(2)],'color',FigColor,...
                      'menubar','none','name','associate','closerequestfcn','associatedlg(''exit'')','numbertitle','off','name',nm);
-        uicontrol('style','listbox','units','centimeter','position',spos,'tag','source1','string',fld1,'backgroundcolor',BgColor,'foregroundcolor',FgColor);
+        uicontrol('style','listbox','units','centimeter','position',spos,'tag','source1',...
+                  'string',fld1,'backgroundcolor',BgColor,'foregroundcolor',FgColor,'FontSize',Settings.FontSize);
         uicontrol('style','listbox','units','centimeter','position',[fsize(1)-spos(1)-spos(3) spos(2) spos(3:4) ],...
-            'tag','source2','string',fld2,'backgroundcolor',BgColor,'foregroundcolor',[0 1 0]);
-        uicontrol('style','pushbutton','units','centimeters','position',[spos(1)+spos(3)+.2,fsize(2)/2-.25 .5 .5],'string','>>','callback','associatedlg(''transfer'')','tag','source1');
-        uicontrol('style','pushbutton','units','centimeters','position',[fsize(1)-spos(1)-spos(3)-.2-.5,fsize(2)/2-.25 .5 .5],'string','<<','callback','associatedlg(''transfer'')','tag','source2');
-        ax = axes('parent',fig,'units','centimeters','position',[fsize(1)/2-asize(1)/2 0 asize],'box','on','xtick',[],'ytick',[],'box','on','tag','mainaxes',...            
-            'ylim',[-fsize(2)/2 fsize(2)/2],'xlim',[-1 1],'color',[0 0 0],'buttondownfcn','associatedlg(''buttondown'')');
-        ok = uicontrol('style','pushbutton','units','centimeters','position',[fsize(1)-spos(1)-spos(3)-okbutt(1)-okbutt(3) okbutt(2:4)],'callback','delete(gcbo)','tag','ok','string','OK');
-        vr = [-1 -.25;1 -.25;1 .25;-1 .25];
+                  'tag','source2','string',fld2,'backgroundcolor',BgColor,'foregroundcolor',[0 1 0],'FontSize',Settings.FontSize);
+        uicontrol('style','pushbutton','units','centimeters','position',[spos(1)+spos(3)+0.2 fsize(2)/2-.25 but],...
+                  'string','>>','callback','associatedlg(''transfer'')','tag','source1');
+        uicontrol('style','pushbutton','units','centimeters','position',[fsize(1)-spos(1)-spos(3)-0.2-0.7,fsize(2)/2-.25 but],...
+                  'string','<<','callback','associatedlg(''transfer'')','tag','source2');
+        ax = axes('parent',fig,'units','centimeters','position',[fsize(1)/2-asize(1)/2 0 asize],'box','on',...
+                  'xtick',[],'ytick',[],'box','on','tag','mainaxes','ylim',[-fsize(2)/2 fsize(2)/2],'xlim',[-1 1],...
+                  'color',[0 0 0],'buttondownfcn','associatedlg(''buttondown'')');
+        ok = uicontrol('style','pushbutton','units','centimeters','position',...
+                       [fsize(1)-spos(1)-spos(3)-okbutt(1)-okbutt(3) okbutt(2:4)],'callback','delete(gcbo)','tag','ok','string','OK');
+%         auto = uicontrol('style','pushbutton','units','centimeters','position',...
+%                          [fsize(1)-spos(1)-spos(3) okbutt(2:4)],'callback','delete(gcbo)','tag','ok','string','OK');
+
+        vr = [-1 -.3;1 -.3;1 .25;-1 .25];
         fc = [1 2 3 4];
-        patch('parent',ax,'tag','target','vertices',vr,'faces',fc,'edgecolor',[1 0 0],'facecolor','none','buttondownfcn','associatedlg(''buttondown'')');
+        patch('parent',ax,'tag','target','vertices',vr,'faces',fc,'edgecolor',[1 0 0],...
+              'facecolor','none','buttondownfcn','associatedlg(''buttondown'')');
         waitfor(ok)
         r = gatherdata;
         delete(gcf);
@@ -63,7 +80,7 @@ switch action
             case 'source2'
                 cel{2} = el;
         end
-        setelement(cel);
+        setelement(cel,Settings);
         recenter;
         nextposition;
         set(srlist,'value',vl);
@@ -88,13 +105,21 @@ r = targetelementhandle;
 r{1} = get(r{1},'string');
 r{2} = get(r{2},'string');
 
-function setelement(cl)
+function setelement(cl,Settings)
 hnd = targetelementhandle;
 if isempty(hnd{1})
     hnd = createelement;
 end
+
+s = fieldnames(Settings);
+
 set(hnd{1},'string',cl{1});
 set(hnd{2},'string',cl{2});
+
+for i = 1:length(s)
+    set(hnd{1},s{i},Settings.(s{i}));
+    set(hnd{2},s{i},Settings.(s{i}));
+end
 
 function r = targetelementhandle
 trg = findobj(gcf,'type','patch','tag','target');
@@ -123,12 +148,20 @@ txt = txt(indx);
 r = {findobj(txt,'horizontalalignment','right'),findobj(txt,'horizontalalignment','left')};
 
 function adjustelements
+
 txt = findobj(gcf,'type','text','tag','elements');
+
 if isempty(txt)
     return
 end
 trg = targetelementhandle;
-txt = setdiff(txt,cell2mat(trg));
+
+if verLessThan('matlab','8.4.0')         % execute code for R2014a or earlier
+    txt = setdiff(txt,cell2mat(trg));
+else                                     % execute code for R2014b or later
+    
+end
+
    
 if isempty(txt)
     return

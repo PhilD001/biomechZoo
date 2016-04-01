@@ -84,24 +84,8 @@ function evalFile = eventval(varargin)
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+% More info: type 'zooinfo' in the command prompt
 
 
 tic  % start calculation timer
@@ -137,8 +121,7 @@ for i = 1:2:nargin
         case 'ext'
             ext = varargin{i+1};
         case 'excelserver'
-            excelserver = varargin{i+1};
-            
+            excelserver = varargin{i+1};         
     end
 end
 
@@ -211,6 +194,7 @@ else
     jfl = engine('path',p,'search path','poi_library','extension','.jar');
     
     for i = 1:length(jfl)
+        batchdisplay(jfl{i},'adding java')
         javaaddpath(jfl{i});
     end
 end
@@ -291,14 +275,12 @@ end
 
 % Load anthro events
 %
-if isempty(anthroevts) && isfield(data.zoosystem,'Anthro')
+if ismember('none',anthroevts)
+    anthroevtnames = {};
+elseif isempty(anthroevts) 
     aev = fieldnames(data.zoosystem.Anthro);
     anthroevtnames = listdlg('liststring',aev,'name','anthro events','ListSize',[300 300]);
     anthroevtnames = aev(anthroevtnames);
-    
-elseif ismember('none',anthroevts)
-    anthroevtnames = {};
-    
 else
     anthroevtnames = anthroevts;
 end

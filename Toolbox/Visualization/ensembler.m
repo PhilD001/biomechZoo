@@ -97,27 +97,16 @@ function ensembler(action)
 % - Moved all embedded functions in main ensembler code to stand-alone
 %   functions now found in ~\Visualization\ensembler support functions
 % - removed relative phase functionality
+%
+% Updated by Philippe C. Dixon March 2016
+% - new GUI controls for font size (increase or decrease), editing of figure name
+% - improved buttondown behavior
+% - improved associate dialog box
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+% More info: type 'zooinfo' in the command prompt
 
 
 % ================= BEGIN SETUP ======================================
@@ -224,13 +213,24 @@ switch action
         lg = findobj(gcf,'type','axes','tag','legend');
         ax = setdiff(ax,lg);
         
-        tg = get(findobj(ax,'type','hggroup'),'tag');
+        if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
+            tg = get(findobj(ax,'type','hggroup'),'tag');
+        else
+            tg = get(findobj('type','bar'),'tag');
+        end
+        
         tg = setdiff(tg,'ebar');
         
         a = associatedlg(tg,{'b','r','g','c','m','k','y','dg','pu','db','lb'});
         
         for i = 1:length(a(:,1))
-            br = findobj(ax,'type','hggroup','tag',a{i,1});
+            
+            if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier   
+                br = findobj(ax,'type','hggroup','tag',a{i,1});
+            else
+                br = findobj(ax,'type','bar','tag',a{i,1});
+            end
+            
             
             if length(a{i,2})==1
                 set(br,'FaceColor',a{i,2});
@@ -267,6 +267,7 @@ switch action
         
     case 'clear outliers'
         clear999outliers
+        resize_ensembler
         
     case 'clear all'
         lg = findobj('type','axes','tag','legend');
@@ -290,6 +291,18 @@ switch action
         pmt = findobj('tag','prompt');
         set(pmt,'String','')
         
+        % remove existing legend
+        %
+        if verLessThan('matlab','8.4.0')
+            lhnd = findobj(gcf,'type','axes','tag','legend');
+        else
+            lhnd = findobj(gcf,'type','legend');
+        end
+        
+        if ~isempty(lhnd)
+            delete(lhnd)
+            return
+        end        
         % reset xaxis label
         %
         for i = 1:length(ax)
@@ -326,14 +339,21 @@ switch action
             end
         end
         
+    case 'clear prompt'
+        prmt = findobj('Tag','prompt');
+
+        if ~isempty(prmt)
+          set(prmt,'string','')
+        end
+        
     case 'combine'
-        combine;
+        combine
         
-    case 'combine_within'
+    case 'combine all'
+        combine_all
+        
+    case 'combine within'
         combine_within
-        
-    case 'combine custom'
-        combine_custom
         
     case 'counttrials'
         counttrials
@@ -343,6 +363,15 @@ switch action
         
     case 'coupling angles'
         coupling_angles(fld)
+        
+    case 'custom'
+        prompt={'Enter the name of your processing m-file: '};
+        defaultanswer = {'bmech_'};
+        custom_function = inputdlg(prompt,'axis title',1,defaultanswer);
+        custom_function = custom_function{1};
+        run(custom_function)
+        update_ensembler_lines(p,f,fld)
+
         
     case 'datacursormode off'
         datacursormode off
@@ -477,6 +506,12 @@ switch action
     case 'horizontal line'
         horline
         
+    case 'increase fonts'
+        font_change('increase')
+        
+    case 'decrease fonts'
+        font_change('decrease')
+        
     case 'vertical line'
         verline
         
@@ -484,10 +519,92 @@ switch action
         keypress_ensembler;
         
     case 'legend'
+        prmt = findobj('Tag','prompt');
+        
+        if ~isempty(prmt)
+            delete(prmt)
+        end
         
         % remove existing legend
         %
-        lhnd = findobj(gcf,'type','axes','tag','legend');
+        if verLessThan('matlab','8.4.0')
+            lhnd = findobj(gcf,'type','axes','tag','legend');
+        else
+            lhnd = findobj(gcf,'type','legend');
+        end
+        
+        if ~isempty(lhnd)
+            delete(lhnd)
+            return
+        end
+        
+        ax = findobj(gcf,'type','axes');% find existing axes
+        lnOther = findobj(ax(1),'type','line','UserData',[]);  % get lines
+       
+        if verLessThan('matlab','8.4.0')
+            lnAll =  findobj(ax(1),'type','line');
+            ln = setdiff(lnAll,lnOther);
+            barr = flipud(findobj(ax(1),'type','hggroup','ShowBaseLine','on'));
+        else
+            lnAll =  findobj(ax(1),'type','line');
+            ln = setdiff(lnAll,lnOther);
+            barr = flipud(findobj(ax(1),'type','bar'));
+        end
+        
+        if ~isempty(ln)
+            tg = cell(size(ln));
+            for i = 1:length(ln)
+                tg{i} = get(ln(i),'Tag');
+            end
+                        
+        else
+            tg = cell(size(barr));
+            for i = 1:length(barr)
+                tg{i} = get(barr(i),'Tag');
+            end
+        end
+        
+        rg = 1:1:length(tg);
+        a = associatedlg(tg,{rg});
+        val = a(:,1);
+        
+        hnd = zeros(length(val),1);
+        for i = 1:length(val)
+            if ~isempty(barr)
+                hnd(i) = findobj(ax(1),'tag',val{i});
+            else
+                hnd(i) = findobj(ax(1),'tag',val{i},'type','line');
+            end
+        end
+        
+        % display order
+        indx = zeros(length(a),1);
+        
+        for i = 1:length(val)
+            indx(i) = str2double(a{i,2});
+        end
+        
+        val = val(indx);
+        hnd = hnd(indx);
+        
+        legend(hnd,val,'interpreter','none');
+        
+    case 'legend within'
+        
+        prmt = findobj('Tag','prompt');
+
+        if ~isempty(prmt)
+            delete(prmt)
+        end
+        
+        % remove existing legend
+        %
+        if verLessThan('matlab','8.4.0')
+            lhnd = findobj(gcf,'type','axes','tag','legend');
+        else
+            lhnd = findobj(gcf,'type','legend');
+        end
+        
         if ~isempty(lhnd)
             delete(lhnd)
             return
@@ -497,45 +614,30 @@ switch action
         %
         ax = findobj(gcf,'type','axes');
         
-        % determine if we have lines or bar graphs
+        % find lines
         %
-        ln = findobj(ax(1),'type','line','UserData','average_line');
-        bar = flipud(findobj(ax(1),'type','hggroup','ShowBaseLine','on'));
+        ln = findobj(ax(1),'type','line');
+        badln = findobj(ax(1),'type','line','tag','hline');
+        ln = setdiff(ln,badln);
+        userData = get(ln(1),'UserData');
         
-        if ~isempty(ln)
-            tg = cell(size(ln));
-            
+        if ~isempty(strfind(userData,'average_line'));
+            tg = cell(length(ln),1);
             for i = 1:length(ln)
-                tg{i} = get(ln(i),'Tag');
+                ud = get(ln(i),'UserData');
+                ud = strrep(ud,'average_line ','');
+                tg{i} = ud;
             end
-            
-            hnd = ln;
-            
-        else
-            tg = cell(size(bar));
-            
-            for i = 1:length(bar)
-                tg{i} = get(bar(i),'Tag');
-            end
-            
-            hnd = bar;
         end
         
         rg = 1:1:length(tg);
-        
         a = associatedlg(tg,{rg});
         val = a(:,1);
         
         hnd = zeros(length(val),1);
+       
         for i = 1:length(val)
-            
-            if ~isempty(bar)
-                hnd(i) = findobj(ax(1),'tag',val{i});
-                
-            else
-                hnd(i) = findobj(ax(1),'tag',val{i},'type','line');
-            end
-            
+            hnd(i) = findobj(ax(1),'userdata',['average_line ',val{i}],'type','line');
         end
         
         
@@ -543,7 +645,7 @@ switch action
         indx = zeros(length(a),1);
         
         for i = 1:length(val)
-            indx(i) = str2num(a{i,2});
+            indx(i) = str2double(a{i,2});
         end
         
         val = val(indx);
@@ -551,7 +653,7 @@ switch action
         
         legend(hnd,val,'interpreter','none');
         
-    case 'linestyle'
+    case 'line style'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'-','--',':','-.','none'});
@@ -560,7 +662,7 @@ switch action
             set(ln,'linestyle',a{i,2});
         end
         
-    case 'linestyle_within'
+    case 'line style within'
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'-','--',':','-.','none'});
@@ -570,7 +672,7 @@ switch action
             set(ln,'linestyle',a{i,2});
         end
         
-    case 'linewidth'
+    case 'line width'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'.5','1','1.5','2','2.5','3'});
@@ -579,7 +681,7 @@ switch action
             set(ln,'linewidth',str2double(a{i,2}));
         end
                 
-    case 'linecolor'
+    case 'line color'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'b','r','g','c','m','k','y','dg','pu','db','lb'});
@@ -612,7 +714,7 @@ switch action
             end
         end
         
-    case 'linecolor_within'
+    case 'line color within'
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'b','r','g','c','m','k'});
@@ -639,7 +741,7 @@ switch action
         zoom out
         cd(p)
         
-    case 'makebar'
+    case 'bar graph'
         makebar
         
     case 'normative PiG Kinematics'
@@ -656,9 +758,9 @@ switch action
         
     case 'normalize'
         prompt={'Enter your desired data length: '};
-        defaultanswer = {'100'};
+        defaultanswer = {'101'};
         datalength = str2double(inputdlg(prompt,'axis title',1,defaultanswer));
-        ensembler_normalize(fld,datalength)
+        bmech_normalize(fld,datalength)
         
         update_ensembler_lines(p,f,fld)
         
@@ -711,6 +813,9 @@ switch action
         
     case 'save fig'
         filemenufcn(gcbf,'FileSaveAs')
+        
+    case 'sig diff star'
+        sigdiff
         
     case 'stdcolor'
         tg = get(findobj(gcf,'type','patch'),'tag');
@@ -930,8 +1035,9 @@ switch action
         prompt = {'Enter new search string'};
         name = 'Search string';
         numline = 1;
-        defaultanswer = {get(gcf,'name')};
-        sstr=inputdlg(prompt,name,numline,defaultanswer);
+        %defaultanswer = {get(gcf,'name')};
+        defaultanswer = strjoin(get(findobj('type','figure'),'name'),' ');       
+        sstr=inputdlg(prompt,name,numline,{defaultanswer});
         sstr = cell2mat(sstr);
         sstr_cell = partitionname(sstr);  % PD update
         

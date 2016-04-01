@@ -11,8 +11,6 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 %  lg         ...  create legend 0: no, 1: yes
 %  type       ... 'standard' or 'special'. If special, first two bars are
 %                 separated from the rest
-%
-%
 % NOTES:
 % - this is an ensembler standalone function. It may not work well outside of the
 %   ensembler needs
@@ -36,29 +34,31 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 % - improved ability to deal with colors
 %
 % Updated by Philippe C. Dixon June 2015
-% - uses the function 'distinguishable_colors' to choose 
+% - uses the function 'distinguishable_colors' to choose
 %   maximally distinct colors using the default mode
+%
+% Updated by Philippe C. Dixon March 2016
+% - compatible with r2014b +
 
 
-
-% Part of the Zoosystem Biomechanics Toolbox 
+% Part of the Zoosystem Biomechanics Toolbox
 %
 % Main contributors:
 % Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
 % Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
 % JJ Loh, Medicus Corda. Montreal, Canada.
-% 
-% Contact: 
+%
+% Contact:
 % philippe.dixon@gmail.com
 %
-% Web: 
+% Web:
 % https://github.com/PhilD001/the-zoosystem
 %
 % Referencing:
 % please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
 
@@ -67,7 +67,7 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 barval = makecolumn(barval)';
 [r,c] = size(barval);
 
-[r_col,c_col] = size(colors);
+[r_col,~] = size(colors);
 
 
 if r~=1
@@ -76,12 +76,34 @@ end
 
 
 
+% y = [4.2; 4.6; 5];                  %The data.
+% fHand = figure;
+% aHand = axes('parent', fHand);
+% hold(aHand, 'on')
+% colors = hsv(numel(y));
+% for i = 1:numel(y)
+%     bar(i, y(i), 'parent', aHand, 'facecolor', colors(i,:));
+% end
+
+
 %--CREATE BAR GRAPH-------------------------------------------------
 %
 z = zeros(r,c);
 barvals = [barval; z];
 
-h = bar(barvals,0.9,'grouped');
+if verLessThan('matlab','8.4.0')
+    h = bar(barvals,0.9,'grouped');
+    
+else
+    barvals = barvals(1,:);
+    x = 1:1:length(barvals);
+    h = zeros(length(barvals),1);
+    for i = 1:length(barvals)
+        h(i) = bar(x(i), barvals(i));
+    end
+    
+    
+end
 
 for i = 1:length(h)
     set(h(i),'tag',conditions{i})
@@ -90,43 +112,47 @@ for i = 1:length(h)
 end
 
 
+
 %---SET COLORS-------------------------------------------------------
-%    
-if ~isequal(colors(1,:),colors(2,:)) && r_col==c
-    
-    for i = 1:c
-        set(h(i),'facecolor',colors(i,:))           % use color codes
-    end
-    
-else
-    
+%
+if isequal(colors(1,:),colors(2,:)) && r_col==c
     disp('using default colors')
     n_colors = length(barvals);
-    bg = {'w','k'}; % don't use black or white
-    colors = distinguishable_colors(n_colors,bg);
+    
+    if verLessThan('matlab','8.4.0')
+        bg = {'w','k'}; % don't use black or white
+        colors = distinguishable_colors(n_colors,bg);
+    else
+        colors = [1 0 0; 0 0 1; 1 1 0; 1 0 1;0 1 1;0 1 0;0 0 0];  % put more if needed
         
-    for i = 1:c
-        set(h(i),'facecolor',colors(i,:))           % use color codes
+        if n_colors > length(colors)
+            error('add more colors to matrix')
+        end
+        
+        colors = colors(1:n_colors,:);
     end
     
-    
 end
-    
 
+for i = 1:c
+    set(h(i),'facecolor',colors(i,:))           % use color codes
+end
 
 
 %---GET POSITION OF MIDDLE OF BAR GRAPHS------------------------------
 %
-bhnd = findobj(ax,'type','patch');
-bars = findobj('type','hggroup');
-x = zeros(length(bhnd),1);
-
-for i = 1:length(bhnd)
-    xdata =  get(bhnd(i),'XData');
-    x(i) = mean(xdata([1,4],1));
+if verLessThan('matlab','8.4.0')
+    bhnd = findobj(ax,'type','patch');
+    x = zeros(length(bhnd),1);
+    
+    for i = 1:length(bhnd)
+        xdata =  get(bhnd(i),'XData');
+        x(i) = mean(xdata([1,4],1));
+    end
+    
+    x = sort(x);
 end
 
-x = sort(x);
 
 
 

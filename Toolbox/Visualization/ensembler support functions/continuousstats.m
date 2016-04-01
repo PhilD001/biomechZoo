@@ -3,6 +3,10 @@ function continuousstats(fld,check)
 % CONTINUOUSSTATS is a standalong function to perform Bootstrap analysis
 % on curve data within ensembler
 
+% Updated by Philippe C. Dixn March 2016
+% - fixed compatibility issues with r2014b and above (ln 65-76)
+
+
 resize_ensembler   % if there are blank 'x' data continuous stats will fail
 
 ax = findobj('type','axes');
@@ -57,11 +61,17 @@ if isempty(check)
     colormap(jet(200));  %uses the jet color map with smooth color changes
     
     dummyax = axes('units','inches','position',[10,1,1,1],'Visible','off');
-    cbar = colorbar('peer',dummyax,'location','NorthOutside');
     
-    % caxis([0 maxval]); % if you want xticks
-    set(cbar,'XTickLabel',[]) % for no xticks
-    set(cbar,'YTickLabel',[])
+     if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
+        cbar = colorbar('peer',dummyax,'location','NorthOutside');
+        set(cbar,'XTickLabel',[])
+        set(cbar,'YTickLabel',[])
+    else
+        cbar = colorbar('location','NorthOutside');
+        set(cbar,'YTickLabel',[])
+        set(cbar,'TickLabels',[])
+    end
+    
     %--textbox containing info----
     
     tx = {'A','B','C','D','E','F','G','H'};

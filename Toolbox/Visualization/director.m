@@ -1,14 +1,14 @@
 function director(action,varargin)
 
-% Director is a three-dimensional virtual environment that can be used to 
-% visualize motion capture data within MatLab. Current version is able to read 
+% Director is a three-dimensional virtual environment that can be used to
+% visualize motion capture data within MatLab. Current version is able to read
 % files in which standard Plug-in Gait (lower or full) marker set is used
 %
-% 
+%
 % NOTES
 % - If trials contain force plate data, force plates and ground reaction
 %   force vectors (for up to three plates) will appear in the virual space
-% 
+%
 % - Additional objects ('props') can be loaded (see 'cinema objects' sub-folder
 %   of 'Visualization' folder. Limited functionality currently exists for
 %   these additional objects.  User is encouraged to modify or add objects
@@ -16,14 +16,14 @@ function director(action,varargin)
 
 
 % Revision History
-% 
+%
 % Created by JJ Loh 2005-2007
 %
 % Updated by Yannick Michaud-Paquette 2013-2014
 % - Major improvements to GUI including improved graphing capabilities and the slide bar
 %
 % Updated by Philippe C. Dixon February 2014
-% - Any data can be graphed (Video or Analog). 
+% - Any data can be graphed (Video or Analog).
 % - Except for CentreOfMass, markers are expected to be less than 6 characters long
 % - Force plate COP and GRF vectors fully functiona
 % - Full compatibility with zoosystem v1.2 (no backwards compatibility)
@@ -34,36 +34,23 @@ function director(action,varargin)
 % - Further compatibility with mac platforms added
 
 % Updated by JJ Loh and Philippe C. Dixon May 2015
-% - Subjects with footwear can be visualized in director. So far the only footwear type 
+% - Subjects with footwear can be visualized in director. So far the only footwear type
 %   is 'skates'. Subjects with the field data.zoosystem.Anthro.Feet = 'skates' will be
 %   rendered wearing 'skates' props (found in ~\the zoosystem\Toolbox\Visualization\Cinema objects\skate)
-%   The function bmech_footwear should be run to record the footwear type in the zoo file. 
+%   The function bmech_footwear should be run to record the footwear type in the zoo file.
 %   Alternatively, the user can add the following code in the 'loadfile' function embedded
 %   in 'marker.m' after the loading section (near line 125): data.zoosystem.Anthro.Feet = 'skates'
 %   The handling of the prop is performed in the embedded function 'skate'
 %   of 'props.m'.
 % - New footwear types can be created by following this example
+%
+% Updated by Philippe C. Dixon March 2016
+% - fixed bug with slider mark not updating graph mark (*)
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+% More info: type 'zooinfo' in the command prompt
 
 global producer;
 global p;
@@ -82,7 +69,7 @@ switch action
         if ~isempty(finddobj('figure'))
             delete(findobj('type','figure','tag','space'));
         end
-       
+        
         fig = figure('tag','space','color',[0 0 0],'name','director',...
             'menubar','none','numbertitle','off','keypressfcn','dkeypress',...
             'buttondownfcn','director(''buttondown'')','doublebuffer','on','units','centimeters','resizefcn','director(''resize'')','position',[2 2 30 18]);
@@ -181,14 +168,17 @@ switch action
         ax = finddobj('axes');
         delete(findobj(ax,'type','patch'));
         delete(findobj(ax,'type','surface'));
-            
+        
     case 'delete graph'
         
         set(findobj('type','uicontrol','tag','data list'),'Visible','off');
         set(findobj('type','axes','tag','data display'),'Visible','off');
         ln = get(findobj('type','axes','tag','data display'),'Children');
-        delete(ln);
-        delete(findobj('tag','graph legend'));
+        
+        if~isempty(ln)
+            delete(ln);
+            delete(findobj('tag','graph legend'));
+        end
         uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[.1 .1 .1],'foregroundcolor',[1 1 1],...
             'tag','open graph','position',[3.5 .7 3 .5],'string','Open Graph','callback','director(''open graph'')','Visible','on');
         set(findobj('tag','delete graph'),'Visible','off');
@@ -201,12 +191,13 @@ switch action
         set(findobj('tag','delete graph'),'Visible','on');
         
     case 'open'
-         
+        
+        director('clear all objects')
         director('load bones');       % loads the bone props
-
+        
         [f,p] = uigetfile('*.*','Pick a file');   % default is c3d or zoo file
         cd(p);
-
+        
         if f == 0
             return
         end
@@ -214,6 +205,9 @@ switch action
         ext = extension(f);
         hnd = [];
         delete(finddobj('graph'));
+        
+        set(findobj('tag','open graph'),'Visible','off');
+        
         
         switch lower(ext)
             
@@ -225,7 +219,7 @@ switch action
                 else
                     data = marker('load c3d',[p,f]);
                 end
-                   
+                
                 video_chns = data.zoosystem.Video.Channels;
                 all_chns = setdiff(fieldnames(data),'zoosystem');
                 
@@ -269,9 +263,9 @@ switch action
                 lightman('load',[p,f]);
             case '.prop'
                 props('load',[p,f]);
-%             case '.c3d'                  % original code
-%                 marker('load c3d',[p,f]);  
-
+                %             case '.c3d'                  % original code
+                %                 marker('load c3d',[p,f]);
+                
             case '.z3d'
                 marker('load z3d',[p,f]);
         end
@@ -318,8 +312,15 @@ switch action
         ax = finddobj('orientation window');
         fpos = get(fig,'position');
         apos = get(ax,'position');
-        apos(1) = fpos(3)-apos(3);
-        apos(2) = fpos(4)-apos(4);
+        
+        if isempty(apos)
+            apos(1) = fpos(3);
+            apos(2) = fpos(4);
+        else
+            apos(1) = fpos(3)-apos(3);
+            apos(2) = fpos(4)-apos(4);
+        end
+        
         set(ax,'position',apos);
         
     case 'reload markers'
@@ -328,7 +329,7 @@ switch action
         
     case 'load bones'
         s = filesep;    % determine slash direction based on computer type
-
+        
         d = which('director'); % returns path to ensemlber
         path = pathname(d) ;  % local folder where director resides
         
@@ -336,7 +337,7 @@ switch action
         openall(bones);
         
         director('first position');
-            
+        
     case 'multi open'
         
         fld = uigetfolder;
@@ -412,7 +413,7 @@ switch action
         
         set(pt,'label',cblb);
         menu(cblb);
-         
+        
     case 'contextmenu'
         
         delete(get(gcbo,'children'));
@@ -458,9 +459,7 @@ switch action
         hnd = finddobj('frame');
         
         flength = length(data.zoosystem.Video.Indx);
-        VideoFreq = data.zoosystem.Video.Freq;
-        AnalogFreq = data.zoosystem.Analog.Freq;
-        av_ratio = AnalogFreq/VideoFreq;
+        av_ratio = data.zoosystem.AVR;
         
         set(findobj('type','uicontrol','tag','button stop'),'visible','on');
         
@@ -474,21 +473,21 @@ switch action
                 producer.cut = 1;
                 set(findobj('tag','button stop'),'visible','off');
             end
-                        
+            
         end
         
         set(finddobj('top menu'),'enable','on');
         set(gcf,'name','director');
         
     case 'slider'
-        
         index = round(get(findobj('tag','slider'),'Value'));
         hnd = finddobj('frame');
         set(hnd,'string',num2str(index));
-        mark('goto',index);
+        flength = length(data.zoosystem.Video.Indx);
+        av_ratio = data.zoosystem.AVR;
+        mark('goto',index,av_ratio,flength);
         
     case 'action'
-        
         producer.cut = 0;
         set(finddobj('top menu'),'enable','off');
         set(gcbo,'label',' cut  ','callback','director(''cut'')','enable','on');
@@ -511,22 +510,18 @@ switch action
         set(finddobj('top menu'),'enable','on');
         
     case 'cut'
-        
         set(gcbo,'label','action','callback','director(''action'')');
         producer.cut = 1;
         
     case 'preview cut'
-        
         set(gcbo,'label','practice','callback','director(''preview'')');
         producer.cut = 1;
         
     case 'button stop'
-        
         set(findobj('type','uicontrol','tag','button stop'),'visible','off');
         producer.cut = 1;
         
     case 'first position'
-        
         cameraman('new film');
         mark('goto',1);
         delete(findobj(finddobj('axes'),'tag','trace'));
@@ -536,19 +531,15 @@ switch action
         end
         
     case 'goto'
-        
         mark('goto',varargin{1});
         
     case 'next frame'
-        
         mark('next');
         
     case 'prev frame'
-        
         mark('prev');
         
     case 'cleanup'
-        
         set(gcf,'windowbuttondownfcn','');
         uic = findobj(gcf,'type','uicontextmenu');
         uic = setdiff(uic,finddobj('contextmenu'));
@@ -560,23 +551,18 @@ switch action
         set(finddobj('actor'),'buttondownfcn','actor(''buttondown'')');
         
     case 'next person'
-        
         nextperson(varargin{1});
         
     case 'next mark'
-        
         mark('next');
-   
-    case 'prev mark'
         
+    case 'prev mark'
         mark('prev');
         
     case 'refresh'
-        
         mark('refresh');
         
     case 'clean object';
-        
         [tp,hnd] = currentobject;
         switch tp
             case 'costume'
@@ -678,6 +664,14 @@ function graph_mark(frm,varargin)
 as = get(findobj('type','axes','tag','data display'),'Visible');
 ax = findobj('type','axes','tag','data display');
 
+if frm==1
+    star = findobj('Marker','*');
+    if ~isempty(star)
+        delete(star)
+        return
+    end
+end
+
 if strcmp(as,'on');
     delete(findobj('type','line','tag','ln frame'));
     ln = get(findobj('type','axes','tag','data display'),'Children');
@@ -688,19 +682,26 @@ if strcmp(as,'on');
         numframes = a{1};
         av_ratio = a{2};
         
+        if length(a)>2
+            numframes = a{3};
+        end
+        
         for i = 1:length(ln)
             c = get(ln(i),'Color');
             yd = get(ln(i),'ydata');
             
-            if length(yd)~=numframes
+            if length(yd)==numframes*av_ratio
                 frm = frm*av_ratio;
             end
             
-            line('parent',ax,'xdata',frm,'ydata',yd(frm),'Marker','*','MarkerSize',8,'tag','ln frame','color',c);
+            line('parent',ax,'xdata',frm,'ydata',yd(frm),'Marker','*',...
+                 'MarkerSize',8,'tag','ln frame','color',c,...
+                 'LineWidth',1.5);
             
         end 
     end
 end
+
 
 function menu(action)
 
@@ -879,7 +880,7 @@ switch tp
         tg = get(hnd,'tag');
         ud = get(target,'userdata');
         indx = find(strcmp(tg,ud.mname));
-        gunit = [1 0 0;0 1 0;0 0 1];
+        %gunit = [1 0 0;0 1 0;0 0 1];
         ud.mvertices(indx,:) = ud.mvertices(indx,:)+vec;
         set(target,'userdata',ud);
         props('goto',finddobj('frame','number'));
@@ -901,41 +902,41 @@ for i = 1:length(fl)
     end
 end
 
-function distributedata(fl,type)  % possibly obsolete
+% function distributedata(fl,type)  % possibly obsolete
+%
+% t = load(fl,'-mat');
+%
+% switch type
+%
+%     case 'zoo'
+%
+%         data = t.data;
+%         fld = setdiff(fieldnames(data),'zoosystem');
+%         cos = finddobj('costume');
+%         hd = findpart('all','head');
+%         for i = 1:length(fld)
+%             hnd = findobj(cos,'tag',fld{i});
+%             if ~isempty(hnd)
+%                 hud = get(hnd,'userdata');
+%                 if isfield(hud,'ydata')
+%                     hud.ydata = data.(fld{i}).line;
+%                     set(hnd,'userdata',hud);
+%                 end
+%             end
+%             insertcdata(hd,fld{i},data.(fld{i}).line);
+%         end
+% end
 
-t = load(fl,'-mat');
-
-switch type
-    
-    case 'zoo'
-        
-        data = t.data;
-        fld = setdiff(fieldnames(data),'zoosystem');
-        cos = finddobj('costume');
-        hd = findpart('all','head');
-        for i = 1:length(fld)
-            hnd = findobj(cos,'tag',fld{i});
-            if ~isempty(hnd)
-                hud = get(hnd,'userdata');
-                if isfield(hud,'ydata')
-                    hud.ydata = data.(fld{i}).line;
-                    set(hnd,'userdata',hud);
-                end
-            end
-            insertcdata(hd,fld{i},data.(fld{i}).line);
-        end
-end   
-
-function insertcdata(hd,fld,yd)
-
-for i = 1:length(hd)
-    hud = get(hd(i),'userdata');
-    if isfield(hud,'cdata');
-        if isfield(hud.cdata,fld);
-            hud.cdata.(fld).cdata = yd/max(yd);
-        end
-    end
-    set(hd(i),'userdata',hud);
-end
+% function insertcdata(hd,fld,yd)
+%
+% for i = 1:length(hd)
+%     hud = get(hd(i),'userdata');
+%     if isfield(hud,'cdata');
+%         if isfield(hud.cdata,fld);
+%             hud.cdata.(fld).cdata = yd/max(yd);
+%         end
+%     end
+%     set(hd(i),'userdata',hud);
+% end
 
 

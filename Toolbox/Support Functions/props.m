@@ -642,9 +642,11 @@ end
 ud.currentorientation = [1 0 0;0 1 0;0 0 1];
 ud.currentpredis = [0 0 0];
 ud.currentpostdis = [0 0 0];
+
 c = patch('parent',ax,'tag',tg,'facecolor','flat','edgecolor','none','buttondownfcn',...
     'props(''buttondown'')','vertices',ud.vertices,'faces',ud.faces,'cdata',cdata,'userdata',ud,...
     'FaceLighting','gouraud','createfcn','props(''createfcn'')','clipping','off','facevertexalphadata',1,'facealpha',.99);
+
 
 if isfield(ud,'vertexnormals');
     set(c,'vertexnormals',ud.vertexnormals);
@@ -1427,9 +1429,7 @@ fpch(cellfun(@isempty,fpch)) = [];
 
 if ~isempty(fpch)
     
-    P = GetFPLocalOriginDirector(zdata);
-    sp = fieldnames(P);
-    
+    P = GetFPLocalOriginDirector(zdata);    
     Or = GetFPGlobalOriginDirector(zdata);
     
     zdata = computecopDirector(zdata,P,Or,fpch);

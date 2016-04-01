@@ -1,5 +1,10 @@
 function resize_ensembler
 
+% resizes axes in enselbler figure
+
+
+extra = 1.05; % extra space multiplier yaxis
+
 ax = findobj('type','axes');
 legend = findobj('type','axes','tag','legend');
 ax = setdiff(ax,legend);
@@ -55,9 +60,14 @@ for a = 1:length(ax)
         y_max = max(max_ystk);
         y_min = min(max_ystk);
         
+        if verLessThan('matlab','8.4.0')
+            set(gca,'Xlim', [x_min-0.2*x_min x_max+0.2*x_max] )
+        else
+            set(gca,'Xlim', [x_min-0.7*x_min x_max+0.3*x_max] )
+        end
+        
         % set new limits
         %
-        set(gca,'Xlim', [x_min-0.2*x_min x_max+0.2*x_max] )        
 
         if y_min > 0
             y_min = 0;
@@ -112,7 +122,7 @@ for a = 1:length(ax)
             dxmin = min(min_xstk);
         
             if ~isempty(dymin)
-                set(ax(a),'Ylim',[dymin-0.05*dymin dymax+0.05*dymax]);
+                set(ax(a),'Ylim',[extra*dymin extra*dymax]);
                    
                 if isin(computer,'MAC')
                     set(ax(a),'Xlim', [dxmin-1 dxmax+1] )  % mac fix for std patch overlap with axis

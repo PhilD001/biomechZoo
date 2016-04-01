@@ -1,1 +1,1 @@
-/usr/local/bin/gs
+C:\Program Files\gs\gs9.18\bin\gswin64c.exe

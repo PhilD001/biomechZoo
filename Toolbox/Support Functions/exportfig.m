@@ -4,10 +4,10 @@ function exportfig(fld,filename)
 % see for more details: https://github.com/ojwoodford/export_fig
 
 % NOTES
-% - 'ghostscript' is required for pdf save 
+% - 'ghostscript' is required for pdf save
 % - pdf save is a great choice to obtained a vectorized (lossless) image;
 %   however, some images using non-standard patches do not render correctly
-%   in pdf. This is a known Matlab issue 
+%   in pdf. This is a known Matlab issue
 
 
 % Revision History
@@ -20,7 +20,8 @@ function exportfig(fld,filename)
 %   if dashed or dotted lines make up the curves in the figure to be exported
 %
 % Updateed January 18th 2015
-% - set to pdf for beautiful figures!
+% - set to pdf for beautiful figures! (sadly, not supported in r2014b and
+% up)
 
 
 tic
@@ -57,11 +58,19 @@ end
 
 % export to figure
 %
-if isempty( findobj('tag','colormap'))
-     export_fig(filename{1}, '-pdf', '-transparent','-q101')  % painters used by default
+
+if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
+    
+    if isempty( findobj('tag','colormap'))
+        export_fig(filename{1}, '-pdf', '-transparent','-q101')  % painters used by default
+    else
+        export_fig(filename{1}, '-png', '-transparent','-r150')     % cannot vectorize colorbars
+    end        
 else
     export_fig(filename{1}, '-png', '-transparent','-r150')     % cannot vectorize colorbars
 end
+
+
 
 
 

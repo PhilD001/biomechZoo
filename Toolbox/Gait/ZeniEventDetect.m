@@ -40,28 +40,14 @@ function indx = ZeniEventDetect(data,side,evt,delta)
 % - Cleaned up function
 % - Added error checking
 % - Added choice of 'PELO' instead of 'SACR' marker to estimate SACR position
+%
+% Updated March 2016
+% - If no FS events are detect 'NaN' is returned
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
-
+% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+% More info: type 'zooinfo' in the command prompt
 
 
 % Set defaults
@@ -125,13 +111,22 @@ ofin = length(mhee);
 if sum(isnan(mtoe))~=0
     start = find(~isnan(mtoe),1,'first');
     fin = find(~isnan(mtoe),1,'last');
+    l = length(mtoe);
     
     if ostart~=start
-        error([side,'TOE marker data has NaNs at start, correct in Vicon'])
+        disp(['WARNING: ',side,'TOE marker data has NaNs at start'])
+        pad = ones(start-1,1) * mtoe(start);
+        mtoe(1:start-1) = pad;
     end
     
     if ofin~=fin
-        error([side,'TOE marker data has NaNs at end, correct in Vicon '])
+        disp(['WARNING: ',side,'TOE marker data has NaNs at end'])
+        pad =ones(l-fin+1,1) * mtoe(fin);
+        mtoe(fin:l) = pad;
+    end
+    
+    if sum(isnan(mtoe))~=0
+        error('Additional NaNs in data. Fill gaps and rerun program')
     end
     
 end
@@ -140,28 +135,48 @@ end
 if sum(isnan(mhee))~=0
     start = find(~isnan(mhee),1,'first');
     fin = find(~isnan(mhee),1,'last');
-    
+    l = length(mhee);
+
     if ostart~=start
-        error([side,'HEE marker data has NaNs at start, correct in Vicon'])
+        disp(['WARNING: ',side,'HEE marker data has NaNs at start'])
+        pad =ones(start-1,1) * mhee(start);
+        mhee(1:start-1) = pad;
     end
     
     if ofin~=fin
-        error([side,'HEE marker data has NaNs at end, correct in Vicon '])
+        disp(['WARNING: ',side,'HEE marker data has NaNs at end'])
+        pad =ones(l-fin+1,1) * mhee(fin);
+        mhee(fin:l) = pad;
     end
+    
+    if sum(isnan(mhee))~=0
+        error('Additional NaNs in data. Fill gaps and rerun program')
+    end
+    
 end
 
 
 if sum(isnan(msacr))~=0
     start = find(~isnan(msacr),1,'first');
     fin = find(~isnan(msacr),1,'last');
-    
+    l = length(msacr);
+
     if ostart~=start
-        error('SACR marker data has NaNs at start, correct in Vicon')
+        disp('WARNING: SACR marker data has NaNs at start')
+        pad =ones(start-1,1) * msacr(start);
+        msacr(1:start-1) = pad;
     end
     
     if ofin~=fin
-        error('SACR marker data has NaNs at end, correct in Vicon ')
+        disp('WARNING: SACR marker data has NaNs at end')
+        pad =ones(l-fin+1,1) * msacr(fin);
+        mhee(fin:l) = pad;
     end
+    
+    if sum(isnan(msacr))~=0
+        error('Additional NaNs in data. Fill gaps and rerun program')
+    end
+    
 end
 
 cumd_hee = cumsum(mhee);
@@ -180,7 +195,10 @@ switch evt
     case 'FS'
         maxs = peakdet(hee_still,delta);
         
-        if maxs(1,1)==1
+        if isempty(maxs)
+            batchdisplay(File,'no events detected')
+            indx = NaN;
+        elseif maxs(1,1)==1
             indx =  maxs(2:end,1);
         elseif maxs(end,1) ==length(hee_still)
             indx = maxs(1:end-1,1);

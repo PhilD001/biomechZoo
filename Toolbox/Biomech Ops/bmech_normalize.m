@@ -14,8 +14,7 @@ function bmech_normalize(fld,datalength,intmethod)
 %   operate on and normalize to 101 frames
 % - All channels of a given file will be normalized
 % - Normalization will not recalculate an event value. It will only recalculate the 
-%   event index. Thus an event may not 'lie' 
-%   exactly on a normalized line. Statistics can still be run on these data. 
+%   event index. Thus an event may not 'lie' exactly on a normalized line. 
 % - For processing a single vector, use standalone NORMALIZELINE.m 
 
 
@@ -40,26 +39,9 @@ function bmech_normalize(fld,datalength,intmethod)
 %  'interp1' function
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
-
+% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+% More info: type 'zooinfo' in the command prompt
 
 % Set defaults
 %
@@ -75,7 +57,7 @@ end
 
 if nargin ==1
     disp(['normalizing to 100%, using folder ',fld]);
-    datalength=100;
+    datalength=101;
     intmethod = 'linear';
 end
 
@@ -101,37 +83,6 @@ end
 
 
 
-function data = normalizedata(data,ndatalength,intmethod)
-
-ch = setdiff(fieldnames(data),{'zoosystem'});
-
-if  isfield(data.zoosystem.Video,'Indx')
-    data.zoosystem.Video.Indx = 0:1:ndatalength;
-end
-
-
-for i = 1:length(ch)
-
-    [data.(ch{i}).line,nlength] = normalizeline(data.(ch{i}).line,ndatalength,intmethod);
-    
-    if ~isempty(fieldnames(data.(ch{i}).event))
-        
-        event = fieldnames(data.(ch{i}).event);
-        
-        for e = 1:length(event)
-            
-            if data.(ch{i}).event.(event{e})(2)~=999
-                
-                if data.(ch{i}).event.(event{e})(1)~=1
-                    data.(ch{i}).event.(event{e})(1) = round(data.(ch{i}).event.(event{e})(1)/(nlength)*ndatalength);
-                end
-                
-            end
-            
-        end
-    end
-    
-end
 
 
 

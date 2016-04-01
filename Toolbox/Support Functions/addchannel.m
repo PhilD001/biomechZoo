@@ -58,6 +58,7 @@ function data = addchannel(data,ch,ndata,section)
 %--backwards compatibility-------------------------------------------------
 if nargin==3  
     section = '';
+    disp('WARNING: channel section not recorded')
 end
 
 %--error checking---------------------------------------------------------

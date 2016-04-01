@@ -41,27 +41,16 @@ function data = c3d2zoo(fld,del)
 %        of the first channel in the c3d2zoo function. Now c3d2zoo will append the channel number
 %        to the nth channel with a repeated label. In this example the channels would be 'RKNE' and
 %        'RKNEn' where n is the channel number from the c3d file
+%
+% Updated by Philippe C. Dixon March 2016
+% - added additional meta info describing force plate channel names
+% - added a copy of ALL c3d meta info to data.zoosystem.OriginalC3dMetaInfo
+% - renamed units subfiled 'moments' to 'Moments'
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+% More info: type 'zooinfo' in the command prompt
 
 
 % SET DEFAULTS ---------------------------------------------------------------------------
@@ -146,7 +135,7 @@ for i = 1:length(fl)
         
     end
     
-    % Add Video/Analog metainformation to zoosystem branch of data struct
+    % Add Video/Analog metainformation 
     %
     vidFreq =  r.Header.VideoHZ;
     
@@ -182,10 +171,11 @@ for i = 1:length(fl)
     
     data.zoosystem.AVR = AVR;
     
-    data.zoosystem.Header.SubName =  makerow(r.Parameter.SUBJECTS.NAMES.data);
+    data.zoosystem.Header.SubName =  makerow(deblank(r.Parameter.SUBJECTS.NAMES.data));
     data.zoosystem.Header.Date = '';
     data.zoosystem.Header.Time = '';
     data.zoosystem.Header.Description = '';  % this remains empty
+    
     
     % Add unit metainformation (if available) to zoosystem branch of data struct
     %
@@ -204,7 +194,7 @@ for i = 1:length(fl)
     end
     
     if isfield(r.Parameter.POINT,'MOMENT_UNITS')
-        data.zoosystem.Units.moments =   makerow(r.Parameter.POINT.MOMENT_UNITS.data);
+        data.zoosystem.Units.Moments =   makerow(r.Parameter.POINT.MOMENT_UNITS.data);
     else
         disp([' missing angle units for: ',fl{i}])
     end
@@ -237,28 +227,21 @@ for i = 1:length(fl)
             
           
         end
-        
-        % original code
-%         if ln==4
-%             b(:,:,1) = a(:,:);
-%             
-%         elseif ln==8
-%             b(:,:,1) = a(:,1:ln/2);
-%             b(:,:,2) = a(:,ln/2+1:end);
-%             
-%         elseif ln==12;
-%             b(:,:,1) = a(:,1:ln/3);
-%             b(:,:,2) = a(:,ln/3+1:2*ln/3);
-%             b(:,:,3) = a(:,2*ln/3+1:end);
-%         else
-%             disp('unknown number of force plates')
-%             b = [];
-%         end
-        
+             
         if ~isempty(b)
             data.zoosystem.Analog.FPlates.CORNERS = b;
             data.zoosystem.Analog.FPlates.LOCALORIGIN = r.Parameter.FORCE_PLATFORM.ORIGIN.data;
             data.zoosystem.Analog.FPlates.NUMUSED = r.Parameter.FORCE_PLATFORM.USED.data;
+            
+            a = r.Parameter.ANALOG.LABELS.data;
+            
+            temp = cell(r.Parameter.FORCE_PLATFORM.USED.data*6,1);
+            for j = 1:(r.Parameter.FORCE_PLATFORM.USED.data)*6
+             temp{j} = deblank(a(:,j)');
+            end
+            data.zoosystem.Analog.FPlates.LABELS = temp;
+
+            
         else
             data.zoosystem.Analog.FPlates.CORNERS = [];
             data.zoosystem.Analog.FPlates.LOCALORIGIN = [];
@@ -342,6 +325,16 @@ for i = 1:length(fl)
         end
         
     end
+    
+    
+    % KEEP COPY OF ALL META INFO
+    %
+    mch = setdiff(fieldnames(r),{'VideoData','AnalogData'});
+    
+    for m = 1:length(mch)
+        data.zoosystem.OriginalC3dMetaInfo.(mch{m}) = r.(mch{m});
+    end
+    
     
     % Empty field for computed meta data in matlab
     %

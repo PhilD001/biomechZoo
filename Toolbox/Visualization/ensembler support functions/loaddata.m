@@ -1,4 +1,3 @@
-
 function loaddata(fld,figs)
 
 fl = engine('path',fld,'extension','zoo');

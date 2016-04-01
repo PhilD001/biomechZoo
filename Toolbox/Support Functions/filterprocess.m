@@ -1,5 +1,3 @@
-
-
 function data = filterprocess(data,chfilt,filt)
 
 % data = FILTERPROCESS(data,chfilt,filt) standalone function for bmech_filter

@@ -1,5 +1,7 @@
 function startup_ensembler(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh,i,nfigs)
 
+% STARTUP_ENSEMBLER initializes the GUI labels
+
 if nargin < 10
     i = 1;
     nfigs = 1;
@@ -19,8 +21,10 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','exit','callback','ensembler(''exit'')','separator','on');
     
     mn = uimenu(gcf,'label','Edit');
-    % uimenu(mn,'label','edit fig names','callback','ensembler(''edit fig names'')');
-    uimenu(mn,'label','property editor on','callback','ensembler(''property editor on'')');
+    uimenu(mn,'label','edit fig names','callback','ensembler(''edit fig names'')');
+    uimenu(mn,'label','decrease fonts','callback','ensembler(''decrease fonts'')','separator','on');
+    uimenu(mn,'label','increase fonts','callback','ensembler(''increase fonts'')');
+    uimenu(mn,'label','property editor on','callback','ensembler(''property editor on'')','separator','on');
     uimenu(mn,'label','property editor off','callback','ensembler(''property editor off'')');
     % uimenu(mn,'label','datacursormode off','callback','ensembler(''datacursormode off'')','separator','on');
     
@@ -31,15 +35,17 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','ensemble (subject x conditon) (SD)','callback','ensembler(''ensemble (subject x conditon) (SD)'')','separator','on');
     uimenu(mn,'label','ensemble (subject x conditon) (CI)','callback','ensembler(''ensemble (subject x conditon) (CI)'')');
     uimenu(mn,'label','combine data','callback','ensembler(''combine'')','separator','on');
-    uimenu(mn,'label','combine custom','callback','ensembler(''combine custom'')');
-    uimenu(mn,'label','combine within data','callback','ensembler(''combine_within'')');
+    uimenu(mn,'label','combine all','callback','ensembler(''combine custom'')');
+    uimenu(mn,'label','combine within','callback','ensembler(''combine within'')');
     uimenu(mn,'label','clear outliers','callback','ensembler(''clear outliers'')','separator','on');
     uimenu(mn,'label','clear all','callback','ensembler(''clear all'')');
     
     mn = uimenu(gcf,'label','Insert');
     uimenu(mn,'label','title','callback','ensembler(''title'')');
     uimenu(mn,'label','axis ids (a,b,c,...)','callback','ensembler(''axisid'')');
-    uimenu(mn,'label','legend','callback','ensembler(''legend'')');
+    uimenu(mn,'label','sig diff star','callback','ensembler(''sig diff star'')');
+    uimenu(mn,'label','legend','callback','ensembler(''legend'')','separator','on');
+    uimenu(mn,'label','legend within','callback','ensembler(''legend within'')');
     uimenu(mn,'label','horizontal line','callback','ensembler(''horizontal line'')','separator','on');
     uimenu(mn,'label','vertical line','callback','ensembler(''vertical line'')');
     uimenu(mn,'label','normative PiG Kinematics','callback','ensembler(''normative PiG Kinematics'')','separator','on');
@@ -60,16 +66,18 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','delete single axis','callback','ensembler(''delete single axis'')','separator','on');
     uimenu(mn,'label','clear all empty axes','callback','ensembler(''clear all empty axes'')');
     uimenu(mn,'label','clear titles','callback','ensembler(''clear titles'')');
+    uimenu(mn,'label','clear prompt','callback','ensembler(''clear prompt'')');
+
     
     mn = uimenu(gcf,'label','Line');
-    uimenu(mn,'label','line style','callback','ensembler(''linestyle'')');
-    uimenu(mn,'label','line style within','callback','ensembler(''linestyle_within'')');
-    uimenu(mn,'label','line width','callback','ensembler(''linewidth'')');
-    uimenu(mn,'label','line color','callback','ensembler(''linecolor'')');
-    uimenu(mn,'label','line color within','callback','ensembler(''linecolor_within'')');
+    uimenu(mn,'label','line style','callback','ensembler(''line style'')');
+    uimenu(mn,'label','line style within','callback','ensembler(''line style within'')');
+    uimenu(mn,'label','line width','callback','ensembler(''line width'')');
+    uimenu(mn,'label','line color','callback','ensembler(''line color'')');
+    uimenu(mn,'label','line color within','callback','ensembler(''line color within'')');
     
     mn = uimenu(gcf,'label','Bar Graph');
-    uimenu(mn,'label','bar graph','callback','ensembler(''makebar'')');   
+    uimenu(mn,'label','bar graph','callback','ensembler(''bar graph'')');   
     uimenu(mn,'label','bar color','callback','ensembler(''bar color'')');
     uimenu(mn,'label','reorder bars','callback','ensembler(''reorder bars'')');
     
@@ -98,8 +106,10 @@ if i == nfigs % only the master gets uimenu
     
     mn = uimenu(gcf,'label','Processing');
     uimenu(mn,'label','filter','callback','ensembler(''filter'')');
-    uimenu(mn,'label','partition','callback','ensembler(''partition'')','separator','on');
-    uimenu(mn,'label','normalize','callback','ensembler(''normalize'')','separator','on');
+    uimenu(mn,'label','partition','callback','ensembler(''partition'')');
+    uimenu(mn,'label','normalize','callback','ensembler(''normalize'')');
+    uimenu(mn,'label','custom','callback','ensembler(''custom'')','separator','on');
+
     
     mn = uimenu(gcf,'label','Analysis');
     uimenu(mn,'label','coupling angles','callback','ensembler(''coupling angles'')','separator','on');
