@@ -96,20 +96,19 @@ bmech_forceplate2limbside(fld)                                             % ass
 %
 % - This step limits the analysis to a single stance phase for the right limb.
 % - Data are partitionned based on right limb force plate hits.
-% - The subfolder 'subfld' will be ignored (data within will not be
-%   partitioned). Static data does not contain partition events and does not need
-%   to be partitionned. 
+% - The subfolder 'sfld' will be ignored (data within will not be partitioned). 
+%   Static data does not contain partition events and does not need to be partitionned. 
 % - The user should create a copy of folder '2-prep fpdata' called '3-partition'.
 
-fld = uigetfolder;                                                         % '3-partition'
+fld  = uigetfolder;                                                        % '3-partition'
+sfld = 'Static';                                                           % no partition
 evt1 = 'RFS';                                                              % start event  
 evt2 = 'RFO';                                                              % end event 
-subfld = 'Static';                                                         % no partition
 
-bmech_addevent(fld,'RFz',evt1,'FS FP',subfld)                              % Finds FS and FO 
-bmech_addevent(fld,'RFz',evt2,'FO FP',subfld)                              % based on Fz sig
+bmech_addevent(fld,'RFz',evt1,'FS FP',sfld)                                % Finds FS and FO 
+bmech_addevent(fld,'RFz',evt2,'FO FP',sfld)                                % based on Fz sig
 
-bmech_partition(evt1,evt2,fld,subfld)                                      % run function
+bmech_partition(evt1,evt2,fld,sfld)                                        % run function
 
 % User notes:
 % - The call to bmech_addevent determines which foot is 'associated' with which force plate
@@ -142,7 +141,7 @@ Thigh  = {'KNE','THI','HipJC'};                                            % def
 Shank  = {'ANK','TIB','KneeJC'};                                           % for joint angle
 Foot   = {'ANK','TOE','HEE'};                                              % computations
 joints = {'HipJC','KneeJC'};
-sequence = 'yxz';
+sequence = 'yxz';                                                          % Euler sequence
 
 bmech_jointcentrePiG(fld,joints)                                           % adds hip joint
 
@@ -171,12 +170,12 @@ bmech_kinemat(fld,Pelvis,Thigh,Shank,Foot,sequence)                        % com
 %   and plotting.
 % - User should create a copy of folder '4-kinemat' called '5-clean'.
 
-fld   = uigetfolder;                                                       % '5-clean'
-subfld = 'Static';                                                         % no partition
-chkp  = {'RFx','RFy','RFz','SACR','LASI',...                               % chns to keep
-         'RHipKinemat','RKneeKinemat','RAnkleKinemat',};               
+fld  = uigetfolder;                                                        % '5-clean'
+sfld = 'Static';                                                           % no partition
+chkp = {'RFx','RFy','RFz','SACR','LASI',...                                % chns to keep
+        'RHipKinemat','RKneeKinemat','RAnkleKinemat',};               
 
-bmech_removefolder(fld,subfld)                                             % rm static
+bmech_removefolder(fld,sfld)                                               % rm static
 
 bmech_removechannel('fld',fld,'chkp',chkp)
 bmech_removechannel('fld',fld,'chrm','LASI')
@@ -253,7 +252,7 @@ bmech_normalize(fld,nlength)
 %        removed. This could be done by deleting the file in a standard window explorer 
 %        (or mac finder) window, but the rest of the data (hip and knee angles) appear 
 %        unaffected and should not be deleted. In ensembler, left click on the trial, 
-%        press 'delete' on the  keyboard and select 'Delete \ Channel'. This will replace 
+%        press 'delete' on the  keyboard and select 'Delete Channel'. This will replace 
 %        all line and event data in this channel with 999 values (check using grab).
 %   (7)  Select 'Ensembler' --> 'Ensemble (SD)' and the 'Ensembler' --> 'combine data' to 
 %        graph the average of both conditions together. Line styles and colors can be 
@@ -304,13 +303,13 @@ bmech_normalize(fld,nlength)
 %
 fld = uigetfolder;                                                         % '6-add events'
 levts = {'min','max'};                                                     % local events                                            
-gevts = 'RFS';                                                             % global events                                       
-aevts = {'Bodymass','Height'};                                                          % anthro events
-ch = {'RFx','RHipKinemat_y','RKneeKinemat_x'};                             % channel to search
-dim1 = {'Straight','Turn'};                                                % conditions
-dim2 = {'HC002D','HC030A','HC031A','HC032A','HC033A',...          % subjects
-        'HC036A','HC038A','HC039A','HC040A','HC044A','HC050A',...
-        'HC055A'};
+gevts = {'RFS'};                                                           % global events                                       
+aevts = {'Bodymass','Height'};                                             % anthro events
+ch    = {'RFx','RHipKinemat_y','RKneeKinemat_x'};                          % channel to search
+dim1  = {'Straight','Turn'};                                               % conditions
+dim2  = {'HC002D','HC030A','HC031A','HC032A','HC033A',...                  % subjects
+         'HC036A','HC038A','HC039A','HC040A','HC044A','HC050A',...
+         'HC055A'};
 excelserver = 'off';                                                       % use java
 ext = '.xls';                                                              % preferred ext
 
@@ -331,25 +330,25 @@ eventval('fld',fld,'dim1',dim1,'dim2',dim2,'localevts',levts,...
 %
 % RGroundReactionForce_x maximum (GRF_ML)
 %
-ch = 'RFx';
+ch  = 'RFx';
 evt = 'min';
 r = extractevents(fld,dim1,dim2,ch,evt);
-[~,pval_GRF_ML] = ttest(r.Straight,r.Turn,0.05,'both');
+[~,pval_GRF_ML] = ttest(r.Straight,r.Turn,0.05,'both');                    % p-val = 0.006*
 disp(['p-value for GRF_ml = ',num2str(pval_GRF_ML)])
 
 % RHipKinemat maximum (Hip_ADD)
 %
-ch = 'RHipKinemat_y';
+ch  = 'RHipKinemat_y';
 evt = 'max';
-r = extractevents(fld,dim1,dim2,ch,evt);
-[~,pval_Hip_ADD,~,stats] = ttest(r.Straight,r.Turn,0.05,'both');
+r = extractevents(fld,dim1,dim2,ch,evt);            
+[~,pval_Hip_ADD,~,stats] = ttest(r.Straight,r.Turn,0.05,'both');           % p-val = 0.033*
 disp(['p-value for Hip_ADD = ',num2str(pval_Hip_ADD)])
 
 % RKneeAngle_x at foot off (Knee_FLX)
 %
-ch = 'RKneeKinemat_x';
+ch  = 'RKneeKinemat_x';
 evt = 'RFS';
 r = extractevents(fld,dim1,dim2,ch,evt);
-[~,pval_Knee_FLX] = ttest(r.Straight,r.Turn,0.05,'both');
+[~,pval_Knee_FLX] = ttest(r.Straight,r.Turn,0.05,'both');                   % p-val = 0.356
 disp(['p-value for Knee_FLX = ',num2str(pval_Knee_FLX)])
 
