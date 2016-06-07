@@ -38,19 +38,15 @@ for i=1:length(cons)-1
         con2 = cons{i+j};
         
         if (  r.(ch).(con1).nlines == r.(ch).(con2).nlines ) && ( strcmp(con1(1:2),con2(1:2)) )
-            
             diffdata =  r.(ch).(con1).lines - r.(ch).(con2).lines;
-            
         else
             u.(con1).line = r.(ch).(con1).lines;
             u.(con2).line = r.(ch).(con2).lines;
         end
         
         compcons = [cons{i},' vs ',cons{i+j}];
-        
         compconsstk =[compconsstk; compcons  ];
         
-    
     
     if isin(ch,'OFM') && isempty(u)
         diffdata = diffdata(:,indx:end);

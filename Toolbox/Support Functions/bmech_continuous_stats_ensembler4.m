@@ -70,13 +70,13 @@ for i = 1:length(ln)
             indx = strfind(rr,'+');
             part1 = rr(1:indx-1);
             part2 = rr(indx+1:end);
-        
+            
             cons{i}= [part1,'_and_',part2];
-        
+            
         else
-        
-        cons{i} =rr;
-        
+            
+            cons{i} =rr;
+            
         end
         
     end
@@ -88,7 +88,7 @@ cons = sort(cons);
 %---EXTRACT SUBJECT AND INFO--------------------------------------------------------------------
 %
 % subs = getsubs_allconditions(fld,cons);
-% 
+%
 % if isempty(subs)
 %     disp('WARNING: not all subjects have performed all conditions')
 %     [~,subs] = bmech_getsubs(fld);
@@ -150,10 +150,10 @@ for i=1:length(compcons)
     
     yd_round = ceil(yd*mult); % ceil must be used since any 0 value would not work
     
-%     if isin(ch,'OFM')  % make OFM data the correct length
-%         nanpad = NaN*ones(1,indx-1);
-%         yd_round = [nanpad yd_round];
-%     end
+    %     if isin(ch,'OFM')  % make OFM data the correct length
+    %         nanpad = NaN*ones(1,indx-1);
+    %         yd_round = [nanpad yd_round];
+    %     end
     
     yd_round(isnan(SigDiffIndx(i,:)))=2;
     av_color = c(yd_round,:);
@@ -181,20 +181,19 @@ for i=1:length(compcons)
     
     patch('Faces',faces,'Vertices',verts,'FaceColor','flat','FaceVertexCData',av_color,'EdgeAlpha',0);
     
- 
+    
     tx = {'A','B','C','D','E','F','G','H','I','J','K','L'};
     
     if i>length(tx)
         error('too many comparisons add more letters to tx')
     end
     
-    if ~isin(computer,'MAC')
-        set(get(a,'YLabel'),'String',tx{i})
-        set(get(a,'YLabel'),'Rotation',0)
-        tpos = get(get(a,'YLabel'),'Position');
-        npos = get(gca,'YLim');
-        set(get(a,'YLabel'),'Position',[tpos(1) npos(2) tpos(3)])
-    end
+    set(get(a,'YLabel'),'String',tx{i})
+    set(get(a,'YLabel'),'Rotation',0)
+    tpos = get(get(a,'YLabel'),'Position');
+    npos = get(gca,'YLim');
+    set(get(a,'YLabel'),'Position',[tpos(1) npos(2) tpos(3)])
+    
     
     
 end

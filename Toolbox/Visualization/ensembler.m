@@ -102,6 +102,9 @@ function ensembler(action)
 % - new GUI controls for font size (increase or decrease), editing of figure name
 % - improved buttondown behavior
 % - improved associate dialog box
+%
+% Updated by Philippe C. Dixon June 2016
+% - Small bug fix to ylabel code for support of color bars in ensembler
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
@@ -776,6 +779,9 @@ switch action
     case 'property editor off'
         propertyeditor('off')
               
+    case 'quick style'
+        quickstyle
+        
     case 'relative phase'
         relative_phase('load')
         
@@ -977,7 +983,7 @@ switch action
         
         for i = 1:length(ax)
             
-            if ~isempty(get(ax(i),'YLabel'))
+            if ~isempty(get(ax(i),'YLabel')) && ~isin(get(get(ax(i),'Title'),'Units'),'data')
                 val = get(get(ax(i),'YLabel'),'String');
                 
                 if ~isempty(val)

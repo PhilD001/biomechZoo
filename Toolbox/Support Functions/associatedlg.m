@@ -84,6 +84,7 @@ switch action
         recenter;
         nextposition;
         set(srlist,'value',vl);
+        
     case 'buttondown'
         state = uisuspend(gcf);        
         set(gcf,'windowbuttonmotionfcn','associatedlg(''motion'')');
@@ -91,6 +92,7 @@ switch action
         set(gca,'userdata',get(gca,'currentpoint'));
         uiwait;
         uirestore(state);
+        
     case 'motion'
         delta = get(gca,'userdata');
         curpt = get(gca,'currentpoint');
@@ -100,19 +102,22 @@ switch action
         offsettext(txt,delta(1,2));        
 end
 
+
 function r = getelement
+
 r = targetelementhandle;
 r{1} = get(r{1},'string');
 r{2} = get(r{2},'string');
 
+
 function setelement(cl,Settings)
+
 hnd = targetelementhandle;
 if isempty(hnd{1})
     hnd = createelement;
 end
 
 s = fieldnames(Settings);
-
 set(hnd{1},'string',cl{1});
 set(hnd{2},'string',cl{2});
 
@@ -121,7 +126,9 @@ for i = 1:length(s)
     set(hnd{2},s{i},Settings.(s{i}));
 end
 
+
 function r = targetelementhandle
+
 trg = findobj(gcf,'type','patch','tag','target');
 
 pos = get(trg,'vertices');
@@ -146,6 +153,7 @@ end
 
 txt = txt(indx);
 r = {findobj(txt,'horizontalalignment','right'),findobj(txt,'horizontalalignment','left')};
+
 
 function adjustelements
 
@@ -202,6 +210,7 @@ adjustelements;
 hnd = {t1,t2};
 
 function offsettext(txt,delta)
+
 for i = 1:length(txt);
     pos = get(txt(i),'position');
     pos(2) = pos(2)+ delta;
@@ -209,6 +218,7 @@ for i = 1:length(txt);
 end
 
 function recenter
+
 trg = targetelementhandle;
 if isempty(trg{1})
     return
@@ -220,7 +230,9 @@ npos = mean(npos(:,2));
 delta = npos-tpos(2);
 offsettext(findobj(gca,'tag','elements','type','text'),delta);
 
+
 function nextposition
+
 txt = findobj(gca,'type','text','tag','elements');
 tpch = findobj(gcf,'type','patch','tag','target');
 tpos = get(tpch,'vertices');
