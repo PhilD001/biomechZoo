@@ -85,6 +85,8 @@ end
 cons = sort(cons);
 
 
+
+
 %---EXTRACT SUBJECT AND INFO--------------------------------------------------------------------
 %
 % subs = getsubs_allconditions(fld,cons);
@@ -180,7 +182,7 @@ for i=1:length(compcons)
     set(a,'Color',[0 0 0])
     
     patch('Faces',faces,'Vertices',verts,'FaceColor','flat','FaceVertexCData',av_color,'EdgeAlpha',0);
-    
+
     
     tx = {'A','B','C','D','E','F','G','H','I','J','K','L'};
     

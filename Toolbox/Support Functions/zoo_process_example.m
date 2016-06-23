@@ -1,12 +1,10 @@
-% ======= Biomechanics Zoosystem Toolbox Demo Processing Script ============================
-
+% ======= The Biomechanics Zoosystem Toolbox Demo Processing Script ============================
 % NOTES:
 % - This script demonstrates the basic tools available in the Biomechanics Zoosystem Toolbox 
 %   by processing data for a hypothetical study.
-% - All folders and subfolders of the "Biomechanics Zoosystem Toolbox" folder should be 
-%   added to the MatLab path before starting the demo script. Windows users should then 
-%   remove the subfolder 'Mac Fixes' from the path.
-% - Sample data is contained in the 'raw c3d files' folder.
+% - The Zoosystem toolbox folders should be added to the MatLab path before starting the demo.
+%   This can be accomplished by running startZoo.m (located in the root zoosystem folder)
+% - Sample data must first be downloaded <a href="https://github.com/PhilD001/the-zoosystem-samplestudy">here</a>
 % - Each processing step should operate on a new folder. This allows the user to retain 
 %   the original data. Also, the user can keep track of the changes performed throughout 
 %   the processing procedure. All steps are included in the download to help users trouble-
@@ -15,7 +13,9 @@
 % - The advanced user would also want to explore the underlying code of each function.
 % - Further information about the zoosystem can be found in:
 %   ~\the zoosystem\Help Files\zoo_presentation.ppt'
-
+% - Users may wish to run the <a href="matlab:edit zoo_process_example_auto">complete processing</a> 
+%   workflow to test the correct install of the Zoosystem
+%
 % THE STUDY
 % - 12 subjects were asked to perform straight walking (Straight) and 90 degree turning 
 %   while walking (Turn) trials in a typical motion capture environment while fit with the
@@ -34,16 +34,15 @@
 %
 % Created by Philippe C. Dixon November 2013 
 %
-% Last updated by Philippe C. Dixon April 1st 2016
-% - Improved user interface and help
-% - Improved statistical analysis section
-% - Added additional processing steps (joint kinematics, filtering) to
-%   demonstrate that the Zoossytem can be used to fully process and analyze 'raw' data 
-%   (markers gap filled and filtered)
+% Last updated by Philippe C. Dixon June 22nd 2016
+% - Updated help 
+% _ Updated links 
 %
 % see https://github.com/PhilD001/the-zoosystem for the latest version of the code
 % and associated help files
 %
+
+
 % License, citations, and latest version information, type 'zooinfo'
  
 
@@ -280,7 +279,7 @@ bmech_normalize(fld,nlength)
 %      display its graph. Click 'Play' to start the animation. 
 %  (4) Repeating this process for a number of trials (including our so-called outlier) 
 %      reveals that in trial 'HC002D25.zoo' the subject walked in the opposite direction to 
-%      the others. This direction change was rsponsible for seemingly incorrect force 
+%      the others. This direction change was responsible for seemingly incorrect force 
 %      profile. A function could be written to rotate GRF to a single (global) orientation 
 %      in a real study.  
 
@@ -341,7 +340,7 @@ disp(['p-value for GRF_ml = ',num2str(pval_GRF_ML)])
 ch  = 'RHipKinemat_y';
 evt = 'max';
 r = extractevents(fld,dim1,dim2,ch,evt);            
-[~,pval_Hip_ADD,~,stats] = ttest(r.Straight,r.Turn,0.05,'both');           % p-val = 0.033*
+[~,pval_Hip_ADD] = ttest(r.Straight,r.Turn,0.05,'both');                  % p-val = 0.033*
 disp(['p-value for Hip_ADD = ',num2str(pval_Hip_ADD)])
 
 % RKneeAngle_x at foot off (Knee_FLX)

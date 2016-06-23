@@ -4,6 +4,7 @@ function fdata = filterline(data,fsamp,filt)
 %
 % ARGUMENTS
 %  data   ...   n x m matrix of data to be filtered
+%  fsamp  ...   sampling frequency of signal
 %  filt   ...   filter properties as struct
 %
 % RETURNS
@@ -19,15 +20,35 @@ function fdata = filterline(data,fsamp,filt)
 % - based on code from JJ Lo 
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
+% Part of the Zoosystem Biomechanics Toolbox v1.2
+%
+% Main contributors:
+% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
+% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
+% JJ Loh, Medicus Corda. Montreal, Canada.
+% 
+% Contact: 
+% philippe.dixon@gmail.com
+%
+% Web: 
+% https://github.com/PhilD001/the-zoosystem
+%
+% Referencing:
+% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
+% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
+% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+
 
 
 
 % error checking
 %
 filt.ftype = lower(filt.ftype); % remove any caps in name
+
+if strcmp(filt.pass,'low') || strcmp(filt.pass,'high') || strcmp(filt.pass,'band')
+    filt.pass = [filt.pass,'pass'];
+end
 
 %---Set myfilt struct--------
 cutoff = filt.cutoff;
@@ -41,6 +62,7 @@ myfilt.smprate = fsamp;
 %----check cutoff frequency---
 
 if ~isnumeric(cutoff)  % the program will try to automatically assess utoff rom fft
+    
     indx = ~isnan(data);
     [~,~,cutoff] = bmech_fft(data(indx),fsamp,5,'yes');
 end
@@ -71,13 +93,13 @@ switch myfilt.type
        
     case 'butterworth'
         switch myfilt.pass
-            case {'low','lowpass'}
+            case 'lowpass'
                 [b,a] = butter(myfilt.order,coff);
             case 'bandpass'
                 [b,a] = butter(myfilt.order,coff);
             case 'notch'
                 [b,a] = butter(myfilt.order,coff,st);
-            case {'high','highpass'}
+            case 'highpass'
                 [b,a] = butter(myfilt.order,coff,hi);
         end
         

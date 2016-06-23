@@ -30,7 +30,7 @@ end
 if nargout == 1
    sub = subfolder(CurrPath,'');
 else
-   [sub fls] = subfolder(CurrPath,'','');
+   [sub, fls] = subfolder(CurrPath,'','');
 end
 
 
@@ -43,16 +43,13 @@ function [sub,fls] = subfolder(CurrPath,sub,fls)
 tmp = dir(CurrPath);
 tmp = tmp(~ismember({tmp.name},{'.' '..'}));
 for i = {tmp([tmp.isdir]).name}
+    sub{end+1} = [CurrPath, filesep, i{:}];  % updated PD
     
-   s = slash;
-   
-       sub{end+1} = [CurrPath, s, i{:}];  % updated phil
-   
-   if nargin==2
-      sub = subfolder(sub{end},sub);
-   else
-      tmp = dir(sub{end});
-      fls{end+1} = {tmp(~[tmp.isdir]).name};
-      [sub fls] = subfolder(sub{end},sub,fls);
-   end
+    if nargin==2
+        sub = subfolder(sub{end},sub);
+    else
+        tmp = dir(sub{end});
+        fls{end+1} = {tmp(~[tmp.isdir]).name};
+        [sub fls] = subfolder(sub{end},sub,fls);
+    end
 end

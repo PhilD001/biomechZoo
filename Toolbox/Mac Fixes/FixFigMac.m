@@ -1,4 +1,4 @@
-function FixFigMac
+function fixFigMac
 
 % FIXFIGMAC attempts tp fix figure patch problems on mac platform
 %

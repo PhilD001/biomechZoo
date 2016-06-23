@@ -43,7 +43,9 @@ function indx = ZeniEventDetect(data,side,evt,delta)
 %
 % Updated March 2016
 % - If no FS events are detect 'NaN' is returned
-
+%
+% Updated June 2016
+% - Removed reference to original c3d file
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
 % Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
@@ -95,8 +97,6 @@ else
     SACR = data.(top).line(:,1:2);
 end
 
-
-File = data.zoosystem.SourceFile;
 
 
 % Compute new channels
@@ -196,7 +196,7 @@ switch evt
         maxs = peakdet(hee_still,delta);
         
         if isempty(maxs)
-            batchdisplay(File,'no events detected')
+            disp('no events detected')
             indx = NaN;
         elseif maxs(1,1)==1
             indx =  maxs(2:end,1);
@@ -211,7 +211,7 @@ switch evt
         [~,mins] = peakdet(toe_still,delta);
         
         if isempty(mins)
-            batchdisplay(File,'no events detected')
+            disp('no events detected')
             indx = NaN;      
         elseif mins(1,1)==1
             indx =  mins(2:end,1);

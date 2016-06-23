@@ -1,7 +1,7 @@
 function [chat_b, cilohat_b, cihihat_b,chat,cilohat,cihihat,muhat_b,muhat,sehat_b,sehat,meanmuhat_b,bias] = bootstrap_t(data,nboots,alpha,display)
 
 % bootstap_t computes symmetric confidence intervals based on the bootstrap-t procedure
-% 
+%
 % ARGUMENTS
 %  data          ...  vector or matrix data. If data is a struct, we have an unbalanced samples
 %  nboots        ...  numbe of bootstrap samplies
@@ -30,7 +30,7 @@ function [chat_b, cilohat_b, cihihat_b,chat,cilohat,cihihat,muhat_b,muhat,sehat_
 
 % Revision History
 %
-% Created by Philippe C. Dixon June 2012 
+% Created by Philippe C. Dixon June 2012
 %
 % Updated by Philippe C. Dixon july 26th 2013
 % - code is easier to understand by using the function datasample instead of bootstrp
@@ -53,10 +53,10 @@ function [chat_b, cilohat_b, cihihat_b,chat,cilohat,cihihat,muhat_b,muhat,sehat_
 % https://github.com/PhilD001/the-zoosystem
 %
 % Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
+% please reference the conference abstract below if the zoosystem was used in the
 % preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
+% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement
+% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of
 % Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
 
 
@@ -65,7 +65,7 @@ function [chat_b, cilohat_b, cihihat_b,chat,cilohat,cihihat,muhat_b,muhat,sehat_
 %
 if nargin==0
     display = 'curves';
-%     display = 'points';
+    %     display = 'points';
     nboots = 1000;
     alpha = 0.05;
 end
@@ -98,7 +98,7 @@ if ~isstruct(data)  % for single condition or paired differences
     
     
     %--extract data and compute sample estimates
- 
+    
     [n,col] = size(data);
     
     muhat = mean(data);                            % sample estimate of the mean
@@ -108,10 +108,10 @@ if ~isstruct(data)  % for single condition or paired differences
     df = n-1;                                      % degrees of freedom of sample
     chat = tinv(1-alpha/2,df);                     % sample estimate of the critical t-value
     
-    cilohat = muhat-chat*sehat;                    % sample estimate of lower CI 
+    cilohat = muhat-chat*sehat;                    % sample estimate of lower CI
     cihihat = muhat+chat*sehat;                    % sample estimate of upper CI
     
-   
+    
     %--Compute bootstrap estimates
     
     muhat_b = zeros(nboots,col);
@@ -134,13 +134,13 @@ if ~isstruct(data)  % for single condition or paired differences
 else % for unpaired differences
     
     %--extract data and compute sample estimates
- 
+    
     ch = fieldnames(data);
     
     data1 = data.(ch{1}).line;                                % 1st condiiton
     data2 = data.(ch{2}).line;                                     % 2nd condiiton
     
-    [n1,col1] = size(data1);                          
+    [n1,col1] = size(data1);
     [n2,col2] = size(data2);
     
     if col1 ~=col2
@@ -151,9 +151,9 @@ else % for unpaired differences
     muhat = mean(data1)-mean(data2);                            % mean difference
     sehat = sqrt((std(data1).^2)/n1 + (std(data2).^2)/n2 );     % Satterthwaite approximation
     
-    df = (n1-1) + (n2-1); 
+    df = (n1-1) + (n2-1);
     chat = tinv(1-alpha/2,df);                      % sample estimate of the critical t-value
-
+    
     cilohat = muhat-chat*sehat;                     % sample estimate of lower CI
     cihihat = muhat+chat*sehat;                     % sample estimate of upper CI
     
@@ -233,13 +233,13 @@ elseif isin(display,'curves')
     x = 1:1:col;
     figure
     suptitle(['Summary stats for: ',ch])
-   
+    
     subplot(2,2,1)
     
     plot(x,muhat,'r','linewidth',1.5);
-    hold on  
+    hold on
     plot(x,meanmuhat_b,'b','linewidth',1.5);
-
+    
     plot(x,cilohat_b,'b--','linewidth',1.5)
     plot(x,cihihat_b,'b--','linewidth',1.5)
     plot(x,cilohat,'r.-','linewidth',1.5)
@@ -248,7 +248,7 @@ elseif isin(display,'curves')
     text(x(2),cihihat(2),['tcrit boot = ' num2str(chat_b)])
     xlim([0,101])
     title('mean and CI')
-
+    
     
     subplot(2,2,2)
     plot(x,bias,'k','linewidth',1.5)
@@ -265,21 +265,22 @@ elseif isin(display,'curves')
     xlim([0,101])
     
     
-%     subplot(2,2,4)
-%     for i = 1:col
-%         hold off
-%         hist(muhat_b(:,i),20)
-%         title('histogram')
-%         hold on
-%         vline(muhat(i),'r:')
-%         vline(meanmuhat_b(i),'b')
-%         vline(cilohat_b(i),'b:')
-%         vline(cihihat_b(i),'b:')
-%         pause(0.2)
-%     
-%     end
+    %     subplot(2,2,4)
+    %     for i = 1:col
+    %         hold off
+    %         hist(muhat_b(:,i),20)
+    %         title('histogram')
+    %         hold on
+    %         vline(muhat(i),'r:')
+    %         vline(meanmuhat_b(i),'b')
+    %         vline(cilohat_b(i),'b:')
+    %         vline(cihihat_b(i),'b:')
+    %         pause(0.2)
+    %
+    %     end
     
     
     
 else
+    
 end

@@ -1,4 +1,4 @@
-function rmdir(fld,mode)
+function my_rmdir(fld,mode)
 
 % RMDIR removes folders for the mac platform
 %

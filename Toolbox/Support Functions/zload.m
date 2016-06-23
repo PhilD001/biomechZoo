@@ -9,5 +9,8 @@ if ~exist(fl,'file')
     error(['file :',fl,' does not exist'])
 end
 
- data = load(fl,'-mat');
- data = data.data;
+data = load(fl,'-mat');
+%data = matfile(fl,'Writable',true);
+
+
+data = data.data;

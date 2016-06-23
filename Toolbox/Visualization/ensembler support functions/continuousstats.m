@@ -74,7 +74,7 @@ if isempty(check)
 
     %--textbox containing info----
     
-    tx = {'A','B','C','D','E','F','G','H'};
+    tx = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N'};
     
     %stk = [];
     stk = cell(length(compcons),1);

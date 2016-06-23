@@ -1,22 +1,33 @@
-The Zoosystem is a user-customizable toolbox for the analysis of biomechanical data. 
+The Zoosystem is a user-customizable Matlab toolbox for the analysis of biomechanical movement data. 
 
-Movement data often contain variables recorded over time, for many subjects, groups, or conditions. Sorting, processing, statistical analysis, and visualization of these data is 
-crucial. The zoosystem provides tools to help users achieve these goals.
+Summary:
+Movement data often contain variables recorded over time, for many subjects, groups, or conditions. The Zoosystem provides tools to help users achieve sort, process, statistically analyze, and visualize these data. 
 
 Quick look:
-Explore the main features of the Zoosystem by viewing our overview video in the wiki section.
+Explore the main features of the Zoosystem by viewing our overview <a href="https://vimeo.com/143870493">video</a>')
 
-Audience: 
-The Zoosystem can help those new to programming/biomechanics to quickly process their data by providing a framework from which to create a streamlined processing workflow. Advanced users are encouraged to contribute to the Zoosystem project by providing additional functions.
 
 Getting started: 
-The Zoosystem download contains a number of files to help the user get started with the toolbox. Users may wish to start by reading the powerpoint presentation and conference poster, both found under the 'Help Files' sub folder of the toolbox. Afterwards, users can explore the toolbox using the accompanying sample dataset (~/sample study) and sample processing m-file (~/Help Files/zoo_process_example.m'). Additional help may be obtained by contacting the main author.
+The Zoosystem can be downloaded by clicking on the green 'Clone or download' button on the main repository page (above). 
+Afterwards, the Zoosystem can be loaded into Matlab by running the startZoo.m file located in the root Zoosystem folder. 
+Users can consult the <a href="https://github.com/PhilD001/the-zoosystem-help">help</a> section or explore the 
+<a href="https://github.com/PhilD001/the-zoosystem-samplestudy">sample study</a>' to become familiar with the main processing, analysis, and visualization tools.
 
-Additional Software: 
-At the moment, the Zoosystem only runs on Matlab (The Mathworks Inc., Natick, USA). Although most functions should run on any version of the software, version r2014a or earlier is recommended for optimal functionality. Newer versions (r2014b onwards) will cause errors in some of the graphical user interfaces due to changes in the way Matlab handles objects (see: http://www.mathworks.com/help/matlab/graphics_transition/major-graphics-changes-in-r2014b.html). Future updates may address these issues. Users interested in developing a version of the Zoosystem to run in an open-source programming environment such as Python could email the main author.
+Additional help may be obtained by contacting the main author (philippe dot dixon at gmail dot com).
 
-Platforms: 
-The Zoosystem runs on both Windows and MAC OS. Functions have not been tested on unix systems. Note: Some functions, particularly those that export data to excel will not work on the MAC OS platform.
+
+Audience: 
+The Zoosystem can help those new to programming / biomechanics to quickly process their data by providing a framework from which to create a streamlined processing workflow. Advanced users are encouraged to contribute to the Zoosystem project by providing additional functions.
+
+
+Additional Software / Platform information: 
+Matlab (The Mathworks Inc., Natick, USA) software running, at minimum, the Signal processing and Statistics toolboxes
+
+The Zoosystem toolbox was tested on Mac (OSX 10.8.5, Matlab v2012a and v2014b), Windows 7 Enterprise (Matlab 2014a and 2016a) and Windows 10 (Matlab 2016a) platforms. The Zoosystem has not been tested on Linux machines.73 operating systems.
+
+
+Users interested in developing a version of the Zoosystem to run in an open-source programming environment such as Python could email the main author.
+
 
 Contact 
 philippe dot dixon at gmail dot com

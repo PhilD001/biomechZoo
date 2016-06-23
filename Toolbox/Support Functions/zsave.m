@@ -21,6 +21,10 @@ function zsave(fl,data,info)
 % Revision History
 %
 % Created by Philippe C. Dixon Sept 15th 2015
+%
+% Updated by Philippe C. Dixon June 22nd 2016
+% - explicit mat file save to version 7 added. Note that v7.3 results in
+%   larger files, explained here http://www.mathworks.com/help/matlab/ref/save.html#inputarg_version
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2
@@ -43,8 +47,9 @@ function zsave(fl,data,info)
 % Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
-
-
+% version type for file save
+%
+version = '-v7';                                 % v7 files are smaller than v7.3
 
 % determine which function called zsave
 %
@@ -73,7 +78,7 @@ end
 
 % traditional save
 %
-save(fl,'data');
+save(fl,'data',version);
 
 
 

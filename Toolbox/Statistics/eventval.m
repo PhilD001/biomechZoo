@@ -88,7 +88,7 @@ function evalFile = eventval(varargin)
 % More info: type 'zooinfo' in the command prompt
 
 
-tic  % start calculation timer
+% tic  % start calculation timer
 
 % == SETTINGS ==============================================================================
 %
@@ -546,8 +546,8 @@ disp('Finished running data for: ')
 disp(' ')
 disp(evalFile)
 disp(' ')
-toc
-disp('****************************')
+% toc
+% disp('****************************')
 
 
 

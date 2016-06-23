@@ -1,6 +1,6 @@
 function batchdisplay(fl,type)
 
-% used to produce a nice batch processing display 
+% batchdisplay(fl,type) produces a shortened display of file path 
 %
 % ARGUMENTS
 % fl    ... name of file being processed

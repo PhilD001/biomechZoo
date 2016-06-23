@@ -1,6 +1,6 @@
-function data = c3d2zoo(fld,del)
+function data = c3d2zooBtk(fld,del)
 
-% C3D2ZOO(FLD,DEL) Converts .c3d files to .zoo format
+% C3D2ZOOBTK(FLD,DEL) Converts .c3d files to .zoo format using the BTK c3d reader
 %
 % ARGUMENTS
 %  fld  ...   path leading to folder to operate on
@@ -9,43 +9,17 @@ function data = c3d2zoo(fld,del)
 % RETURNS
 %  data  ...  zoo system data. This return is mostly used by 'director'
 %
-% See also readc3d
+% See also c3d2zoo, readc3dBTK, readc3d
 %
-% NOTES:
-% - The function attempts to fix invalid fielnames via the makevalidfield.m function
+% NOTES: 
+% - BTK toolkit must be installed to run this file. Downloaded BTK  <a href="http://code.google.com/p/b-tk/">here</a> 
 
 
 % Revision History
 %
-% Created by JJ Loh 2006
-%
-% Updated by Philippe C. Dixon Nov 2008
-% - reorganised to match zoo system
-%
-% Updated by Philippe C. Dixon May 2014
-% - This function has been reintroduced as the main c3d converter after recent update
-%   of the readc3d function by JJ Loh
-% - reintroduction of the 'return' of the function for use with director
-%
-% Updated by Philippe C. Dixon Sept 2015
-% - implements the new 'zsave' procedure in which the processing information
-%   is saved to the zoo file in the branch 'data.zoosystem.processing'
-% - c3d files with no 'EVENT' information can now be read without error
-% - updated algorithm to find force plate locations. Unlimited number of
-%   force plates can now be used
-%
-% Updated by Philippe C. Dixon Oct 2015
-% - bug fix for c3d files with two or more channels with same labels. 
-%   e.g. If a marker set has channels 'RKNE' and 'RKNEjointcenter', the c3d file saves
-%        both channel labels as 'RKNE' (First four characters only). This led to a deletion
-%        of the first channel in the c3d2zoo function. Now c3d2zoo will append the channel number
-%        to the nth channel with a repeated label. In this example the channels would be 'RKNE' and
-%        'RKNEn' where n is the channel number from the c3d file
-%
-% Updated by Philippe C. Dixon March 2016
-% - added additional meta info describing force plate channel names
-% - added a copy of ALL c3d meta info to data.zoosystem.OriginalC3dMetaInfo
-% - renamed units subfiled 'moments' to 'Moments'
+% Created by Philippe C. Dixon June 2016
+% - based on c3d2zoo, but with small changes to deal with differences in the output
+%   format between readc3dBTK and readc3d  
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016 
@@ -84,7 +58,9 @@ for i = 1:length(fl)
     % Extract info from c3d file
     %
     batchdisplay(fl{i},'converting to zoo');
-    r = readc3d(fl{i});
+    
+    r = readc3dBtk(fl{i});
+    
     zfl = extension(fl{i},'zoo');
     data = struct;
     vfld = fieldnames(r.VideoData);
@@ -98,17 +74,14 @@ for i = 1:length(fl)
     
     for v = 1:length(vfld)
         
-        lbl = makevalidfield(r.VideoData.(vfld{v}).label);                 % fixes invalid fieldnames
+        lbl = makevalidfield(vfld{v});                 % fixes invalid fieldnames
         
         if isfield(data,lbl)
             disp(['WARNING: Repeated channel name ',lbl, ' to be renamed ',lbl,num2str(v)])
             lbl = [lbl,num2str(v)];  
         end
         
-        data.(lbl).line = [makecolumn(r.VideoData.(vfld{v}).xdata),...
-            makecolumn(r.VideoData.(vfld{v}).ydata),...
-            makecolumn(r.VideoData.(vfld{v}).zdata)];
-        
+        data.(lbl).line = r.VideoData.(vfld{v});
         data.(lbl).event = struct;
         vlbl{v} = lbl;
         
@@ -120,14 +93,14 @@ for i = 1:length(fl)
         
         for a = 1:length(afld)
             
-            lbl = makevalidfield(r.AnalogData.(afld{a}).label);                                  % fixes all invalid fieldnames
+            lbl = makevalidfield(afld{a});                                  % fixes all invalid fieldnames
             
             if isfield(data,lbl)
                 disp(['WARNING: Repeated channel name ',lbl, ' to be renamed ',lbl,num2str(v)])
                 lbl = [lbl,num2str(v)];
             end
             
-            data.(lbl).line = makecolumn(r.AnalogData.(afld{a}).data);
+            data.(lbl).line = r.AnalogData.(afld{a});
             data.(lbl).event = struct;
             albl{a} = lbl;
         end
@@ -228,17 +201,18 @@ for i = 1:length(fl)
         end
              
         if ~isempty(b)
+            
             data.zoosystem.Analog.FPlates.CORNERS = b;
+            
             data.zoosystem.Analog.FPlates.LOCALORIGIN = r.Parameter.FORCE_PLATFORM.ORIGIN.data;
+            
             data.zoosystem.Analog.FPlates.NUMUSED = r.Parameter.FORCE_PLATFORM.USED.data;
             
             a = r.Parameter.ANALOG.LABELS.data;
             
-            temp = cell(r.Parameter.FORCE_PLATFORM.USED.data*6,1);
-            for j = 1:(r.Parameter.FORCE_PLATFORM.USED.data)*6
-             temp{j} = deblank(a(:,j)');
-            end
-            data.zoosystem.Analog.FPlates.LABELS = temp;
+            temp = r.Parameter.FORCE_PLATFORM.USED.data*6;
+            
+            data.zoosystem.Analog.FPlates.LABELS = a(1:temp);
 
             
         else
@@ -295,7 +269,7 @@ for i = 1:length(fl)
                 events = struct;
                 
                 for s = 1:cols
-                    ech = [sides(:,s)','_',type(:,s)'];
+                    ech = [sides{s},'_',type{s}];
                     ech = strrep(ech,' ','');
                     events.(ech).lines(s) = times(s);
                 end
