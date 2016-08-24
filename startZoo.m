@@ -14,7 +14,7 @@ s = filesep;                                                   % platform depend
 zoo_fld = [fileparts(which('startZoo')),s,'Toolbox'];          % get root Zoosystem folder
 pmsg = 'Loading ';                                             % prefix for message
 smsg = ' ... ';                                                % suffix for message
-lfld = 'the zoosystem/Toolbox/Support Functions';              % longest subfolder
+lfld = 'biomechZoo/Toolbox/Support Functions';                % longest subfolder
 lpad = length(pmsg) + length(lfld)+length(smsg)+5;             % length of longest
 start = strfind(zoo_fld,'the zoosystem');                      % start of short file path
 frmt = ['%-',num2str(lpad),'s'];                               % format output nicely
@@ -22,7 +22,7 @@ frmt = ['%-',num2str(lpad),'s'];                               % format output n
 % Welcome message
 %
 clc
-fprintf('--------------- Welcome to the BiomechZoo Toolbox ---------------\n\n')
+fprintf('--------------- Welcome to the biomechZoo Toolbox ---------------\n\n')
 
 
 % Get Zoosystem folders and subfolders
@@ -41,7 +41,7 @@ fprintf('complete\n\n')
 
 % Load Zoosystem folders and subfolders
 %
-fprintf('Loading Zoosystem folders and subfolders:\n\n')
+fprintf('Loading biomechZoo folders and subfolders:\n\n')
 
 
 % a) load mac fixes (MACI platform only)
@@ -84,7 +84,7 @@ end
 
 % Set some good defaults
 %
-fprintf('\nSetting Zoosystem defaults:\n\n')
+fprintf('\nSetting biomechZoo defaults:\n\n')
 
 fprintf(frmt,['Send deleted files to trash: ON',smsg])
 recycle('on')                                                  % move deleted to recycling
@@ -96,12 +96,13 @@ fprintf('complete\n')
 
 % Give the user some help
 %
-fprintf('\nThe Zoosystem Quick Guide:\n\n')
-fprintf('View the <a href="https://vimeo.com/143870493">Video</a> | ')
-fprintf('Seek <a href="https://github.com/PhilD001/the-zoosystem-help">help</a> | ')
-fprintf('Download the <a href="https://github.com/PhilD001/the-zoosystem-sample-study">sample study</a> | ')
-fprintf('Get <a href="https://github.com/PhilD001/the-zoosystem">updates</a>\n\n')
-fprintf('type ''zoosystem'' to browse available functions or click <a href="matlab:zoosystem">here</a> \n')
+fprintf('\nbiomechZoo Quick Guide:\n\n')
+fprintf('Visit the <a href="https://www.biomechzoo.com/">Website</a> | ')
+fprintf('View the <a href="https://vimeo.com/143870493">Video</a> | \n')
+fprintf('Get <a href="https://github.com/PhilD001/biomechzoo">updates</a> | ')
+fprintf('Download the <a href="https://github.com/PhilD001/biomechzoo-samplestudy">sample study</a> | ')
+fprintf('Seek <a href="https://github.com/PhilD001/biomechzoo-help">help</a> \n\n')
+% fprintf('type ''zoosystem'' to browse available functions or click <a href="matlab:zoosystem">here</a> \n')
 fprintf('type ''zooinfo'' for project information or click <a href="matlab:zooinfo">here</a> \n')
 fprintf('type ''samplestudy'' to explore the sample study or click <a href="matlab:samplestudy">here</a> \n\n')
 

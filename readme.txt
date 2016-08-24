@@ -1,4 +1,4 @@
-biomechZoo is a user-customizable Matlab toolbox for the processing and visualization of biomechanical movement data. 
+biomechZoo is a user-customizable toolbox for the processing, analysis, and visualization of biomechanical movement data. 
 
 
 Summary:
