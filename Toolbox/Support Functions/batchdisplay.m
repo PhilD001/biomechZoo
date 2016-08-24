@@ -19,7 +19,7 @@ if nargin==1
     type = 'processing';
 end
 
-s = slash; 
+s = filesep; 
 indx = strfind(fl,s);
 
 if length(indx)<=4

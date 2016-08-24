@@ -1,4 +1,4 @@
-function [p1,p2,p3] = GetFPLocalOrigin(zdata)
+function localOr = getFPLocalOrigin(data)
 
 % extracts local origin from zdata
 %
@@ -10,23 +10,14 @@ function [p1,p2,p3] = GetFPLocalOrigin(zdata)
 % p2 = [0.001397	-0.0000254	0.03757];
 % p3 = [0.0000508	-0.001473	0.03873];
 
-p3 = [];
-r =  zdata.zoosystem.Analog.FPlates.LOCALORIGIN; % c3d file contains this info
+nplates = data.zoosystem.Analog.FPlates.NUMUSED;
+localOr = struct;
 
-[~,cols] = size(r);
-
-p1 = (r(:,1)/1000)';
-p2 = (r(:,2)/1000)';
-
-if cols==3
-    p3 = (r(:,3)/1000)';
+for i = 1:nplates
+    localOr.(['FP',num2str(i)]) =  data.zoosystem.Analog.FPlates.LOCALORIGIN(:,i)/1000';
 end
 
-% check for Oxford switched force plate position in 2014
-% 
-% if isnear(p2(1),0.0003302 ,0.001)
-%     
-%    disp('This is a misordered OGL force plate file, switching FP info')
-%   p2 = [0 0 0];
-%    
-% end
+
+% add unit information
+%
+data.zoosystem.Units.LocalOriginFP = 'mm';

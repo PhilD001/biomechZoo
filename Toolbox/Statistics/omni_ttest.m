@@ -1,7 +1,7 @@
 function [P,t,df,e,md,CIdiff,plus,minus] = omni_ttest(data1,data2,type,alpha,thresh,mode,bonf)
 
-% [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode,bonf) performs statistical comparison of
-% two groups taking into account parametric assumptions. 
+% [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode,bonf) performs statistical 
+% comparison of two groups taking into account parametric assumptions. 
 %
 % ARGUMENTS
 %  data1    ...  first data set.
@@ -80,6 +80,7 @@ switch nargin
     case 5
         tail = 'both';
         mode = 'full';
+        bonf = 1;
         
     case 6
         mode = 'full';

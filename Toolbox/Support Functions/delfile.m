@@ -5,9 +5,7 @@ function delfile(fl)
 % ARGUMENTS
 % fl  ... 'string' for single file or cell array of strings for multiple files
 %
-% NOTES
-% - works on MAC and PC platforms
-%
+% See also outlier, bmech_removefolder
 
 
 % Revision History
@@ -20,29 +18,9 @@ function delfile(fl)
 % Updated by Philippe C. Dixon May 2015
 % - ability to delete hidden files implemented for PC platform 
 %
-% Updated by Philippe C. Dixon June 2015
-% - bug fix with user display
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
-% JJ Loh, Medicus Corda. Montreal, Canada.
-% 
-% Contact: 
-% philippe.dixon@gmail.com
-%
-% Web: 
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
-
+% Updated by Philippe C. Dixon Jult 2015
+% - bug fix with user display 
+% - added search directory below current working directory for MAC
 
 
 if ~iscell(fl)
@@ -54,9 +32,7 @@ for i = 1:length(fl)
     
     if exist(fl{i},'file')==2
         batchdisplay(fl{i},'deleting file')
-    
-    
-    
+   
     if ispc
         % dos(['erase "',fl{i},'"']);
         delete(fl{i}) 
@@ -65,7 +41,15 @@ for i = 1:length(fl)
     end
     
     else
-       batchdisplay(fl{i},'file not found')    
+       disp('attempting to locate file in current working directory....')
+       
+       file = engine('fld',pwd,'search file',fl{i});
+       
+       if isempty(file)
+              batchdisplay(file{1},'file not found')
+       else
+           delfile(file{i})
+       end
     end
     
 end

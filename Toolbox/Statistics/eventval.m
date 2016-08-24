@@ -83,10 +83,6 @@ function evalFile = eventval(varargin)
 % - Clean up for input arguments
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
-
 
 % tic  % start calculation timer
 
@@ -331,7 +327,7 @@ for i = 1:length(fl)
     % write additional meta-info
     %
     if i==1
-        process = data.zoosystem.processing;
+        process = data.zoosystem.Processing;
         
         if strcmp(excelserver,'on')
             xlswrite1(evalFile,{'Summary info related to data'},'info','A1');
@@ -537,17 +533,6 @@ if strcmp(excelserver,'on')
     Excel.delete
     clear Excel
 end
-
-% == SHOW END OF PROGRAM ===================================================================
-%
-disp(' ')
-disp('****************************')
-disp('Finished running data for: ')
-disp(' ')
-disp(evalFile)
-disp(' ')
-% toc
-% disp('****************************')
 
 
 

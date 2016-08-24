@@ -126,6 +126,8 @@ global fld     % give every case access to fld
 global f p     % give access to [p,f] for an individual trial
 
 
+settings.textstring = '\diamondsuit';
+
 
 %================== BEGIN CASE STATEMENTS ============================
 %
@@ -228,7 +230,7 @@ switch action
         
         for i = 1:length(a(:,1))
             
-            if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier   
+            if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
                 br = findobj(ax,'type','hggroup','tag',a{i,1});
             else
                 br = findobj(ax,'type','bar','tag',a{i,1});
@@ -273,6 +275,9 @@ switch action
         resize_ensembler
         
     case 'clear all'
+        
+        %clearcolorbars
+        
         lg = findobj('type','axes','tag','legend');
         
         if ~isempty(lg)
@@ -305,7 +310,7 @@ switch action
         if ~isempty(lhnd)
             delete(lhnd)
             return
-        end        
+        end
         % reset xaxis label
         %
         for i = 1:length(ax)
@@ -320,14 +325,16 @@ switch action
             
         end
         
+        
+        
     case 'clear colorbars'
         clearcolorbars
         
     case 'clear all events'
-        delete(findobj('string','\diamondsuit'));
+        delete(findobj('string',settings.textstring));
         
     case 'clear event by type'
-        evthnd = findobj('string','\diamondsuit');
+        evthnd = findobj('string',settings.textstring);
         evts =unique(get(evthnd,'Tag'));
         indx = listdlg('promptstring','choose your event type to clear','liststring',evts);
         
@@ -344,9 +351,9 @@ switch action
         
     case 'clear prompt'
         prmt = findobj('Tag','prompt');
-
+        
         if ~isempty(prmt)
-          set(prmt,'string','')
+            set(prmt,'string','')
         end
         
     case 'combine'
@@ -373,8 +380,10 @@ switch action
         custom_function = inputdlg(prompt,'axis title',1,defaultanswer);
         custom_function = custom_function{1};
         run(custom_function)
-        update_ensembler_lines(p,f,fld)
-
+        if isin(custom_function,'bmech_')
+            update_ensembler_lines(p,f,fld)
+        end
+        
         
     case 'datacursormode off'
         datacursormode off
@@ -403,7 +412,7 @@ switch action
             end
             save(fl,'data');
         else
-            bmech_removeevent('all',fld)
+            bmech_removeevent(fld,'all')
         end
         
         update_ensembler_lines(p,f,fld)
@@ -412,7 +421,7 @@ switch action
         ch = get(get(gca,'Title'),'String');
         lines = findobj('type','line','LineWidth',0.5);
         nlines = length(lines);
-        evthnd = findobj('string','\diamondsuit');
+        evthnd = findobj('string',settings.textstring);
         evts =unique(get(evthnd,'Tag'));
         indx = listdlg('promptstring','choose your event type to delete','liststring',evts);
         
@@ -429,7 +438,7 @@ switch action
         else
             a=evts(indx);
             
-            bmech_removeevent(a,fld)
+            bmech_removeevent(fld,a)
         end
         
         update_ensembler_lines(p,f,fld)
@@ -441,8 +450,7 @@ switch action
         lnhnd = get(evthnd,'userdata');           % this is the line handle
         fl = get(lnhnd,'UserData');
         
-        data = load(fl,'-mat');
-        data = data.data;
+        data = zload(fl);
         data.(ch).event = rmfield(data.(ch).event,evt);
         save(fl,'data');
         
@@ -543,7 +551,7 @@ switch action
         
         ax = findobj(gcf,'type','axes');% find existing axes
         lnOther = findobj(ax(1),'type','line','UserData',[]);  % get lines
-       
+        
         if verLessThan('matlab','8.4.0')
             lnAll =  findobj(ax(1),'type','line');
             ln = setdiff(lnAll,lnOther);
@@ -559,7 +567,7 @@ switch action
             for i = 1:length(ln)
                 tg{i} = get(ln(i),'Tag');
             end
-                        
+            
         else
             tg = cell(size(barr));
             for i = 1:length(barr)
@@ -590,12 +598,12 @@ switch action
         val = val(indx);
         hnd = hnd(indx);
         
-        legend(hnd,val,'interpreter','none');
+        legend(hnd,val,'interpreter','none','units','inches');
         
     case 'legend within'
         
         prmt = findobj('Tag','prompt');
-
+        
         if ~isempty(prmt)
             delete(prmt)
         end
@@ -633,14 +641,25 @@ switch action
             end
         end
         
+        pch = findobj(ax(1),'type','patch');
+        for i = 1:length(pch)
+            ud = get(pch(i),'UserData');
+            ud = strrep(ud,'average_','');
+            tg{end+i} = ud;
+        end
+        
         rg = 1:1:length(tg);
         a = associatedlg(tg,{rg});
         val = a(:,1);
         
         hnd = zeros(length(val),1);
-       
+        
         for i = 1:length(val)
-            hnd(i) = findobj(ax(1),'userdata',['average_line ',val{i}],'type','line');
+            if strfind(val{i},'SD')
+                hnd(i) = findobj(ax(1),'userdata',['average_',val{i}],'type','patch');
+            else
+                hnd(i) = findobj(ax(1),'userdata',['average_line ',val{i}],'type','line');
+            end
         end
         
         
@@ -654,7 +673,23 @@ switch action
         val = val(indx);
         hnd = hnd(indx);
         
-        legend(hnd,val,'interpreter','none');
+        legend(hnd,val,'interpreter','none','units','inches')
+        
+%         [legend_h, object_h, plot_h, text_strings] = legend(hnd,val,'interpreter','none');
+% 
+%         txt = findobj(object_h,'type','text')
+%         
+%         for i = 1:length(txt)
+%             set(txt(i),'FontSize',14)
+%         end
+        
+%         [legend_h, object_h, plot_h, text_strings] = legend(...) returns
+% 
+%     legend_h — Handle of the legend axes
+%     object_h — Handles of the line, patch, and text graphics objects used in the legend
+%     plot_h — Handles of the lines and other objects used in the plot
+%     text_strings — Cell array of the text strings used in the legend
+
         
     case 'line style'
         tg = get(findobj(gcf,'type','line'),'tag');
@@ -683,48 +718,28 @@ switch action
             ln = findobj('type','line','tag',a{i,1});
             set(ln,'linewidth',str2double(a{i,2}));
         end
-                
+        
     case 'line color'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
-        a = associatedlg(tg,{'b','r','g','c','m','k','y','dg','pu','db','lb'});
-        for i = 1:length(a(:,1))
+        col = colorlist;
+        a = associatedlg(tg,col(:,1)');
+        for i = 1:length(a(:,1));
             ln = findobj('type','line','tag',a{i,1});
-            
-            if length(a{i,2})==1
-                set(ln,'color',a{i,2});
-            else
-                if isin(a{i,2},'dg')
-                    set(ln,'color', [0.1059  0.3098  0.2078]);          % dark green
-                elseif isin(a{i,2},'pu')
-                    set(ln,'color', [0.4235  0.2510  0.3922]);          % purple
-                    
-                elseif isin(a{i,2},'br')
-                    set(ln,'color', [0.4510  0.2627  0.2627]);          % brown
-                    
-                elseif isin(a{i,2},'db')
-                    set(ln,'color', [0       0       0.7000]);          % dark blue
-                    
-                elseif isin(a{i,2},'lb')
-                    set(ln,'color', [ 0.2000    0.6000    1.0000]);     % ligh blue
-                    
-                    
-                    
-                else
-                    
-                end
-                
-            end
+            [~,indx] = ismember(a{i,2},col(:,1));
+            set(ln,'color',col{indx,2});
         end
         
     case 'line color within'
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
-        a = associatedlg(tg,{'b','r','g','c','m','k'});
+        col = colorlist;
+        a = associatedlg(tg,col(:,1)');
         for i = 1:length(a(:,1));
             ax = findobj('type','axes','tag',a{i,1});
             ln = findobj(ax,'type','line');
-            set(ln,'color',a{i,2});
+            [~,indx] = ismember(a{i,2},col(:,1));
+            set(ln,'color',col{indx,2});
         end
         
     case 'load data'
@@ -737,7 +752,7 @@ switch action
     case 'load single file'
         delete(findobj('type','line'));
         delete(findobj('type','patch'));
-        delete(findobj('string','\diamondsuit'));
+        delete(findobj('string',settings.textstring));
         
         [f,p] = uigetfile('*.zoo','select zoo file');
         loadfile(f,p,findobj('type','figure'));
@@ -763,9 +778,18 @@ switch action
         prompt={'Enter your desired data length: '};
         defaultanswer = {'101'};
         datalength = str2double(inputdlg(prompt,'axis title',1,defaultanswer));
-        bmech_normalize(fld,datalength)
+        ax = findobj('type','axes');
+        ch = cell(size(ax));
+        for i = 1:length(ax)
+           ch{i} =  get(ax(i),'tag');
+           set(ax(i),'XLim',[0 datalength])
+        end
+        ch(cellfun(@isempty,ch)) = [];   
+        ch = unique(ch);
+        bmech_normalize(fld,ch,datalength)
         
         update_ensembler_lines(p,f,fld)
+        
         
     case 'partition'
         prompt={'Enter name of start event: ', 'Enter name of end event'};
@@ -778,12 +802,13 @@ switch action
         
     case 'property editor off'
         propertyeditor('off')
-              
+        
     case 'quick style'
         quickstyle
         
     case 'relative phase'
-        relative_phase('load')
+        disp('this process is not currently available')
+        %relative_phase('load')
         
     case 'retag'
         fig = gcf;
@@ -842,7 +867,7 @@ switch action
             pch = findobj(ax,'type','patch');
             set(pch,'FaceColor',a{i,2},'FaceAlpha',0.1);
         end
-              
+        
     case 'stdline'
         tg = get(findobj(gcf,'type','patch'),'tag');
         %         tg = setdiff(unique(tg),{''});
@@ -858,7 +883,7 @@ switch action
         for i = 1:length(b(:,1))
             set(pch,'LineStyle',b{i,2});
         end
-               
+        
     case 'std shade'
         tg = get(findobj(gcf,'type','patch'),'tag');
         %         tg = unique(tg)
@@ -1042,7 +1067,7 @@ switch action
         name = 'Search string';
         numline = 1;
         %defaultanswer = {get(gcf,'name')};
-        defaultanswer = strjoin(get(findobj('type','figure'),'name'),' ');       
+        defaultanswer = strjoin(get(findobj('type','figure'),'name'),' ');
         sstr=inputdlg(prompt,name,numline,{defaultanswer});
         sstr = cell2mat(sstr);
         sstr_cell = partitionname(sstr);  % PD update
@@ -1068,7 +1093,7 @@ switch action
         
         
         save(defaultvalfile,'a')
-                    
+        
     case 'zero'
         ax = findobj('type','axes');
         tg = cell(1,length(ax));

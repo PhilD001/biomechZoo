@@ -1,13 +1,11 @@
-function bmech_removeevent(evt,fld,ch)
+function bmech_removeevent(fld,evt,ch)
 
-% bmech_removeevent(evt,fld,ch)
-% 
-% This m-file will remove events from your data. This step is usually done before final graphing
-% to avoid having to clear your graphs
+% BMECH_REMOVEEVENT(fld,evt,ch) removes events from data set. 
 %
 % ARGUMENTS
-%  evt  ...   name of event(s) to remove as cell array of strings e.g.{'HS','TO'}. Default is 'all'
-%  fld  ...   folder to operate on
+%  fld  ...   Folder to operate on
+%  evt  ...   Name of event(s) to remove (string or cell array of strings) e.g.{'HS','TO'}. 
+%             Default is 'all'
 %  ch   ...   channels from which to remove events. Default is 'all'
 
 

@@ -157,7 +157,7 @@ for i = 1:length(ch)
     rstk = zeros(length(trials),1);
     
     for j = 1:length(trials)
-        valstk(j,:) = normalizeline(gdata.(trials{j}).(ch{i}).line,nlength)';
+        valstk(j,:) = normalize_line(gdata.(trials{j}).(ch{i}).line,nlength)';
     end
     
     meanval = mean(valstk,1);               % mean value for a given sub/con/channel

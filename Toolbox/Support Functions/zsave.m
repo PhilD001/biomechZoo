@@ -1,13 +1,12 @@
-function zsave(fl,data,info)
+function zsave(fl,data,message)
 
-% ZSAVE(fl,data) saves zoo files to disk. The processing step 
-% information (name of calling function) is also saved to the 
-% zoosystem 'processing' branch
+% ZSAVE(fl,data,message) saves zoo files to disk with processing step information appended to the 
+% zoosystem 'Processing' branch.
 %
 % ARGUMENTS
-% fl      ...  full path to file
-% data    ...  zoo data
-% info    ...  further information about process (optional)
+%  fl       ...  Full path to file (string)
+%  data     ...  Zoo data
+%  message  ...  Further details about processing step (string). Default: Current date.
 %
 % e.g.1 If the function bmech_partition is run, then calling zsave(fl,data)
 % will add 'bmech_partition' to the branch 'data.zoosystem.processing'
@@ -16,35 +15,20 @@ function zsave(fl,data,info)
 % channels ch = {'RKneeAngle_x','LAnkleAngle_y'} then calling
 % zsave(fl,data,ch) will add 'bmech_removechannel 'RKneeAngle_x','LAnkleAngle_y'
 % to the branch 'data.zoosystem.processing'
+%
+% See also save, zload
 
 
 % Revision History
 %
 % Created by Philippe C. Dixon Sept 15th 2015
 %
-% Updated by Philippe C. Dixon June 22nd 2016
+% Updated by Philippe C. Dixon July 2016
 % - explicit mat file save to version 7 added. Note that v7.3 results in
 %   larger files, explained here http://www.mathworks.com/help/matlab/ref/save.html#inputarg_version
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Dr. Philippe C. Dixon, Harvard University. Boston, USA.
-% Yannick Michaud-Paquette, McGill University. Montreal, Canada.
-% JJ Loh, Medicus Corda. Montreal, Canada.
-% 
-% Contact: 
-% philippe.dixon@gmail.com
-%
-% Web: 
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
+% - Date stamp appended to message
+% - renamed branch from 'processing' to 'Processing' for consistency with
+%   other data.zoosystem fields 
 
 
 % version type for file save
@@ -59,20 +43,22 @@ process = ST.name;
 
 % Add additional processing info
 %
-if nargin==3
-    process = [process,' ',info];
+if nargin==2
+    message = '';
 end
+
+process = [process,' ',message,' (',date,')'];
 
 
 
 % write processing step to zoosystem
 %
-if ~isfield(data.zoosystem,'processing')
-    data.zoosystem.processing = {process};
+if ~isfield(data.zoosystem,'Processing')
+    data.zoosystem.Processing = {process};
 else
-    r = data.zoosystem.processing;
+    r = data.zoosystem.Processing;
     r{end+1,1} = process;
-    data.zoosystem.processing = r;
+    data.zoosystem.Processing = r;
 end    
     
 

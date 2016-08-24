@@ -1,6 +1,16 @@
 function data = zload(fl)
 
-% zload loads zoo files for quicker typing in batch processing
+% data = ZLOAD(fl) loads zoo files for quicker typing in batch processing
+%
+% ARGUMENTS
+%  fl    ... complete file path of file (string)
+%
+% RETURN
+%  data  ... zoo data (struct)
+%
+% See also zsave
+
+% Revision history
 %
 % Created by Philippe C. Dixon January 2012
 

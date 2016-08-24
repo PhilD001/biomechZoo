@@ -1,5 +1,7 @@
 function loaddata(fld,figs)
 
+% LOADDATA(fld,figs) loads line and event data into ensembler
+
 fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)

@@ -1,353 +1,427 @@
-% ======= The Biomechanics Zoosystem Toolbox Demo Processing Script ============================
-% NOTES:
-% - This script demonstrates the basic tools available in the Biomechanics Zoosystem Toolbox 
-%   by processing data for a hypothetical study.
-% - The Zoosystem toolbox folders should be added to the MatLab path before starting the demo.
-%   This can be accomplished by running startZoo.m (located in the root zoosystem folder)
-% - Sample data must first be downloaded <a href="https://github.com/PhilD001/the-zoosystem-samplestudy">here</a>
-% - Each processing step should operate on a new folder. This allows the user to retain 
-%   the original data. Also, the user can keep track of the changes performed throughout 
-%   the processing procedure. All steps are included in the download to help users trouble-
-%   shoot individual problems.
-% - The user is encouraged to first run through each step to understand the procedure. 
-% - The advanced user would also want to explore the underlying code of each function.
-% - Further information about the zoosystem can be found in:
-%   ~\the zoosystem\Help Files\zoo_presentation.ppt'
-% - Users may wish to run the <a href="matlab:edit zoo_process_example_auto">complete processing</a> 
-%   workflow to test the correct install of the Zoosystem
+% ZOO_PROCESS_EXAMPLE demonstrates the tools available in BiomechZoo by processing
+% sample data for a hypothetical study.
+%
+% NOTES
+% - BiomechZoo folders should be added to the MatLab path before starting the demo.
+%   This can be accomplished by running startZoo.m (located in the root BiomechZoo folder)
+% - Sample data can be downloaded at https://github.com/PhilD001/biomechzoo-samplestudy
+% - Run mode ('auto' or 'manual'). If input set to 'auto' all processing steps are run 
+%   automatically without user input. In manual mode, each processing step should operate
+%   on a new folder. This allows the user to check each process before moving on. 
+%   All steps are included in the download to help users trouble-shoot problems.
+% - The user is encouraged to first run through each step to understand the procedure.
+% - The advanced user may also want to explore the underlying code of each function.
+%
 %
 % THE STUDY
-% - 12 subjects were asked to perform straight walking (Straight) and 90 degree turning 
+% - 12 subjects were asked to perform straight walking (Straight) and 90 degree turning
 %   while walking (Turn) trials in a typical motion capture environment while fit with the
 %   Plug-in Gait (PiG) markers.
 % - For the purposes of this demo, we will hypothesize that there are differences between
-%   conditons for: 
+%   conditons for:
 %   (1) Maximum medio-lateral ground reaction force (GRF_ML)
 %   (2) Maximum hip adduction in stance (Hip_ADD)
-%   (3) Knee flexion angle at foot-off (Knee_FLX)
+%   (3) Knee flexion moment angle at foot-off (Knee_FLX)
+%   (4) Maximum ankle power generation (Ankle_PWR)
 %
 % - Step 1-7 processes the data for analysis
-% - Step 8 (The visualization section) presents the two main graphical user interfaces 
-%   (GUIs) of the zoosystem: 'ensembler' and 'director'. 
+% - Step 8 (The visualization section) presents the two main graphical user interfaces
+%   (GUIs) of the zoosystem: 'ensembler' and 'director'.
 % - Step 9 (The statistical analysis section) demonstrates how to export data to be read
 %   by thrid party statistical programs such as SPSS or R.
 %
-% Created by Philippe C. Dixon November 2013 
+% Created by Philippe C. Dixon November 2013
 %
-% Last updated by Philippe C. Dixon June 22nd 2016
-% - Updated help 
-% _ Updated links 
+% Last updated by Philippe C. Dixon August 15th 2016
+% - Improved help
+% - Included hyperlinks
+% - Added processes for comparsion with PiG outputs
+% - Added 'auto' mode
 %
-% see https://github.com/PhilD001/the-zoosystem for the latest version of the code
-% and associated help files
+% see http://www.biomechzoo.com for the latest updates on the biomechZoo project
 %
-
-
+%
 % License, citations, and latest version information, type 'zooinfo'
- 
 
-%% Step 1: Conversion to the Zoosystem format ----------------------------------------------
+
+
+%% Step 0: Set run mode ------------------------------------------------------------------
 %
-% - In this step, we convert data from origial format (.c3d) to zoosystem format (.zoo).
-% - User should create a copy of folder 'raw c3d files' called '1-c3d2zoo'. This will allow 
-%   us to return to the original data at any time.
+% - If mode is set to 'auto', all processes will apply to the new folder called 
+%   'zoo files (auto process)' created in this step
+% - If mode is set to 'manual', the user can run each cell (step 1-9) indivdually, each 
+%   time manually copying a new folder for each step
 
-fld = uigetfolder;                                                         % '1-c3d2zoo'
-del = 'yes';                                                               % delete original
+% mode = 'manual';                                                         % cell by cell
+mode = 'auto';                                                             % entire code
 
-c3d2zoo(fld,del)                                                           % run conversion
+if strfind(mode,'auto')
+    fld = uigetfolder('select ''raw c3d files''');
+    tic
+    indx = strfind(fld,filesep);
+    folder = fld(indx(end)+1:end);
+    tfld = strrep(fld,folder,'zoo files (auto process)');
+    copyfile(fld,tfld)
+    fld = tfld;
+    cd(fld)
+end
 
-% User notes: 
+
+%% Step 1: Conversion to the biomechZoo format -------------------------------------------
+%
+% - In this step, we convert data from origial format (.c3d) to zoo format (.zoo)
+% - User should create a copy of folder 'raw c3d files' called '1-c3d2zoo'. This will 
+%   allow us to return to the original data at any time
+
+if strfind(mode,'manual')
+    fld = uigetfolder('select ''1-c3d2zoo''');
+end
+
+del = 'yes';                                                                % delete c3ds
+
+c3d2zoo(fld,del);                                                           % run conv
+
+
+% User notes:
 % - Explore the structure of a raw zoo file by typing 'grab' and selecting any file.
 
 
-%% STEP 2: Processing force plate data ------------------------------------------------------
+%% STEP 2: Cleaning the data -------------------------------------------------------------
 %
-% - In this step, ground reaction forces are processed for later analysis (see hypotheses): 
-%   (1) Basic filtering
-%   (2) Normalizing to mass (N/kg)
-%   (2) Downsampling to match kinematics
-%   (3) Association of foot to force plate
-% - User should create a copy of folder '1-c3d2zoo' called '2-prep fpdata'.
+% - removes channels (not used in current study)
+% - The user should create a copy of folder '1-c3d2zoo' called '2-clean'
 
-fld = uigetfolder;                                                         % '2-process fpdata'
-filt.cutoff = 20;                                                          % filter settings 
-filt.ftype  = 'butterworth';                                               % see function
-filt.forder = 4;                                                           % for list of all
-filt.pass   = 'low';                                                       % filter choices
-ch_fp = {'Fx1','Fy1','Fz1','Fx2','Fy2','Fz2'};
+if strfind(mode,'manual')
+    fld = uigetfolder('select ''2-clean''');
+end
 
-bmech_filter('fld',fld,'filt',filt,'chfilt',ch_fp)                         % filter
+ch = {'LFHD','LBHD','RFHD','RBHD','C7','T10','T12','RBAK','CLAV','STRN',... % PiG markers
+      'LSHO','LELB','LWRA','LWRB','LFIN','RSHO','RELB','RWRA','RWRB',...
+      'RFIN','SACR','RASI','LASI','LTHI','LTIB','LKNE','LANK','LHEE',...
+      'LTOE','RTHI','RTIB','RKNE','RANK','RHEE','RTOE',...
+      'RHJC','LHJC','RFEO','LFEO','RTIO','LTIO',...                         % PiG jnts
+      'LPelvisAngles','LHipAngles','LKneeAngles','LAnkleAngles',...         % PiG kinemat
+      'RPelvisAngles','RHipAngles','RKneeAngles','RAnkleAngles',...
+      'LHipForce','LKneeForce','LAnkleForce','LHipMoment','LKneeMoment',... % PiG kinetics
+      'LAnkleMoment','LHipPower','LKneePower','LAnklePower','RHipForce',...
+      'RKneeForce','RAnkleForce','RHipMoment','RKneeMoment',...
+      'RAnkleMoment','RHipPower','RKneePower','RAnklePower',...   
+      'LGroundReactionForce','LGroundReactionMoment',...                    % PiG proc GRF
+      'RGroundReactionForce','RGroundReactionMoment',...
+      'ForceFx1','ForceFy1','ForceFz1','MomentMx1','MomentMy1',...          % raw GRF
+      'MomentMz1','ForceFx2','ForceFy2','ForceFz2','MomentMx2',...
+      'MomentMy2','MomentMz2'};
+    
+bmech_removechannel(fld,ch,'keep')                  
 
-bmech_massnormalize(fld,ch_fp,'Forces')                                    % convert to N/kg
 
-bmech_resample(fld,'Analog')                                               % FP match kin 
+%% STEP 3: Processing force plate data ---------------------------------------------------
+%
+% - In this step, filtering and downsampling of raw force plate data is performed
+% - Data are also mass normalized, renamed, and coordinate transformed in order to 
+%   prepare ground reaction force (GRF) data for use in other processes
+% - These processes attempt to replicate the steps performed by the Vicon modeller
+% - The user should create a copy of folder '2-clean' called '3-process fpdata' 
 
-bmech_forceplate2limbside(fld)                                             % assoc limbs
+if strfind(mode,'manual')
+    fld = uigetfolder('select ''3-process fpdata''');
+end
+filt.cutoff = 20;                                                           % filter
+filt.type   = 'butterworth';                                                % settings 
+filt.order  = 4;                                                            % see function
+filt.pass   = 'low';
+    
+bmech_processGRF(fld,filt)
+
+
+%% Step 4: Partitioning the data ---------------------------------------------------------
+%
+% - This step limits the analysis to a single stance phase for the right limb
+% - Data are partitionned based on right limb force plate hits
+% - The subfolder 'sfld' will be ignored (i.e., not partitioned, because static data do
+%   not contain gait data and do not need to be partitionned)
+% - The user should create a copy of folder '3-process fpdata' called '4-partition'
+
+if strfind(mode,'manual')
+    fld  = uigetfolder('select ''4-partition''');
+end
+
+sfld  = 'Static';                                                           % no partition
+evtn1 = 'RFS';                                                              % start name
+evtn2 = 'RFO';                                                              % end name
+evtt1 = 'FS_FP';                                                            % start type
+evtt2 = 'FO_FP';                                                            % end type
+ch    = 'RightGroundReactionForce';                                                              % event channel
+
+bmech_addevent(fld,ch,evtn1,evtt1,sfld)                                     % Find FS & FO
+bmech_addevent(fld,ch,evtn2,evtt2,sfld)                                     % based on Fz
+
+bmech_partition(fld,evtn1,evtn2,sfld)                                       % run function
 
 % User notes:
-% - This dataset also includes 'RGroundReactionForce' and 'LGroundReactionForce' channels.
-%   These are PiG modeller created channels that were filtered, mass normalized and 
-%   dowwnsampled. The process here recreates these steps from the raw force data.  
+% - After processing, all files show data over the stance phase of the right limb (left 
+%   will be in swing). Check by plotting, for example, the vertical ground reaction force:
+%  'plot(data.RightGroundReactionForce.line(:,3))'.
+% - The dataset also includes, for some files, events that were manually identified in 
+%   Vicon ('Right_FootStrike1' and 'Right_FootOff1'). The user can check if these are 
+%   similar to the events identified here.
 
 
-%% Step 3: Partitioning the data -----------------------------------------------------------
+%% STEP 5: Computing joint kinematics and kinetics ---------------------------------------
 %
-% - This step limits the analysis to a single stance phase for the right limb.
-% - Data are partitionned based on right limb force plate hits.
-% - The subfolder 'sfld' will be ignored (data within will not be partitioned). 
-%   Static data does not contain partition events and does not need to be partitionned. 
-% - The user should create a copy of folder '2-prep fpdata' called '3-partition'.
+% - This steps computes ankle, knee, and hip joint kinematics using two approaches:
+%   (1) 'KineMat' toolbox see: http://isbweb.org/software/movanal/kinemat/
+%   (2) custom code made to reproduce the PiG outputs
+% - Ankle, knee, and hip joint centres are also computed to supported calculations
+% - The user should create a copy of folder '4-partition' called '5-computations'
 
-fld  = uigetfolder;                                                        % '3-partition'
-sfld = 'Static';                                                           % no partition
-evt1 = 'RFS';                                                              % start event  
-evt2 = 'RFO';                                                              % end event 
+if strfind(mode,'manual')
+    fld = uigetfolder('select ''5-computations''');
+end
 
-bmech_addevent(fld,'RFz',evt1,'FS FP',sfld)                                % Finds FS and FO 
-bmech_addevent(fld,'RFz',evt2,'FO FP',sfld)                                % based on Fz sig
+sfld = {'Static'};                                                          % no partition
 
-bmech_partition(evt1,evt2,fld,sfld)                                        % run function
+Pelvis = {'RASI','LASI','SACR'};                                            % markers to
+Thigh  = {'KNE','THI','HipJC'};                                             % define seg
+Shank  = {'ANK','TIB','KneeJC'};                                            % for kinemat
+Foot   = {'ANK','TOE','HEE'};                                               % computations
+joints = {'HipJC','KneeJC','AnkleJC'};
+sequence = 'yxz';                                                           % Euler seq
+
+bmech_jointcentrePiG(fld,joints)                                            % Jnt centres
+
+bmech_kinematicsRvdB(fld,Pelvis,Thigh,Shank,Foot,sequence)                  % run kinemat
+
+bmech_kinematics(fld)                                                       % run kinemat
+
+bmech_kinetics(fld)                                                         % run kinetics
+
+bmech_removefolder(fld,sfld)                                                % rm static
+
 
 % User notes:
-% - The call to bmech_addevent determines which foot is 'associated' with which force plate
-%   using a kinematic algoritm (see ZeniEventDetect.m). The information is stored in 
-%   data.zoosystem.CompInfo. Later, this will be used to identify the correct force plate.  
-% - After processing, all files show data over the stance phase of the right limb (left will
-%   be in swing). Check by plotting, for example 'RFz': 'plot(data.RFz.line)'. 
-% - The field data.zoosystem.Video is updated to reflect the parititonning: 
-%   ORIGINAL_START_FRAME and ORIGINAL_END_FRAME refer to the frames captured in Vicon. The
-%   ORIGINAL_START_FRAME is considered the first frame in the Zoosystem. Thus, the 
-%   CURRENT_START_FRAME indicates how many frames were cut from the start in partionning.
-% - Analog channels sampled at 1000Hz were downsampled by bmech_resample before 
-%   partitionning and therefore reflect correct partition points. 
-% - The dataset also included events that were manually identified in Vicon 
-%   ('Right_FootStrike1' and 'Right_FootOff1'). The user can check that these are similar 
-%   to the events identified here.
+% - This step demonstrates the kinematic and kinetic tools available in BiomechZoo
+% - Kinematics are computed from 'raw' markers (labelled and gap filled); however, the
+%   anthropometric info within the c3d file were used to support the calculations
+% - A truly 'raw' process would need to include a step in which anthropometrics are added
+%   to the data.zoosystem.Anthro branch
+% - This dataset also contains kinematic quantities computed by the PiG modeller. These 
+%   were used to compare the present calculations (see biomechZoo-samplestudy/figures/)
+% - The angles output by the KineMat function were offset by the static PiG angles in 
+%   order to better compare the processes.
 
 
-%% STEP 4: Computing joint kinematics -------------------------------------------------------
-%
-% - This steps computes ankle, knee, and hip joint kinematics using the 'kinemat' toolbox 
-%   of Reinschmidt and Van den Bogert, see: http://isbweb.org/software/movanal/kinemat/
-% - Additional 'virtual markers' representing the ankle (AnkleJC), knee (KneeJC), 
-%   and hip (HipJC) are computed to allow kinematic computations
-% - The user should create a copy of folder '3-partition' called '4-kinemat'.
-
-fld = uigetfolder;                                                         % '4-kinemat'
-Pelvis = {'RASI','LASI','SACR'};                                           % markers used to
-Thigh  = {'KNE','THI','HipJC'};                                            % define each seg
-Shank  = {'ANK','TIB','KneeJC'};                                           % for joint angle
-Foot   = {'ANK','TOE','HEE'};                                              % computations
-joints = {'HipJC','KneeJC'};
-sequence = 'yxz';                                                          % Euler sequence
-
-bmech_jointcentrePiG(fld,joints)                                           % adds hip joint
-
-bmech_kinemat(fld,Pelvis,Thigh,Shank,Foot,sequence)                        % comp. kinematics
-
-% User notes:
-% - This step has been included to demonstrate that the zoosystem can be used on 'raw' data,
-%   i.e., data that contain only marker data (labelled and gap filled). This dataset also 
-%   contains joint centres/angles computed by the Pig modeller that could be used instead. 
-% - Joint kinematics from the kinemat toolbox are assumed to be 'valid'. It is left as an 
-%   exercise to the user to compare these outputs to the PiG. 
-% - bmech_kinemat as implemented here relies on virtual joint center markers (not present in
-%   'raw data'. These were computed from marker data as described in the PiG user manual 
-% - bmech_kinemat relies on Matlab's symbolic math toolbox to compute the PiG 'Chord' 
-%   function. If this toolbox is unavailable other algorithms must be considered.
-% - PiG information (leg length and marker diameteter) must be exported to original c3d file
-%   or appended in a custom step for correction functionality
-% - Comparison of kinemat and PiG output is shown in PiGvsKinemat_Straight.pdf and 
-%   PiGvsKinemat_Turn.pdf stored in \Sample Study\Figures\ 
-
-
-%% Step 5: Cleaning the data ---------------------------------------------------------------
-%
-% - This step cleans up the zoo files by removing unwanted channels and by splitting 
-%   (exploding) 3D channels into separate channels ('_x','_y', and '_z' for easier analysis
-%   and plotting.
-% - User should create a copy of folder '4-kinemat' called '5-clean'.
-
-fld  = uigetfolder;                                                        % '5-clean'
-sfld = 'Static';                                                           % no partition
-chkp = {'RFx','RFy','RFz','SACR','LASI',...                                % chns to keep
-        'RHipKinemat','RKneeKinemat','RAnkleKinemat',};               
-
-bmech_removefolder(fld,sfld)                                               % rm static
-
-bmech_removechannel('fld',fld,'chkp',chkp)
-bmech_removechannel('fld',fld,'chrm','LASI')
-
-bmech_explode(fld)                                                         % mx3 to 3 mx1
-
-% User notes:
-% - All files now contain a single channel for marker data ('SACR'), channels for each 
-%   dependent variable to be analysed (exploded into three mx1 subchannels), and additonal 
-%   ankle angles ('RAnkleKinemat', also exploded)
-% - The 'zoosystem' metainformation channel is never removed by 'bmech_removechannel'
-
-
-%% Step 6: Adding events -------------------------------------------------------------------
+%% Step 6: Adding events -----------------------------------------------------------------
 %
 % - In this step, discrete events along the curves are identified for statistical analysis
-%   (see hypotheses).
-% - User should create a copy of folder '5-clean' called '6-add events'.
+%   (see hypotheses)
+% - User should create a copy of folder '5-computations' called '6-add events'.
 
-fld = uigetfolder;                                                         % '6-add events'
+if  strfind(mode,'manual')
+    fld = uigetfolder('select ''6-add events''');
+end
 
-bmech_addevent(fld,'RFx','min','min')                                      % min val stance
-bmech_addevent(fld,'RHipKinemat_y','max','max')                            % max val stance
+bmech_explode(fld)
+
+bmech_addevent(fld,'RightGroundReactionForce_x','max','max')                % max lateral
+bmech_addevent(fld,'RightHipAngle_y','max','max')                           % max adduct
+bmech_addevent(fld,'RightAnklePower','max','max')                           % max gener
+
 
 % User notes:
-% - Local events have been added to the event branch of the channels selected. Users can 
+% - Local events have been added to the event branch of the channels selected. Users can
 %   explore data by typing 'grab', selecting a file and plotting using 'zplot', e.g.:
-%   'zplot(data.RHipAngles_y)'. See ~\Sample Study\figures\zplot_figure_example.fig' 
-% - An event does not need to be added for knee flexion at foot-off because this event 
-%   already exists ('RFO' identified in step 3 or 'Right_Foot_Off1' identified in Vicon).
-%   This kind of event is referred to as a 'global event' and can be accessed by any channel.
+%   'zplot(data.RightHipAngle_y)'
+% - An event does not need to be added for knee moment at foot-off because this event
+%   already exists ('RFO' previously identified)
+%   This kind of event is referred to as a 'global event', the other events are 'local'
 
 
-%% Step 7: Normalizing the data ------------------------------------------------------------
+%% Step 7: Normalizing -------------------------------------------------------------------
 %
-% - This step normalizes data to a single length of 101 frames (0-100% stance phase)
+% - This step normalizes all channels to a single length of 101 frames (0-100% stance)
 % - User should create a copy of folder '6-add events' called '7-normalize'
 
-fld = uigetfolder;                                                         % '7-normalize'
-nlength = 100;                                                             % 100% of stance
+if  strfind(mode,'manual')
+    fld = uigetfolder('select ''7-normalize''');
+end
 
-bmech_normalize(fld,nlength)
+nlength = 100;                                                              % 100% stance
+method = 'linear';                                                          % interp meth
+ch = 'all';                                                                 % norm all chs
 
-% User notes:
-% - Different interpolation methods can be implemented in bmech_normalize via an optional
-%   (third) argument
+bmech_normalize(fld,ch,nlength,method)
 
 
-%% Step 8: Visualization -------------------------------------------------------------------
+%% Step 8: Visualization -----------------------------------------------------------------
 %
-% - Now that the processing is complete, it is important to visualize the data to check for 
-%   errors/problems. This can be done using the 'ensembler' and 'director' tools.
+% - Now that the processing is complete, it is important to visualize the data to check
+%   for any errors/problems. This can be done using the 'ensembler' and 'director' tools.
+
+% Generating time-series graphs for RightGroundReactionForce_x, RightHipAngle_y, 
+% RightKneeMoment_x, and Righ3tAnklePower in Ensembler:
+% 
+% 1. Type ensembler in the Matlab command window. A preliminary settings window opens.
+% 2. Change the name field to Straight Turn, rows to 1, and columns to 4 and click OK. 
+%    Two generic Ensembler figures are created, each with four empty axes. The main figure 
+%    (Turn) contains a menu bar at the top. To resize figure windows and axes, select 
+%    File, restart from the menu bar and edit the sizing options.
+% 3. Select Axes, re-tag and choose any fully processed zoo file in the final normalized 
+%    folder. A channel selection window opens. Associate RightGroundReactionForce_x, 
+%    RightHipAngle_y, RightKneeMoment_x, and RightAnklePower to the generic 1 1, 1 2, 1 3, 
+%    and 1 4 axes, respectively, by clicking on the arrows. Each channel should now be 
+%    listed on the right of its corresponding axis number in the center of the selection
+%    window. Select OK to update the figure axis titles with the selected channel names.
+% 4. In the menu bar, choose File, load data, and select the folder containing normalized 
+%    data. Ensembler populates the axes with the corresponding channel data for each 
+%    condition. Trials from the Straight and Turn conditions will be sorted into the 
+%    Straight and Turn figures, respectively.
+% 5. Clear all events by selecting Events, clear all events from the menu bar.
+% 6. One line for RightGroundReactionForce_x for each condition appears separate from the 
+%    others. Left click on the trace to identify the trials (HC002D25.zoo and HC036A10.zoo 
+%    for the Straight and Turn conditions, respectively.). Press delete on the keyboard 
+%    and select Delete Channel to erase the traces. The line and event values are replaced
+%    with the value 999 (see Section 3.3 for justification).
+% 7. Select Ensembler, Ensemble (SD) then Ensembler, combine data to graph the average of 
+%    both conditions in a single figure. Line styles and colors can be updated via the 
+%    Line menu to differentiate the conditions.
+% 8. Add a legend by selecting Insert, legend and associating each condition with a number 
+%    indicating the order in which the legend entries are displayed (vertically).
+% 9. Finalize graphs by exploring the menu bar options or by selecting Edit, property 
+%    editor on.
+% 10. Save the figure by selecting File, save fig or export to vector graphics format 
+%    (.pdf ) by selecting File, export.
 %
-% ENSEMBLER (PART 1): 
-% - The main GUI in the zoosystem is 'ensembler'. For this example, follow instructions: 
-%   (1)  Type 'ensembler' in the Matlab command window. A window pops up with some settings  
-%   (2)  Change the 'name' field to 'Straight' 'turn', rows to '1', and columns to '3' (all 
-%        without quotes) and click 'OK'. This will create two generic figure windows, each 
-%        with three empty axes. To resize figure windows and axes to your liking, select 
-%        'restart' from the 'File' menu on the main figure window and edit sizing options
-%   (3)  Select 'Axes' --> 're-tag'. Choose any zoo file from the step 7 folder. This opens
-%        a window for you to select which channel(s) to view in ensembler. Associate 
-%        'RHipKinemat_y', 'RKneeKinemat_x', and 'RFx' to the generic axes '1 1', '1 2', '1 3'
-%        and select 'ok'. The axes of each figure will be updated.
-%   (4)  In the main menu of either figure window, choose 'File'-->'load data' and select
-%        the step 7 folder. This will allow ensembler to populate the axes with
-%        corresponding data. For example, the 'RHipKinemat_y' axes of figure 'Turn' contains 
-%        only the RHipKinemat_y data for the turn condition 
-%   (5)  For now, ignore the events by selecting 'Events' --> 'clear all events'. Only the 
-%        line data remain. 
-%   (6)  One line for RFx of the Turn condition appears separate from the others. Left click
-%        on the trace to identify the trial (HC002D25.zoo).  We will see later why this 
-%        trace is different, but for now let's assume it is an outlier that should be 
-%        removed. This could be done by deleting the file in a standard window explorer 
-%        (or mac finder) window, but the rest of the data (hip and knee angles) appear 
-%        unaffected and should not be deleted. In ensembler, left click on the trial, 
-%        press 'delete' on the  keyboard and select 'Delete Channel'. This will replace 
-%        all line and event data in this channel with 999 values (check using grab).
-%   (7)  Select 'Ensembler' --> 'Ensemble (SD)' and the 'Ensembler' --> 'combine data' to 
-%        graph the average of both conditions together. Line styles and colors can be 
-%        updated via the 'Line' menu. Change the colors and styles to easily differentiate 
-%        the conditons. 
-%   (8)  Add a legend by selecting 'Insert' --> 'legend'  
-%   (9)  Finalize graphs by exploring the menu bar options or by selecting Edit, property 
-%        editor on.
-%   (10) Save the figure by selecting File, save fig or export to pdf format by selecting 
-%        File, export.
-%        See ~\Sample Study\figures\ensembler_line_example.fig and .pdf for sample outputs
+%
+% Generating a bar graph for the maximum hip adduction angle (HipADD) in Ensembler:
+%
+% 1. Repeat steps 1–4 from the time-series instructions, modified to load the 
+%    RightHipAngle_y channel data only.
+% 2. Clear the event NRMSE by selecting Events then clear events by type.
+% 3. Select Ensembler, ensemble (CI) then Ensembler, combine data.
+% 4. Select Bar Graph from the menu, then bar graph to display discrete event data as a 
+%    bar graph.
+% 5. Finalize, and save using steps 8–10 from the time-series graphing instructions.
+%
+%
+% Visualizing three-dimensional motion capture data in Director:
+% 
+% 1. Type director in the command window. A blank three-dimensional canvas opens.
+% 2. Select Load File and choose a file from the “Step 1” folder.
+% 3. Choose lower-limbs to load a lower-body skeleton for the selected trial.
+% 4. Choose a few markers to display in the animation and select OK
+% 5. Choose a channel to plot by clicking on the channel list in the upper left corner.
+% 6. Press Play to start animation (Stop to stop).
+% 7. Repeat this process for a number of trials (including
 
-% DIRECTOR  
-% - The other zoosystem GUI is called 'director'. Director is a 3D virtual environment for 
-%   visualization of 3D motion data. Out of the box, it can animate motion trials for 
-%   plug-in gait data, but can be updated by advanced users for use with other datasets. 
-% - Let us explore a few trials from the dataset by following these steps: 
-%  (1) Type 'director' (make sure ensembler is closed) from the command window. This opens
-%      up a blank 3D canvas. 
-%  (2) Select 'Load File' and choose a file from the step 1 folder. 
-%  (3) Choose 'lower-limbs' and then select a few markers to display from the list (e.g. 
-%      'RP1M','RP5M', and 'RTOE'). This will load a skeleton and markers associated with the
-%      trial. Director detects the position of force plates in the file and also displays 
-%      them in the 3D environment. Select a channel from the top-left channel list to 
-%      display its graph. Click 'Play' to start the animation. 
-%  (4) Repeating this process for a number of trials (including our so-called outlier) 
-%      reveals that in trial 'HC002D25.zoo' the subject walked in the opposite direction to 
-%      the others. This direction change was responsible for seemingly incorrect force 
-%      profile. A function could be written to rotate GRF to a single (global) orientation 
-%      in a real study.  
+if strfind(mode,'auto')
+    out_file_turn = [fld,filesep,'HC002D',filesep,'Turn',filesep,'HC002D25.zoo'];
+    out_file_straight = [fld,filesep,'HC036A',filesep,'Straight',filesep,'HC036A10.zoo'];
 
-% ENSEMBLER (PART 2)
-% - We are interested in extracting discrete points along the curves (see hypotheses). 
-%   Follow the steps below to crete bar graphs for the given events
-%  (1) Repeat steps 1-4, but this time only load the RHipAngles_y data
-%  (2) Select Ensembler --> Ensemble (CI) then Ensembler, combine data to show a mean and 
-%      confidence interval (CI) curve for each condition on a single axis. 
-%  (3) Select 'Bar Graph' --> 'bar graph' to display these discrete data. 
-%  (4) Finalize, and save graphs using steps 8-10 from the time-series graphing instructions
+    ch = {'RightGroundReactionForce_x','RGroundReactionForce_x',...
+          'RightGroundReactionForce_y','RGroundReactionForce_y'};
+      
+    outlier(out_file_turn,ch)                
+    outlier(out_file_straight,ch)            
+end
 
 
-%% Step 9: Statistical analysis ------------------------------------------------------------
+%% Step 9: Statistical analysis ----------------------------------------------------------
 %
 % - After analysis and visualization of data is complete, it is now possible to export the
 %   data for statistical analysis
 %
 % METHOD A: Exporting to spreadsheet (using the eventval function)
 %
-fld = uigetfolder;                                                         % '6-add events'
-levts = {'min','max'};                                                     % local events                                            
-gevts = {'RFS'};                                                           % global events                                       
-aevts = {'Bodymass','Height'};                                             % anthro events
-ch    = {'RFx','RHipKinemat_y','RKneeKinemat_x'};                          % channel to search
-dim1  = {'Straight','Turn'};                                               % conditions
-dim2  = {'HC002D','HC030A','HC031A','HC032A','HC033A',...                  % subjects
-         'HC036A','HC038A','HC039A','HC040A','HC044A','HC050A',...
-         'HC055A'};
-excelserver = 'off';                                                       % use java
-ext = '.xls';                                                              % preferred ext
+if strfind(mode,'manual')
+    fld = uigetfolder('select ''7-normalize''');
+end
+
+levts = {'max'};                                                            % local events
+gevts = {'RFO'};                                                            % global events
+aevts = {'Bodymass','Height'};                                              % anthro events
+ch    = {'RightGroundReactionForce_x','RightHipAngle_y',...                 % channels 
+         'RightKneeMoment_x','RightAnklePower'};                            % to export
+dim1  = {'Straight','Turn'};                                                % conditions
+dim2  = {'HC002D','HC030A','HC031A','HC032A','HC033A','HC036A',...          % subjects
+         'HC038A','HC039A','HC040A','HC044A','HC050A','HC055A'};
+    
+excelserver = 'off';                                                        % use java
+ext = '.xls';                                                               % pref ext
 
 eventval('fld',fld,'dim1',dim1,'dim2',dim2,'localevts',levts,...
-         'globalevts',gevts,'anthroevts',aevts,'ch',ch,'excelserver',excelserver,...
-         'ext',ext) 
-     
+    'globalevts',gevts,'anthroevts',aevts,'ch',ch,'excelserver',excelserver,...
+    'ext',ext)
+
 % User notes:
 % - If you run into problems take a look at the exisiting 'eventval.xls' file
-% - Non-existant events (e.g. 'max' for RKneeAngles_x') and outliers will show as 999 values 
+% - Outliers will show as 999
 % - Check that data in excel sheet matches zoo data using grab
-% - This sheet can be imported into SPSS to test the hypotheses...what do you find?
+% - This sheet can be imported into SPSS/R or other programs to test the hypotheses...
+%   what do you find?
 % - On mac or if excel is not installed on computer, 'excelserver' must be set to 'off'
+
 
 
 % METHOD B: Analysis within the Matlab environment (using extractevents.m)
 %
-%
-% RGroundReactionForce_x maximum (GRF_ML)
-%
-ch  = 'RFx';
-evt = 'min';
-r = extractevents(fld,dim1,dim2,ch,evt);
-[~,pval_GRF_ML] = ttest(r.Straight,r.Turn,0.05,'both');                    % p-val = 0.006*
-disp(['p-value for GRF_ml = ',num2str(pval_GRF_ML)])
+alpha = 0.05;
 
-% RHipKinemat maximum (Hip_ADD)
+% RightGroundReactionForce_x maximum (GRF_ML)
 %
-ch  = 'RHipKinemat_y';
+ch  = 'RightGroundReactionForce_x';
 evt = 'max';
-r = extractevents(fld,dim1,dim2,ch,evt);            
-[~,pval_Hip_ADD] = ttest(r.Straight,r.Turn,0.05,'both');                  % p-val = 0.033*
-disp(['p-value for Hip_ADD = ',num2str(pval_Hip_ADD)])
-
-% RKneeAngle_x at foot off (Knee_FLX)
-%
-ch  = 'RKneeKinemat_x';
-evt = 'RFS';
 r = extractevents(fld,dim1,dim2,ch,evt);
-[~,pval_Knee_FLX] = ttest(r.Straight,r.Turn,0.05,'both');                   % p-val = 0.356
-disp(['p-value for Knee_FLX = ',num2str(pval_Knee_FLX)])
+[~,pval] = ttest(r.Straight,r.Turn,alpha);                                   % p = 0.008*
+disp(['p-value for GRF_ml = ',num2str(pval)])
+disp(['GRF_ML Straight = ',sprintf('%.1f',nanmean(r.Straight)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Straight)),' N/kg'])
+disp(['GRF_ML Turn = ',sprintf('%.1f',nanmean(r.Turn)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Turn)),' N/kg'])
+
+
+% RightHipAngle maximum (Hip_ADD)
+%
+ch  = 'RightHipAngle_y';
+evt = 'max';
+r = extractevents(fld,dim1,dim2,ch,evt);
+[~,pval] = ttest(r.Straight,r.Turn,alpha);                                   % p = 0.007*
+disp(['p-value for Hip_ADD = ',num2str(pval)])
+disp(['Hip_ADD Straight = ',sprintf('%.1f',nanmean(r.Straight)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Straight)),' deg'])
+disp(['Hip_ADD Turn = ',sprintf('%.1f',nanmean(r.Turn)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Turn)),' deg'])
+
+% RightKneeMoment_x at foot off (Knee_FLX)
+%
+ch  = 'RightKneeMoment_x';
+evt = 'RFO';
+r = extractevents(fld,dim1,dim2,ch,evt);
+[~,pval] = ttest(r.Straight,r.Turn,alpha);                                   % p = 0.028
+disp(['p-value for Knee_FLX = ',num2str(pval)])
+disp(['Knee_FLX Straight = ',sprintf('%.1f',nanmean(r.Straight)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Straight)),' Nmm/Kg'])
+disp(['Knee_FLX Turn = ',sprintf('%.1f',nanmean(r.Turn)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Turn)),' Nmm/kg'])
+
+
+% RightAnklePower max (Ankle_PWR)
+%
+ch  = 'RightAnklePower';
+evt = 'max';
+r = extractevents(fld,dim1,dim2,ch,evt);
+[~,pval] = ttest(r.Straight,r.Turn,alpha);                                   % p = 0.002
+disp(['p-value for Ankle_PWR = ',num2str(pval)])
+disp(['Ankle_PWR Straight = ',sprintf('%.1f',nanmean(r.Straight)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Straight)),' W/kg'])
+disp(['Ankle_PWR Turn = ',sprintf('%.1f',nanmean(r.Turn)),...
+    ' +/- ',sprintf('%.1f',nanstd(r.Turn)),' W/kg'])
+
+if strfind(mode,'auto')
+    disp(' ')
+    disp('**********************************')
+    disp('Finished running demo program in : ')
+    toc
+    disp('**********************************')
+end
 

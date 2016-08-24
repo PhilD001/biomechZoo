@@ -1,18 +1,18 @@
 function zoosystem
 
 % ZOOSYSTEM gives a quick summary of the functions included in the
-% latest version of the zoosystem
+% latest version of the biomechZoo Toolbox
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Part of the Zoosystem Biomechanics Toolbox v1.3 Copyright (c) 2006-2016 (Main contributors)
 % Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
+% Type 'zooinfo' in the command prompt for additional information
 
 disp('==============================================================================================')
-disp('                             ZOOSYSTEM BIOMECHANICAL TOOLBOX SUMMARY')
+disp('                  THE BIOMECHZOO TOOLBOX FUNCTION SUMMARY')
 disp('=============================================================================================')
 disp(' ')
-disp('The following is a summary of the Zoosystem Toolbox functions for analysis of biomechanical data')
+disp('The following is a summary of the biomechZoo Toolbox functions for analysis of biomechanical data')
 disp(' ')
 disp(' (1) Biomech Ops: Functions to conduct basic biomechanical analysis');
 disp(' (2) Gait: Functions for walking research, including display of normative gait curves in Ensembler');

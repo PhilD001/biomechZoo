@@ -1,18 +1,18 @@
-function bmech_partition(evt1,evt2,fld,folders)
+function bmech_partition(fld,evt1,evt2,nfld)
 
 % BMECH_PARTITION(evt1,evt2,fld,folders) partitions (cuts) files from evt1 and evt2.
 %
 % ARGUMENTS
-%  evt1     ...   Name of first event as a string.
-%  evt2     ...   Name of second event as a string.
-%  fld      ...   Path leading to files (Optional argument). Default, popup during
-%                 function call
-%  folders  ...   Name of folders as cell array of sttring in which NOT to partition. Default 'all'
-
+%  fld      ...  Folder to batch process (string). Default: folder selection window.
+%  evt1     ...  Name of first event as a string.
+%  evt2     ...  Name of second event as a string.
+%  nfld     ...  Folder(s) NOT to partition (string or cell array of strings). Default: ''
+%
+% See also partition_data
 
 
 % Revision History
-% 
+%
 % Created by JJ Loh 2006
 %
 % Updated by Philippe C. Dixon August 2009
@@ -30,20 +30,11 @@ function bmech_partition(evt1,evt2,fld,folders)
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
-
 
 % Set Defaults
 %
-if nargin == 2
-    folders  = 'all';
-    fld = uigetfolder;
-end
-
-if nargin ==3
-    folders  = 'all';
+if nargin == 3
+    nfld  = '';
 end
 
 
@@ -51,34 +42,34 @@ end
 %
 cd(fld);
 fl = engine('path',fld,'extension','zoo');
-
-if strcmp(folders,'all')==1
+nfl = {};
+if isempty(nfld)
     
     for i = 1:length(fl)
         data = zload(fl{i});
         batchdisplay(fl{i},'partitioning');
-        data = partitiondata(data,evt1,evt2);
-        zsave(fl{i},data,[evt1,' to ',evt2]) 
+        data = partition_data(data,evt1,evt2);
+        zsave(fl{i},data,[evt1,' to ',evt2])
     end
     
 else
     
     for i = 1:length(fl)
         
-        if ~isin(fl{i},folders)
-            
+        if ~isin(fl{i},nfld)
             data = zload(fl{i});
             batchdisplay(fl{i},'partitioning');
-            data = partitiondata(data,evt1,evt2);
-            zsave(fl{i},data,[evt1,' to ', evt2])            
+            data = partition_data(data,evt1,evt2);
+            zsave(fl{i},data,[evt1,' to ', evt2])
         else
-            batchdisplay(fl{i},'not partitioning');
-            
-            
+            nfl{i} = fl{i}; %#ok<AGROW>
         end
-        
     end
-    
+end
+
+nfl(cellfun(@isempty,nfl)) = [];   
+for i = 1:length(nfl)
+    batchdisplay(nfl{i},'not partitioning');
 end
 
 

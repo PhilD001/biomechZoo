@@ -1,26 +1,28 @@
-function data = makebones(sdata,data)
+function data = makebones(data,type,foot_flat,test)
 
-% DATA = MAKEBONES(data,sdata) creates segment axes for use in vicon2groodsuntay
+% DATA = MAKEBONES(data) creates segment 'bones' for use in vicon2groodsuntay or for
+% visualization in director. Bones are virtual markers representing segment axes.
 %
 % ARGUMENTS
 %
-% sdata   ... static trial data
-% data    ... dynamic trial data with PiG 'bone' channels (suff
-%             'O','A','L','P') for pelvis, R/L femur, R/L tibia, R/L foot
-%             as well as R/L Hip (HJC), Knee (KJC), ankle (AJC) joint centers
+% data             ... trial data
+% test             ... test against existing PiG 'bones'
 %
 % NOTES
-% - requires further testing before use
+% - Following anthroopmetric/metainfo data must be available:
+%   'MarkerDiameter, R/LLegLength,R/LKneeWidth,R/LAnkleWidth
+%
+% - Foot length may be inexact during visualization in director. Joint angles are unaffected
+% - Only lower-limb bones are currently created
 
-% Revision history: 
+
+% Revision history:
 %
 % Created by Yannick Michaud-Paqutte 2008
 %
-% Updated by Philippe C. Dixon March 17th 2016
-% - User can input static trial data with medial knee and ankle markers to improve
-%  joint center estimates. If static trial is not included (and dynamic
-%  trial does not include these markers) offset from KNEE and ANK markers
-%  in global Y will be used to locate joint center
+% Updated by Philippe C. Dixon June 2016
+% - All segment-emedded axes verified (good agreement)
+% - All joint centers verified (good aggreement)
 
 
 % Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
@@ -29,730 +31,612 @@ function data = makebones(sdata,data)
 
 
 
-% Set defaults
+% Set defaults ---------------------------------------------------------------------------
 %
+if nargin==1
+    type = 'dynamic';
+    test = 0;
+    foot_flat = false;
+end
 
+if nargin==2
+    test = 0;
+    foot_flat = false;
+end
 
-% Load file for testing purposes
-%
-if nargin==0
-    
-    f = 'HC021A01.zoo';
-    p = ['/Users/phildixon/Dropbox/Current Work/my public m-files and datasets/'...
-        'the zoosystem/Sample Study/Data/1-c3d2zoo/HC021A/Static/'];
-    sdata = zload([p,f]);
-    
-    f = 'HC021A23.zoo';
-    p = ['/Users/phildixon/Dropbox/Current Work/my public m-files and datasets/'...
-        'the zoosystem/Sample Study/Data/1-c3d2zoo/HC021A/Turn/'];
-    data = zload([p,f]);
-    test = 1;
-else
+if nargin==3
     test = 0;
 end
 
-
-
-
-% Get anthropometric parameters
+% Extract PiG markers --------------------------------------------------------------------
 %
-anthro = getAnthro(data);
+if isfield(data,'RPSI')                                     % in cases where SACR
+    RPSI = data.RPSI.line;                                  % marker was not used
+    LPSI = data.LPSI.line;                                  % it can be computed
+    SACR = (RPSI+LPSI)/2;                                   % from RPSI and LPSI
+    data = addchannel_data(data,'SACR',SACR,'video');
+else
+    SACR = data.SACR.line;
+end
 
-RAsisTrocDist = 0;
-LAsisTrocDist = 0;
-
-LLegLength = anthro.LLegLength;
-RLegLength = anthro.RLegLength;
-
-markerdiameter = anthro.MarkerDiameter;
-mm = markerdiameter/2 ;
-
-lkneewidth = anthro.LKneeWidth;
-rkneewidth = anthro.RKneeWidth;
-
-lanklewidth = anthro.LAnkleWidth;
-ranklewidth = anthro.RAnkleWidth;
-
-
-
-% Get markers for comparison
-%
-SACR = data.SACR.line;
 LASI = data.LASI.line;
-RASI = data.RASI.line;
-
 LKNE = data.LKNE.line;
-RKNE = data.RKNE.line;
+LTIB = data.LTIB.line;
 LANK = data.LANK.line;
+LHEE = data.LHEE.line;
+LTOE = data.LTOE.line;
+
+RASI = data.RASI.line;
+RKNE = data.RKNE.line;
+RTIB = data.RTIB.line;
 RANK = data.RANK.line;
-
-RTHI = data.RTHI.line;
-LTHI = data.LTHI.line;
-
-LFEO = data.LFEO.line; % PiG computed Knee joint Center
+RHEE = data.RHEE.line;
+RTOE = data.RTOE.line;
 
 
-% Pelvis
+
+% Extract required anthropometrics -------------------------------------------------------
 %
-pelo = (LASI + RASI)/2;         % origin (O)
-pelx = LASI-pelo;               % lateral vector (L)
-peltemp = SACR - pelo;          % temp anterior 
-pelz = cross(pelx,peltemp);     % proximal (P)
-pely = cross(pelx,pelz);        % final anterior (A)
+% - these should be measured during data collection and appended to file
+%   before running this program
+%
+% mrkDiam = getanthro(data,'MarkerDiameter');
+% rLegL   = getanthro(data,'RLegLength');
+% lLegL   = getanthro(data,'LLegLength');
+% rKneeW  = getanthro(data,'RKneeWidth');
+% lKneeW  = getanthro(data,'LKneeWidth');
+% rAnkleW = getanthro(data,'RAnkleWidth');
+% lAnkleW = getanthro(data,'LAnkleWidth');
 
-data = addchannel(data,'mPELO',pelo);      
-data = addchannel(data,'mPELP',pelz);
-data = addchannel(data,'mPELL',pelx);
-data = addchannel(data,'mPEA',pely);
 
-% plot(pelx.*10)
-% hold on
-% plot(data.PELL.line)
 
-% dim = {'O','A','L','P'};
-% for i = 1:length(dim)
-%     subplot(1,4,i)
-%     plot(data.(['mPEL',dim{i}]).line)
-%     hold on
-%     plot(data.(['PEL',dim{i}]).line)
-%     xlim([0,length(data.(['PEL',dim{i}]).line)])
+% Extract Hip, Knee, and Ankle joint centres --------------------------------------------
+%
+% - Hip joint centres are computed from dynamic trial in case marker position changed
+%   since static pose
+% - Hip joint centre computation based on Davis et al. 1991
+% - Knee and Ankle joint center computation based on pyCGM.py's
+%   interpretatin of PiG 'chord function'
+%
+RHipJC = data.RHipJC.line;
+RKneeJC = data.RKneeJC.line;
+RAnkleJC = data.RAnkleJC.line;
+
+LHipJC = data.LHipJC.line;
+LKneeJC = data.LKneeJC.line;
+LAnkleJC = data.LAnkleJC.line;
+
+
+% for testing
+% RKneeJC = data.RFEO.line;
+% RAnkleJC = data.RTIO.line;
+% LKneeJC = data.LFEO.line;
+% LAnkleJC = data.LTIO.line;
+
+% exact values for first frame from pyCGM for testing ('C1605A01.zoo')
+% if strcmpi(type,'static')
+%     RHipJC(1,:) = [162.24567427,  273.65162221,  868.71575397];
+%     RKneeJC(1,:) = [  165.76850331,  279.32187514,  491.06883585];
+%     RAnkleJC(1,:) = [  159.72078594,  326.35772713,   71.54075074];
+% end
+
+% if strcmpi(type,'dynamic')
+%     RHipJC(1,:) = [372.02633188,  1569.81507501,   883.98244222];
+%     RKneeJC(1,:) = [  165.76850331,  279.32187514,  491.06883585];
+%     RAnkleJC(1,:) = [  159.72078594,  326.35772713,   71.54075074];
 % end
 
 
-% Left Hip joint center
+
+
+% Pelvis coordinate system ---------------------------------------------------------------
 %
-if RAsisTrocDist == 0 && LAsisTrocDist == 0
-    RAsisTrocDist = (0.1288*RLegLength)-48.56; % distance estimated following (Davis, Ounpuu, Tyburski and Gage, 1991) linear regression analysis
-    LAsisTrocDist = (0.1288*LLegLength)-48.56;
+% - The formaula proposed by Davis et al. 1991 to compute PELO as RASI+LASI)/2 is NOT used
+% by Vicon. Instead it appears the average HJC position is used. This is not stated
+% in any of the literature, but this approach improves agreement (see comparePiG)
+%
+segment = 'Pelvis';
+boneLength = magnitude(LHipJC-RHipJC);
+O = (RASI+LASI)/2;
+L = makeunit(LASI-RASI);                                             % lateral (L)
+temp = makeunit(LASI - SACR);                                        % temp anterior
+P = makeunit(cross(temp,L));                                         % proximal (P)
+A = makeunit(cross(L,P));                                            % anterior (A)
+
+O(:,1) = mean([LHipJC(:,1) RHipJC(:,1)],2);                          % adjust PELO
+O(:,2) = mean([LHipJC(:,2) RHipJC(:,2)],2);
+O(:,3) = mean([LHipJC(:,3) RHipJC(:,3)],2);
+
+[PELO,PELA,PELL,PELP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+data = addchannel_data(data,'PELO',PELO,'video');
+data = addchannel_data(data,'PELA',PELA,'video');
+data = addchannel_data(data,'PELL',PELL,'video');
+data = addchannel_data(data,'PELP',PELP,'video');
+
+
+% Compute Left Femur bones (GOOD) -------------------------------------------------------------
+%
+segment= 'Left Femur';
+boneLength = magnitude(LHipJC-LKneeJC);
+
+O = LKneeJC;
+P = LHipJC-O;                            % proximal vector
+Ltemp = LKNE - O;                        % temp lateral vector
+A = cross(Ltemp,P);                      % anterior vector
+L = cross(P,A);                          % lateral vector
+
+[LFEO,LFEA,LFEL,LFEP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+data = addchannel_data(data,'LFEO',LFEO,'video');
+data = addchannel_data(data,'LFEA',LFEA,'video');
+data = addchannel_data(data,'LFEL',LFEL,'video');
+data = addchannel_data(data,'LFEP',LFEP,'video');
+
+
+% Compute Right Femur bones (GOOD) -----------------------------------------------------------
+%
+segment= 'Right Femur';
+boneLength = magnitude(RHipJC-RKneeJC);
+
+O = RKneeJC;
+P = RHipJC-O;                            % proximal vector
+Ltemp = -(RKNE - O);                        % temp lateral vector
+A = cross(Ltemp,P);                      % anterior vector
+L = cross(P,A);                          % lateral vector
+
+[RFEO,RFEA,RFEL,RFEP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+data = addchannel_data(data,'RFEO',RFEO,'video');
+data = addchannel_data(data,'RFEA',RFEA,'video');
+data = addchannel_data(data,'RFEL',RFEL,'video');
+data = addchannel_data(data,'RFEP',RFEP,'video');
+
+
+% Compute Left Tibia bone (GOOD) --------------------------------------------------------
+%
+segment = 'Left Tibia';
+boneLength = magnitude(LKneeJC-LAnkleJC);
+
+O = LAnkleJC;
+P = LKneeJC-O;                                         % proximal vector     (pyCGM: axis_z)
+Ltemp = LTIB-LANK;                                     % temp lateral vector (pyCGM: tib_ank_L)
+A = cross(Ltemp,P);                                    % anterior vector     (pyCGM: axis_x)
+L = cross(P,A);                                        % lateral vector      (pyCGM: axis_y)
+
+% [A,L,P] = tibiaTorsion(A,L,P,lTorsion); % same as pyCGM.py @ ln 615 (ankle axes)
+
+[LTIO,LTIA,LTIL,LTIP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+data = addchannel_data(data,'LTIO',LTIO,'video');
+data = addchannel_data(data,'LTIA',LTIA,'video');
+data = addchannel_data(data,'LTIL',LTIL,'video');
+data = addchannel_data(data,'LTIP',LTIP,'video');
+
+
+% Compute Right Tibia bone (no torsion) --------------------------------------------------
+%
+segment = 'Right Tibia';
+boneLength = magnitude(RKneeJC-RAnkleJC);
+
+O = RAnkleJC;
+P = RKneeJC-O;                             %  proximal vector
+Ltemp = -(RTIB-RANK);                         % temp lateral vector
+A = cross(Ltemp,P);                        % anterior vector
+L = cross(P,A);                            % lateral vector
+
+%[A,L,P] = tibiaTorsion(A,L,P,rTorsion); % same as pyCGM.py @ ln 615 (ankle axes)
+[RTIO,RTIA,RTIL,RTIP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+
+data = addchannel_data(data,'RTIO',RTIO,'video');
+data = addchannel_data(data,'RTIA',RTIA,'video');
+data = addchannel_data(data,'RTIL',RTIL,'video');
+data = addchannel_data(data,'RTIP',RTIP,'video');
+
+
+
+% Compute Left Foot 'bone'(GOOD)---------------------------------------------------------
+%
+% Length of foot calculated here is longer than Vicon PiG version
+% LfootLength = magnitude(data.LFOP.line-data.LFOO.line)
+
+segment ='Left Foot';
+boneLength =magnitude(LHEE-LTOE);                       % length of bone*
+
+O = LTOE;
+P = LAnkleJC-O;                             % proximal vector (pyCGM: L_axis_z)
+Ltemp = LTIL-LAnkleJC;
+A = cross(Ltemp,P);
+L = cross(P,A);
+
+if strcmpi(type,'dynamic')
+    LStaticPlantFlex = data.zoosystem.Anthro.LStaticPlantFlex;
+    LStaticRotOff    = data.zoosystem.Anthro.LStaticRotOff;
+    [A,L,P] = rotateFootAxes(A,L,P,LStaticRotOff,LStaticPlantFlex);
 end
 
-InterAsis = magnitude(LASI - RASI);
-InterAsis = mean(InterAsis);
+[LFOO,LFOA,LFOL,LFOP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
 
-Cl = (LLegLength*0.115) - 15.3; % Distance between the greater trochanter's head and the ASIS (see Davis et al, 1991)
+data = addchannel_data(data,'LFOO',LFOO,'video');
+data = addchannel_data(data,'LFOA',LFOA,'video');
+data = addchannel_data(data,'LFOL',LFOL,'video');
+data = addchannel_data(data,'LFOP',LFOP,'video');
 
-COSBETA  = cos(0.314);
-SINBETA  = sin(0.314);
-COSTHETA = cos(0.5);
-SINTHETA = sin(0.5);
 
-LHipOSx = Cl*COSTHETA*SINBETA - (LAsisTrocDist + mm)*COSBETA;
-LHipOSy = -(Cl*SINTHETA - (InterAsis/2));
-LHipOSz = -Cl*COSTHETA*COSBETA - (LAsisTrocDist + mm)*SINBETA;
-
-LHJC=zeros(size(LASI));
-for i =1:length(LASI)
-    LHJC(i,:) = LASI(i,:) + [LHipOSx,LHipOSy,LHipOSz];
-end
-
-
-
-% Left Knee joint center 
-%
-if isfield(sdata,'LMFE')   % if a medial knee marker is available
-    disp('not yet coded')
-end
-
-% tic
-% syms u
-% solve(1-0.99-(u+1)*exp(-u),'Real',true)
-% toc
-% double(ans)
-
-
-LKJC = GetKneeJointCentreLeitch(LHJC,LTHI,LKNE,lkneewidth,markerdiameter);
-
-
-% data = addchannel(data,'mLKJC',LKJC);
-
-
-
-% Left Femur bones
-
-LKJC = data.LFEO.line; % use for testing
-LHJC = data.LHJC.line; % use for testing
-
-LFEMo = LKJC;
-LFEMz = LHJC - LKJC;
-LFEMtemp = LTHI - LKJC;
-LFEMx = cross(LFEMz,LFEMtemp);
-LFEMy = cross(LFEMx,LFEMz);
-
-test = LFEMo-LFEMz;
-
-data = addchannel(data,'mLFEO',LFEMo);
-data = addchannel(data,'mLFEP',LFEMy);
-data = addchannel(data,'mLFEA',LFEMx);
-data = addchannel(data,'mLFEL',LFEMz);
-
-
-% subplot(1,4,1)
-% plot(data.mLFEO.line)
-% hold on
-% plot(data.LFEO.line)
-% ylabel('LFEO')
-% 
-% subplot(1,4,2)
-% plot(data.mLFEA.line);
-% hold on
-% plot(data.LFEA.line);
-% ylabel('LFEA')
-% 
-% subplot(1,4,3)
-% plot(data.mLFEL.line);
-% hold on
-% plot(data.LFEL.line);
-% ylabel('LFEL')
-% 
-% subplot(1,4,4)
-% plot(data.mLFEP.line);
-% hold on
-% plot(data.LFEP.line);
-% ylabel('LFEP')
-
-
-
-
-% Right Hip joint center
-%
-InterAsis = magnitude(LASI - RASI);
-InterAsis = InterAsis(1,1);
-
-Cr = (RLegLength*0.115) - 15.3;
-
-COSBETA = 0.951;
-SINBETA = 0.309;
-COSTHETA = 0.880;
-SINTHETA = 0.476;
-
-RHipOSx = Cr*COSTHETA*SINBETA - (RAsisTrocDist + mm)*COSBETA;
-RHipOSy = Cr*SINTHETA - (InterAsis/2);
-RHipOSz = -Cr*COSTHETA*COSBETA - (RAsisTrocDist + mm)*SINBETA;
-
-RHJC=zeros(size(RASI));
-for i = 1:length(RASI)
-    RHJC(i,:) = RASI(i,:) + [RHipOSx,RHipOSy,RHipOSz];
-end
-
-data = addchannel(data,'mRHJC',RHJC);
-
-
-% Right knee joint center
-%
-
-KneeOSx = 0;
-RKneeOSy = (mm + 0.5*rkneewidth);
-KneeOSz = 0;
-
-RKJC = zeros(size(RASI));
-for i = 1:length(RKNE)
-    RKJC(i,:) = RKNE(i,:) + [KneeOSx,RKneeOSy,KneeOSz];
-end
-
-data = addchannel(data,'mRKJC',RKJC);
-
-
-% Right Femur bones
-%
-RFEMo = RKJC;
-RFEMz = RHJC - RKJC;
-RFEMtemp = RTHI - RKJC;
-RFEMx = cross(RFEMz,RFEMtemp);
-RFEMy = cross(RFEMx,RFEMz);
-
-data = addchannel(data,'mRFEO',RFEMo);
-data = addchannel(data,'mRFEP',RFEMy);
-data = addchannel(data,'mRFEA',RFEMx);
-data = addchannel(data,'mRFEL',RFEMz);
-
-
-
-% Left Ankle joint centers calculation
-%
-
-LKJC = data.LFEO.line;
-LAJC = GetKneeJointCentreLeitch(LKJC,data.LTIB.line,LANK,lanklewidth,markerdiameter);
-
-
-% Left Tibia bones
-
-LTIBo = LAJC;
-LTIBz = LKJC - LAJC;
-LTIBtemp = LTIBo - LAJC;
-LTIBx = cross(LTIBz,LTIBtemp);
-LTIBy = cross(LTIBx,LTIBz);
-
-data = addchannel(data,'mLTIO',LTIBo);
-data = addchannel(data,'mLTIP',LTIBy);
-data = addchannel(data,'mLTIA',LTIBx);
-data = addchannel(data,'mLTIL',LTIBz);
-
-
-
-
-
-% Right ankle joint center
-%
-sRANK = sdata.RANK.line;
-sRMMA = sdata.RMMA.line;
-
-ank_offset = mean((sRANK - sRMMA)/2);   
-
-RAJC = zeros(size(data.RANK.line));
-RAJC(:,1) = data.RANK.line(:,1)+ank_offset(1);
-RAJC(:,2) = data.RANK.line(:,2)+ank_offset(2);
-RAJC(:,3) = data.RANK.line(:,3)+ank_offset(3);
-
-
-
-% Right Tibia bones
-%
-RTIBo = RAJC;
-RTIBz = RKJC - RAJC;
-RTIBtemp = RTIBo - RAJC;
-RTIBx = cross(RTIBz,RTIBtemp);
-RTIBy = cross(RTIBx,RTIBz);
-
-
-
-
-
-
-
-%  
-% dis =  magnitude(data.RMMA.line - data.RANK.line)/2; % points laterally
-% one = ones(length(RTI0),1);
-% zero = zeros(length(RTI0),1);
-% 
-% RTI2 = RTI0 - [dis zero  zero];     % points proximally
-% % RTI3 = data.RTIB3.line/100;
-% % RTI2 = data.RTIB2.line/100; % cheating
-% 
-
-
-data = addchannel(data,'mRTIO',RTIBo);
-data = addchannel(data,'mRTIP',RTIBy);
-data = addchannel(data,'mRTIA',RTIBx);
-data = addchannel(data,'mRTIL',RTIBz);
-
-
-
-% Left Foot bone
-%
-LFOOz = LTOE - LAJC;
-LFOOtemp = LKJC - LAJC;
-LFOOy = cross(LFOOz,LFOOtemp);
-LFOOx = cross(LFOOz,LFOOy);
-LFOOo = LTOE;
-
-
-data = addchannel(data,'mLFOO',LFOOo);
-data = addchannel(data,'mLFOP',LFOOy);
-data = addchannel(data,'mLFOA',LFOOx);
-data = addchannel(data,'mLFOL',LFOOz);
-
-
-
-
-
-% Right Foot bone
-%
-RFOOz = RTOE - RAJC;
-RFOOtemp = RKJC - RAJC;
-RFOOy = cross(RFOOz,RFOOtemp);
-RFOOx = cross(RFOOz,RFOOy);
-RFOOo = RTOE;
-
-
-
-
-
-
-data = addchannel(data,'mRFOO',RFOOo);
-data = addchannel(data,'mRFOP',RFOOy);
-data = addchannel(data,'mRFOA',RFOOx);
-data = addchannel(data,'mRFOL',RFOOz);
-
-
-
-
-% test segment axes
-%
-segment = {'PEL','RFE'};
-ax = {'O','A','L','P'};
-
-count = 1;
-
-for i = 1:length(segment)
+if strcmpi(type,'static')
     
-    for j = 1:length(ax);
+    % LF1_RAxis
+    O = LTOE;
+    P1 = makeunit(LAnkleJC-O);
+    Ltemp = LTIL-LAnkleJC;
+    A1 = makeunit(cross(Ltemp,P1));
+    L1 = makeunit(cross(P1,A1));
+    
+    A1 = A1+O;
+    L1 = L1+O;
+    P1 = P1+O;
+    
+    data = addchannel_data(data,'LF1O',O,'video');
+    data = addchannel_data(data,'LF1A',A1,'video');
+    data = addchannel_data(data,'LF1L',L1,'video');
+    data = addchannel_data(data,'LF1P',P1,'video');
+    
+    if foot_flat == false
+        % LF2_RAxis
+        O = LTOE;
+        P2 = makeunit(LHEE-O);
+        Ltemp = makeunit(LTIL-LAnkleJC);
+        A2 = makeunit(cross(Ltemp,P2));                         %
+        L2 = makeunit(cross(P2,A2));
         
-        subplot(length(segment),length(ax),count)
-        plot(data.([segment{i},ax{j}]).line)
-        hold on
-        plot(data.(['m',segment{i},ax{j}]).line)
-        ylabel([segment{i},ax{j}])
-        xlim([0,length(data.([segment{i},ax{j}]).line)])
+        A2 = A2+O;
+        L2 = L2+O;
+        P2 = P2+O;
         
-        count = count+1;
+        data = addchannel_data(data,'LF2O',O,'video');
+        data = addchannel_data(data,'LF2A',A2,'video');
+        data = addchannel_data(data,'LF2L',L2,'video');
+        data = addchannel_data(data,'LF2P',P2,'video');
+    else
+        % LF3_RAxis
+        O = LTOE;
+        P3 = makeunit(LAnkleJC-O);                             
+        hee2_toe = makeunit(LHEE-O);
+        hee2_toe(:,3) = 0;
+        A = makeunit(cross(hee2_toe,P3));                         
+        B = makeunit(cross(A,hee2_toe));
+        C = cross(B,A);
+        P3 = makeunit(C);                    % L_axis_z
+        
+        Ltemp = makeunit(LTIL-LAnkleJC);     %y_flex_L
+        A3 = makeunit(cross(Ltemp,P3));      % L_axis_x
+        L3 = makeunit(cross(P3,A3));
+        P3 = cross(A3,L3);
+        
+        A3 = A3+O;
+        L3 = L3+O;
+        P3 = P3+O;
+        
+        data = addchannel_data(data,'LF3O',O,'video');
+        data = addchannel_data(data,'LF3A',A3,'video');
+        data = addchannel_data(data,'LF3L',L3,'video');
+        data = addchannel_data(data,'LF3P',P3,'video');
     end
     
+    
 end
 
 
-% UPPER BODY (NOT TESTED)
-%
-% Trunk bones calculation
-%-------------------------------------------------------------------------
-%_________________________________________________________________________
 
 
-%-------------------------------------------------------------------------
-% Head bone
-% if ismember({'LFHD','LBHD','RFHD','RBHD'},chlist)
-%     HEAo = (LFHD + RFHD)/2;
-%     HEAx = ((LBHD + RBHD)/2) - HEAo;
-%     HEAtemp = LBHD - HEAo ;
-%     HEAz = cross(HEAx,HEAtemp);
-%     HEAy = cross(HEAx,HEAz);
-%     HEAx = cross(HEAy,HEAz);
-%
-%     data.HEDO.line = HEAo;
-%     data.HEDP.line = HEAy;
-%     data.HEDA.line = HEAx;
-%     data.HEDL.line = HEAz;
-%
-% end
-% %__________________________________________________________________________
-% %-------------------------------------------------------------------------
-% % Thorax bone
-% % Note: Z-axis is pointing downward and Y-Axis pointing rightward
-%
-% if ismember({'STRN','CLAV','C7'},chlist)
-%
-%     TRXz = STRN - CLAV;
-%     TRXtemp = C7 - CLAV;
-%     TRXy =  cross(TRXz,TRXtemp);
-%     TRXx = cross(TRXy,TRXz);
-%
-%     TRXo =[];
-%     for i =1:length(CLAV)
-%         TRXo =[TRXo;CLAV(i,:) - [mm,0,0]];
-%     end
-%
-%     data.TRXO.line = TRXo;
-%     data.TRXP.line = TRXy;
-%     data.TRXA.line = TRXx;
-%     data.TRXL.line = TRXz;
-%
-% end
-% %__________________________________________________________________________
-% %-------------------------------------------------------------------------
-% % Shoulder joint centers
-% % Note : Using the assumption that the clavicules are lying between the
-% % thorax origin and the shoulder joint center and therefore the shoulder
-% % joint centers are defined as the clavicules' origins
-% if ismember({'LSHO','RSHO'},chlist)
-%     ISHO = magnitude(LSHO - RSHO);
-%     ISHO = ISHO(1,1);
-%
-%     LSJC =[];
-%     RSJC = [];
-%     for i = 1:length(LSHO)
-%         LSJC = [LSJC;LSHO(i,:) + [0,-LShoulderOffset,0]+ ISHO*[0,0,0.2]];
-%         RSJC = [RSJC;RSHO(i,:) + [0,RShoulderOffset,0]+ ISHO*[0,0,0.2]];
-%     end
-%
-%     %-------------------------------------------------------------------------
-%     % Clavicule bones %
-%
-%
-%     LCLo = LSJC;
-%     LCLz = TRXo - LSJC;
-%     LCLtemp = LSHO - LSJC;
-%     LCLx = cross(LCLz,LCLtemp);
-%     LCLy = cross(LCLx,LCLz);
-%
-%     data.LCLO.line = LCLo;
-%     data.LCLP.line = LCLy;
-%     data.LCLA.line = LCLx;
-%     data.LCLL.line = LCLz;
-%
-%     RCLo = RSJC;
-%     RCLz = TRXo - RSJC;
-%     RCLtemp = RSHO - RSJC;
-%     RCLx = cross(RCLtemp,RCLz);
-%     RCLy = cross(RCLx,RCLz);
-%
-%     data.RCLO.line = RCLo;
-%     data.RCLP.line = RCLy;
-%     data.RCLA.line = RCLx;
-%     data.RCLL.line = RCLz;
-%
-% end
-% %__________________________________________________________________________
-% %-------------------------------------------------------------------------
-% % Temporary Left humerus bones %
-% if ismember({'LWRA','LWRB','LELB','LSHO'},chlist)
-%
-%     LWR = ((LWRA + LWRB)/2);
-%
-%     if ~ismember('RSHO',chlist)
-%         LSJC = LSHO;
-%     end
-%
-%     LHUo = LSJC;
-%     LHUz = LSJC - LELB;
-%     LHUtemp = LWR - LELB;
-%     LHUy = cross(LHUz,LHUtemp);
-%     LHUx = cross(LHUy,LHUz);
-%
-%     %-------------------------------------------------------------------------
-%     % Left Elbow joint centers %
-%
-%     ElbowOSx = 0;
-%     LELBOSy = (mm + 0.5*lelbowwidth);
-%     ElbowOSz = 0;
-%
-%     LEJC = [];
-%
-%     for i = 1:length(LELB)
-%         LEJC = [LEJC;LELB(i,:) + [ElbowOSx,LELBOSy,ElbowOSz]];
-%     end
-%     %-------------------------------------------------------------------------
-%     % Left Humerus bones %
-%
-%     LHUz = LSJC - LEJC;
-%     LHUtemp = LUPA - LEJC;
-%     LHUy = cross(LHUz,LHUtemp);
-%     LHUx = cross(LHUy,LHUz);
-%     LHUo = LEJC;
-%
-%     data.LHUO.line = LHUo;
-%     data.LHUP.line = LHUy;
-%     data.LHUA.line = LHUx;
-%     data.LHUL.line = LHUz;
-%
-% end
-% %__________________________________________________________________________
-% % Temporary right humerus bone
-% if ismember({'RWRA','RWRB','RELB','RSHO'},chlist)
-%
-%
-%     RWR = ((RWRA + RWRB)/2);
-%
-%     if ~ismember('LSHO',chlist)
-%         RSJC = RSHO;
-%     end
-%
-%     RHUo = RSJC;
-%     RHUz = RSJC - RELB;
-%     RHUtemp = RWR - RELB;
-%     RHUy = cross(RHUz,RHUtemp);
-%     RHUx = cross(RHUy,RHUz);
-%
-%     %-------------------------------------------------------------------------
-%     % Right Elbow joint centers %
-%
-%     ElbowOSx = 0;
-%     RELBOSy = (mm + 0.5*relbowwidth);
-%     ElbowOSz = 0;
-%
-%     REJC = [];
-%     for i = 1:length(RELB)
-%         REJC = [REJC;RELB(i,:) + [ElbowOSx,RELBOSy,ElbowOSz]];
-%     end
-%     %-------------------------------------------------------------------------
-%     % Right Humerus bones %
-%
-%     RHUz = RSJC - REJC;
-%     RHUtemp = RUPA - REJC;
-%     RHUy = cross(RHUz,RHUtemp);
-%     RHUx = cross(RHUy,RHUz);
-%     RHUo = REJC;
-%
-%     data.RHUO.line = RHUo;
-%     data.RHUP.line = RHUy;
-%     data.RHUA.line = RHUx;
-%     data.RHUL.line = RHUz;
-%
-% end
-% %__________________________________________________________________________
-% %------------------------------------------------------------------------
-% % Temporary left radius bones %
-% if ismember({'LELB','LFRM','LWRA','LWRB'},chlist)
-%
-%     if ~ismember('LSHO',chlist)
-%         LEJC = LELB;
-%         LWR = (LWRA+LWRB)/2;
-%     end
-%
-%     LRAz = LEJC - LWR;
-%     LRAtemp = LFRM - LWR;
-%     LRAx = cross(LRAz,LRAtemp);
-%     LRAy = cross(LRAx,LRAz);
-%     %------------------------------------------------------------------------
-%     % Left Wrist joint centers
-%     WristOSx = 0;
-%     LWristOSy = -(mm + (lwristwidth/2));
-%     WristOSz = 0;
-%
-%     LWJC = [];
-%
-%     for i = 1:length(LWR)
-%         LWJC = [LWJC;LWR(i,:) + [WristOSx,LWristOSy,WristOSz]];
-%     end
-%     %------------------------------------------------------------------------
-%     % Left Radius bones
-%
-%     LRAz = LEJC - LWJC;
-%     LRAtemp = LFRM - LWJC;
-%     LRAx = cross(LRAz,LRAtemp);
-%     LRAy = cross(LRAx,LRAz);
-%     LRAo = LWJC;
-%
-%     data.LRAO.line = LRAo;
-%     data.LRAP.line = LRAy;
-%     data.LRAA.line = LRAx;
-%     data.LRAL.line = LRAz;
-% end
-% %__________________________________________________________________________
-% if ismember({'RELB','RFRM','RWRA','RWRB'},chlist)
-%
-%     if ~ismember('RSHO',chlist)
-%         REJC = RELB;
-%         RWR = (RWRA+RWRB)/2;
-%     end
-%
-%     RRAz = REJC - RWR;
-%     RRAtemp = RFRM - RWR;
-%     RRAx = cross(RRAz,RRAtemp);
-%     RRAy = cross(RRAx,RRAz);
-%     %------------------------------------------------------------------------
-%     % Right Wrist joint centers
-%
-%     WristOSx = 0;
-%     RWristOSy = -(mm + (rwristwidth/2));
-%     WristOSz = 0;
-%
-%     RWJC = [];
-%
-%     for i = 1:length(RWR)
-%         RWJC = [RWJC;RWR(i,:) + [WristOSx,RWristOSy,WristOSz]];
-%     end
-%     %------------------------------------------------------------------------
-%     % Right radius bones
-%     RRAz = REJC - RWJC;
-%     RRAtemp = RFRM - RWJC;
-%     RRAx = cross(RRAz,RRAtemp);
-%     RRAy = cross(RRAx,RRAz);
-%     RRAo = RWJC;
-%
-%     data.RRAO.line = RRAo;
-%     data.RRAP.line = RRAy;
-%     data.RRAA.line = RRAx;
-%     data.RRAL.line = RRAz;
-% end
-% %__________________________________________________________________________
-% %-------------------------------------------------------------------------
-% % Temporary Left Hand bones
-%
-% if ismember({'LWRA','LWRB','LFIN'},chlist)
-%
-%     LWR = (LWRA+LWRB)/2;
-%
-%     LHNo = LFIN ;
-%     LHNz = LWJC - LFIN;
-%     LHNtemp = LWR - LFIN;
-%     LHNy = cross(LHNz,LHNtemp);
-%     LHNx = cross(LHNy,LHNz);
-%
-%     %-------------------------------------------------------------------------
-%     % Left Hand origin centers
-%     LHandOSx = -( mm + (LHandThickness/2));
-%
-%     LHC =[];
-%
-%
-%     for i =1:length(LFIN)
-%         LHC = [LHC;LFIN(i,:) + [LHandOSx,0,0]];
-%     end
-%     %-------------------------------------------------------------------------
-%     % Left Hand bones %
-%
-%     LHNo = LHC ;
-%     LHNz = LWJC - LHC;
-%     LHNtemp = LWR - LHC;
-%     LHNy = cross(LHNz,LHNtemp);
-%     LHNx = cross(LHNy,LHNz);
-%
-%     data.LHNO.line = LHNo;
-%     data.LHNP.line = LHNy;
-%     data.LHNA.line = LHNx;
-%     data.LHNL.line = LHNz;
-%
-% end
-% %__________________________________________________________________________
-%
-% if ismember({'RWRA','RWRB','RFIN'},chlist)
-%
-%     RWR = (RWRA+RWRB)/2;
-%     RHNo = RFIN ;
-%     RHNz = RWJC - RFIN;
-%     RHNtemp = RWR - RFIN;
-%     RHNy = cross(RHNz,RHNtemp);
-%     RHNx = cross(RHNy,RHNz);
-%
-%     %-------------------------------------------------------------------------
-%     % Right Hand origin center
-%
-%     RHandOSx = -( mm + (RHandThickness/2));
-%
-%     RHC=[];
-%
-%     for i =1:length(RFIN)
-%         RHC = [RHC;RFIN(i,:) + [RHandOSx,0,0]];
-%     end
-%
-%     %-------------------------------------------------------------------------
-%     % Right Hand bones %
-%
-%     RHNo = RHC ;
-%     RHNz = RHC - RHC;
-%     RHNtemp = RWR - RHC;
-%     RHNy = cross(RHNz,RHNtemp);
-%     RHNx = cross(RHNy,RHNz);
-%
-%     data.RHNO.line = RHNo;
-%     data.RHNP.line = RHNy;
-%     data.RHNA.line = RHNx;
-%     data.RHNL.line = RHNz;
-% end
-%
-% %--------------------------------------------------------------------------
-%
-%
-% varout = data;
-% fldv = fieldnames(varout);
-% fldv = setdiff(fldv,'zoosystem');
-% filt = filteroption(300);
 
-% for i =1:length(fldv)
-%     varout.(fldv{i}).line = filterline(data.(fldv{i}).line,filt);
-% end
+% Compute Right Foot 'bone'-----------------------------------------------------------------
+%
+% Length of foot calculated here is longer than Vicon PiG version
+% LfootLength = magnitude(data.LFOP.line-data.LFOO.line)
+%
+segment ='Right Foot';
+boneLength =magnitude(RHEE-RTOE);                       % length of bone*
+
+O = RTOE;
+P = RAnkleJC-O;                             % proximal vector
+Ltemp = RTIL-RAnkleJC;                      % temp lateral vector
+A = cross(Ltemp,P);                         % anterior vector
+L = cross(P,A);
+
+if strcmpi(type,'dynamic')
+    RStaticPlantFlex = data.zoosystem.Anthro.RStaticPlantFlex;
+    RStaticRotOff    = data.zoosystem.Anthro.RStaticRotOff;
+    [A,L,P] = rotateFootAxes(A,L,P,RStaticRotOff,RStaticPlantFlex);
+end
+
+
+
+[RFOO,RFOA,RFOL,RFOP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+data = addchannel_data(data,'RFOO',RFOO,'video');
+data = addchannel_data(data,'RFOA',RFOA,'video');
+data = addchannel_data(data,'RFOL',RFOL,'video');
+data = addchannel_data(data,'RFOP',RFOP,'video');
+
+
+if strcmpi(type,'static')
+    
+    % RF1_RAxis
+    O = RTOE;
+    P1 = makeunit(RAnkleJC-O);
+    Ltemp = RTIL-RAnkleJC;
+    A1 = makeunit(cross(Ltemp,P1));
+    L1 = makeunit(cross(P1,A1));
+    
+    A1 = A1+O;
+    L1 = L1+O;
+    P1 = P1+O;
+    
+    data = addchannel_data(data,'RF1O',O,'video');
+    data = addchannel_data(data,'RF1A',A1,'video');
+    data = addchannel_data(data,'RF1L',L1,'video');
+    data = addchannel_data(data,'RF1P',P1,'video');
+    
+    if foot_flat == false
+    % RF2_RAxis
+    O = RTOE;
+    P2 = makeunit(RHEE-O);
+    Ltemp = makeunit(RTIL-RAnkleJC);
+    A2 = makeunit(cross(Ltemp,P2));                         %
+    L2 = makeunit(cross(P2,A2));
+    
+    A2 = A2+O;
+    L2 = L2+O;
+    P2 = P2+O;
+    
+    data = addchannel_data(data,'RF2O',O,'video');
+    data = addchannel_data(data,'RF2A',A2,'video');
+    data = addchannel_data(data,'RF2L',L2,'video');
+    data = addchannel_data(data,'RF2P',P2,'video');
+    else
+        % RF3_RAxis
+        O = RTOE;
+        P3 = makeunit(RAnkleJC-O);                             
+        hee2_toe = makeunit(RHEE-O);
+        hee2_toe(:,3) = 0;
+        A = makeunit(cross(hee2_toe,P3));                         
+        B = makeunit(cross(A,hee2_toe));
+        C = cross(B,A);
+        P3 = makeunit(C);                    % L_axis_z
+        
+        Rtemp = makeunit(RTIL-RAnkleJC);     %y_flex_L
+        A3 = makeunit(cross(Rtemp,P3));      % L_axis_x
+        L3 = makeunit(cross(P3,A3));
+        P3 = cross(A3,L3);
+        
+        A3 = A3+O;
+        L3 = L3+O;
+        P3 = P3+O;
+        
+        data = addchannel_data(data,'RF3O',O,'video');
+        data = addchannel_data(data,'RF3A',A3,'video');
+        data = addchannel_data(data,'RF3L',L3,'video');
+        data = addchannel_data(data,'RF3P',P3,'video');
+    end
+    
+    
+    
+end
 
 
 
 
 
 
-function anthro = getAnthro(data)
 
-% ANTHRO = GETANTHRO(DATA) extracts anthropometric data from file.
+
+
+function [Arot,Lrot,Prot] = rotateFootAxes(A,L,P,StaticRotOff,StaticPlantFlex)
+
+P = makeunit(P);                            % L_axis_z same as pyCGM ln 802
+A = makeunit(A);                            % L_axis_x
+L = makeunit(L);                            % L_axis_y
+
+% Apply static offset angle to the incorrect foot axes
+alpha = StaticRotOff; %0.028639917144370208;
+beta = StaticPlantFlex; %0.2466761911406323;
+
+
+
+Prot = zeros(size(P));
+Arot = zeros(size(A));
+Lrot = zeros(size(L));
+
+
+for i = 1:length(A)
+    
+    axis = [A(i,:); L(i,:); P(i,:)];
+    
+    % rotate about y-axis
+    roty = [cos(beta)*axis(1,1)+sin(beta)*axis(3,1),...
+        cos(beta)*axis(1,2)+sin(beta)*axis(3,2),...
+        cos(beta)*axis(1,3)+sin(beta)*axis(3,3);...
+        axis(2,1),axis(2,2),axis(2,3);...
+        -1*sin(beta)*axis(1,1)+cos(beta)*axis(3,1),...
+        -1*sin(beta)*axis(1,2)+cos(beta)*axis(3,2),...
+        -1*sin(beta)*axis(1,3)+cos(beta)*axis(3,3)];
+    
+    % rotate aboux x-axis
+    rotyx = [roty(1,1),roty(1,2),roty(1,3);...
+        cos(alpha)*roty(2,1)-sin(alpha)*roty(3,1),...
+        cos(alpha)*roty(2,2)-sin(alpha)*roty(3,2),...
+        cos(alpha)*roty(2,3)-sin(alpha)*roty(3,3);...
+        sin(alpha)*roty(2,1)+cos(alpha)*roty(3,1),...
+        sin(alpha)*roty(2,2)+cos(alpha)*roty(3,2),...
+        sin(alpha)*roty(2,3)+cos(alpha)*roty(3,3)];
+    
+    
+    Arot(i,:) = rotyx(1,:);
+    Lrot(i,:) = rotyx(2,:);
+    Prot(i,:) = rotyx(3,:);
+    
+    
+end
+
+function [At,Lt,Pt] = tibiaTorsion(A,L,P,torsion)
+
+torsion = deg2rad(torsion);
+
+At = zeros(size(A));
+Lt = zeros(size(L));
+Pt = zeros(size(P));
+
+for i = 1:length(At)
+    
+    axis = [A(i,:); L(i,:); P(i,:)];
+    
+    axisRot = [cos(torsion)*axis(1,1)-sin(torsion)*axis(2,1),...
+        cos(torsion)*axis(1,2)-sin(torsion)*axis(2,2),...
+        cos(torsion)*axis(1,3)-sin(torsion)*axis(2,3);...
+        sin(torsion)*axis(1,1)+cos(torsion)*axis(2,1),...
+        sin(torsion)*axis(1,2)+cos(torsion)*axis(2,2),...
+        sin(torsion)*axis(1,3)+cos(torsion)*axis(2,3);
+        axis(3,1),axis(3,2),axis(3,3)];
+    
+    At(i,:) = axisRot(1,:);
+    Lt(i,:) = axisRot(2,:);
+    Pt(i,:) = axisRot(3,:);
+    
+    
+end
+
+
+function [O,A,L,P] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test)
+
+% make unit vectors
 %
-% NOTES
-% - These values must have been computed in vicon. Update to compute
-%   from 'scratch'
+P = makeunit(P);
+A = makeunit(A);
+L = makeunit(L);
 
-anthro = data.zoosystem.Anthro;
+
+% Scale to length of bone
+%
+for i = 1:3
+    A(:,i) = A(:,i).*boneLength;
+    L(:,i) = L(:,i).*boneLength;
+    P(:,i) = P(:,i).*boneLength;
+end
+
+% Move to global coordinate system
+%
+A = A + O;
+L = L + O;
+P = P + O;
+
+% Check results
+if test ==1
+    comparePiG(data,segment,O,A,L,P)
+    comparePiGangles(data,segment,O,A,L,P)
+end
+
+
+
+
+function [O,A,L,P] = getLocalCoord(data,orig,proxJC,latMkr,disMkr,boneLength,segment,test)
+
+% This function computes local coordinate system for all segments except pelvis
+
+
+% Create coordinate system
+%
+O = orig;
+P = proxJC-O;                             % unit proximal vector
+Ltemp = latMkr-disMkr;                    % temp lateral vector
+A = cross(Ltemp,P);                       % unit anterior vector
+L = cross(P,A);                           % unit lateral vector
+
+% make unit vectors
+%
+P = makeunit(P);
+A = makeunit(A);
+L = makeunit(L);
+
+
+% Scale to length of bone
+%
+for i = 1:3
+    A(:,i) = A(:,i).*boneLength;
+    L(:,i) = L(:,i).*boneLength;
+    P(:,i) = P(:,i).*boneLength;
+end
+
+% Move to global coordinate system
+%
+A = A + O;
+L = L + O;
+P = P + O;
+
+% Check results
+if test ==1
+    comparePiG(data,segment,O,A,L,P)
+    comparePiGangles(data,segment,O,A,L,P)
+end
+
+
+
+function comparePiGangles(data,segment,mO,mA,mL,mP)
+
+switch segment
+    
+    case 'Pelvis'
+        seg = 'PEL';
+        
+    case 'Left Femur'
+        seg = 'LFE';
+        
+    case 'Left Tibia'
+        seg = 'LTI';
+        
+    case 'Left Foot';
+        seg = 'LFO';
+        
+    case 'Right Femur'
+        seg = 'RFE';
+        
+    case 'Right Tibia'
+        seg = 'RTI';
+        
+    case 'Right Foot';
+        seg = 'RFO';
+end
+
+
+O = data.([seg,'O']).line;
+A = data.([seg,'A']).line;
+L = data.([seg,'L']).line;
+P = data.([seg,'P']).line;
+
+
+mp = makeunit(mP-mO);
+ma = makeunit(mA-mO);
+ml = makeunit(mL-mO);
+
+disp('angles between my vectors:')
+disp(['P vs A: ',num2str(nanmean(angle(mp,ma)))])
+disp(['P vs L: ',num2str(nanmean(angle(mp,ml)))])
+disp(['A vs L: ',num2str(nanmean(angle(ma,ml)))])
+disp(' ')
+p = makeunit(P-O);
+a = makeunit(A-O);
+l = makeunit(L-O);
+
+disp('angles between PiG vectors:')
+disp(['P vs A: ',num2str(nanmean(angle(p,a)))])
+disp(['P vs L: ',num2str(nanmean(angle(p,l)))])
+disp(['A vs L: ',num2str(nanmean(angle(a,l)))])
+disp(' ')
+
+disp('angles between PiG and my vectors:')
+disp(['P vs p: ',num2str(nanmean(angle(p,mp)))])
+disp(['L vs l: ',num2str(nanmean(angle(l,ml)))])
+disp(['A vs a: ',num2str(nanmean(angle(a,ma)))])
+
 

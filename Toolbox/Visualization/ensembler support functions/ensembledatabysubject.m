@@ -31,7 +31,6 @@ for i = 1:length(ax)
    
     ln = findobj(ax(i),'type','line','linewidth',.5);
 
-    
     % Extract all subject names
     %
     stk = zeros(length(ln),1);

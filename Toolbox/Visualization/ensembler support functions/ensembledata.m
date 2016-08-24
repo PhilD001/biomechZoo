@@ -130,14 +130,15 @@ for i = 1:length(ax)
                 
                 hold(ax(i),'on')
                 
-                errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',1.12) % mean event has special width
+                ebar = errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',1.12); % mean event has special width
+                set(ebar,'tag',[tg{k},'_av_',nm])
                 
                 %--horizontal error bar---
                 starthor = mpos(1) - spos(1);
                 endhor = mpos(1) + spos(1);
                 x = (starthor:1:endhor);
                 y = mpos(2)*ones(size(x));
-                line(x,y,'parent',ax(i),'LineWidth',1.1)
+                line(x,y,'parent',ax(i),'LineWidth',1.1,'tag',[tg{k},'_av_',nm])
                 
                 text('parent',ax(i),'position',[round(mpos(1)) mpos(2)],...
                      'tag',[tg{k},'_av_',nm],'string','\bullet','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...

@@ -1,143 +1,123 @@
-function bmech_filter(varargin)
+function bmech_filter(fld,ch,filt)
 
-% data = BMECH_FILTER(varargin) will filter data with zero-lag based on user input arguments
+% BMECH_FILTER(fld,ch,filt) batch process filtering of given channel(s) with multiple options
 %
 % ARGUMENTS
-%  fld       ...   full path leading to folder to be processed
-%  cutoff    ...   single number or 2 element vector (for notch type filters)
-%  ftype     ...   Type of filter (string) to be used from the following list:
-%                 ('butterworth', 'chebychev I', 'chebychev II', 'eliptic','bessel')
-%  order     ...   Order of filter (number). Default is 4
-%  pass      ...   frequencies to pass (string) from the following list:
-%                 ('lowpass', 'highpass', 'bandpass','notch'). Default is lowpass
-%  chfilt    ...   channel to filter as cell arrawy of strings. e.g. {'ch1','ch2','ch3'}
-%
+%  fld      ...  Folder to batch process (string). Default: folder selection window. 
+%  ch       ...  Channel(s) to filter (single string or cell array of strings).
+%                Use 'Video','Analog',or 'all' to filter video, analog, or
+%                all channels. Default 'all'.
+%  filt     ...  Filter options (struct). Default: 4th order butterworth low-pass filter
+%                with 10Hz cutoff.
+%                filt can contain the following fields:
+%                filt.type   = 'butterworth','chebychev I/II','eliptic','bessel'
+%                filt.cutoff =  integer cutoff frequency.
+%                filt.order  =  interger filter order
+%                filt.pass   = 'lowpass','highpass'
+%                filt.srip   =  stopband ripple (see 'cheby1,cheby2,ellip)
+%                filt.prip   =  peak-to-peak ripple (see 'ellip')
 %
 % NOTES
-% - inputs are in pairs where the first element is the property name and the second is a property value
-%   e.g. data = bmech_filter('fld',fld) associates the folder fld to the variable 'fld
-% - if you want to run the filter on a single vector or zoo file, use 'filterline'
-% - Sampling rate will be read from zoo file. If filtering both analog and
-%   video channels, users should make sure that filter settings are
-%   approproate for both
+% - Sampling rate will be read from zoo file.
+%
+% See also filter_data, filter_line, butter, cheby1, cheby2, ellip,besself
 
-
-% Revision history: 
+% Revision history:
 %
 % Created by JJ Loh 2006
 %
-% Updated by Philippe C Dixon Oct 2007
+% Updated by Philippe C Dixon 2007-2016
 % - improved functionality
-%
-% Updated by Philippe C. Dixon Nov 2008
-% - increased choice of parameters
-%
-% Updated by Philippe C. Dixon June 2010
-% - when using zoo files, fsamp is extracted from the zoosystem channel
-%
-% updated by Philippe C. Dixon August 2010
-% - fixed small bug in 'zoodata' mode.
-%
-% updated by Philippe C. Dixon June 2012
-% - added possibility of filtering via fft algorithm
-%
-% Updated by Philippe C. Dixon August 2013
-% - fixed sampling frequency bug when processing using a folder
-%
-% Updated by Philippe C. Dixon September 2013
-% - checking of frequency using zoo v1.2 functionality
-% - filter setting can be input using a struct called 'filt'
-%
-% Updated by Philippe C. Dixon May 2015
 % - improved help
-% - simplified inputs
-% - 'filterline' made as standalone function
-% - upgraded to zoosystem v.1.2 (no backwards compatibility)
+% - additional settings
+
+
+
+% Default settings/error checking
 %
-% Updated by Philippe C. Dixon Sept 2015
-% - implements the new 'zsave' procedure in which the processing information
-%   is saved to the zoo file in the branch 'data.zoosystem.processing'
-%
-% Updated by Philippe C. Dixon Nov 2015
-% - Fixed bug with selection of specific channels to filter
-% - Added display of filter settings summary
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
-
-% Default settings
-%
-filt.cutoff = 10;
-filt.ftype = 'butterworth';
-filt.forder = 4;
-filt.pass = 'lowpass';
-chfilt = 'all';
-
-fld = [];
-
-
-for i = 1:2:nargin
-    
-    switch varargin{i}
-        
-        case 'cutoff'
-            filt.cutoff = varargin{i+1};
-            
-        case 'ftype'
-            filt.ftype = varargin{i+1};
-            
-        case 'order'
-            filt.forder = varargin{i+1};
-            
-        case 'pass'
-            filt.pass = varargin{i+1};
-            
-        case 'chfilt'
-            chfilt = varargin{i+1};
-            
-        case 'fld'
-            fld = varargin{i+1};
-          
-    end
-
+if nargin==0
+    fld = uigetfolder('select folder to process');
+    ch = 'all';
+    filt.cutoff = 10;
+    filt.type = 'butterworth';
+    filt.order = 4;
+    filt.pass = 'lowpass';
 end
 
-if isempty(fld)
-    fld = uigetfolder;
+if nargin==1
+    ch = 'all';
+    filt.cutoff = 10;
+    filt.type = 'butterworth';
+    filt.order = 4;
+    filt.pass = 'lowpass';
+end
+
+if nargin==2
+    filt.cutoff = 10;
+    filt.type = 'butterworth';
+    filt.order = 4;
+    filt.pass = 'lowpass';
 end
 
 
-
-
-cd(fld)
-
-fl = engine('fld',fld,'extension','zoo');
-
-% Filter summary
+% Display filter summary
 %
 disp('----------------Filter settings------------')
-disp(['Filter type:             ',filt.ftype])  
-disp(['Filter Order:            ',num2str(filt.forder)])
-disp(['Filter Pass Range:       ',filt.pass]);
-disp(['Filter Cutoff Frequency: ', num2str(filt.cutoff)])
+disp(['Filter type:                    ',filt.type])
+disp(['Filter Order:                   ',num2str(filt.order)])
+disp(['Filter Pass Range:              ',filt.pass]);
+disp(['Filter Cutoff Frequency:        ', num2str(filt.cutoff)])
+if ismember(filt.type,{'chebychev I','chebychev II','eliptic'})
+    disp(['Filter stopband ripple:     ', num2str(filt.srip)])
+end
+
+if ismember(filt.type,{'eliptic'})
+    disp(['Filter peak-to-peak ripple: ', num2str(filt.prip)])
+end
 disp(' ')
 disp('Channels to be filtered:')
-disp(makecolumn(chfilt));
+if iscell(ch)
+    disp(makecolumn(ch));
+else
+    disp(ch)
+end
+disp(' ')
 
+% Batch process
+%
+cd(fld)
+fl = engine('path',fld,'extension','zoo');
+msg = prepmsg(filt,ch);
 
 for i = 1:length(fl)
-    data = zload(fl{i});    
-    batchdisplay(fl{i},'filtering:')
-    data = filterprocess(data,chfilt,filt);
-    msg = [filt.ftype,' ',num2str(filt.cutoff),'Hz ',num2str(filt.pass),' ',num2str(filt.forder),'th order'];
+    data = zload(fl{i});
+    batchdisplay(fl{i},'filtering')
+    data = filter_data(data,ch,filt);
     zsave(fl{i},data,msg);
 end
 
 
 
+function msg = prepmsg(filt,ch)
 
+msg = [filt.type,' ',num2str(filt.cutoff),'Hz ',num2str(filt.pass),'pass ',num2str(filt.order),'th order',];
+
+if ismember(filt.type,{'chebychev I','chebychev II','eliptic'})
+    msg = [msg, 'stopband ripple',num2str(filt.srip)];
+end
+
+if ismember(filt.type,{'eliptic'})
+    msg = [msg, 'peak ripple',num2str(filt.prip)];
+end
+
+if iscell(ch)
+    msg = [msg, ' on channels:'];
+    for i = 1:length(ch)
+        msg = [msg,' ',ch{i}]; %#ok<AGROW>
+    end
     
-  
-%============EMBEDDED FUNCTIONS================
+else
+    msg = [msg, ' on channels: ',ch];
+end
+
+

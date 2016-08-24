@@ -1,6 +1,6 @@
 function data = c3d2zooBtk(fld,del)
 
-% C3D2ZOOBTK(FLD,DEL) Converts .c3d files to .zoo format using the BTK c3d reader
+% data = C3D2ZOOBTK(fld, del) converts .c3d files to .zoo format using the BTK c3d reader
 %
 % ARGUMENTS
 %  fld  ...   path leading to folder to operate on
@@ -21,9 +21,6 @@ function data = c3d2zooBtk(fld,del)
 % - based on c3d2zoo, but with small changes to deal with differences in the output
 %   format between readc3dBTK and readc3d  
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016 
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
 
 
 % SET DEFAULTS ---------------------------------------------------------------------------

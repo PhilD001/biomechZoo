@@ -43,13 +43,13 @@ function [sub,fls] = subfolder(CurrPath,sub,fls)
 tmp = dir(CurrPath);
 tmp = tmp(~ismember({tmp.name},{'.' '..'}));
 for i = {tmp([tmp.isdir]).name}
-    sub{end+1} = [CurrPath, filesep, i{:}];  % updated PD
+    sub{end+1} = [CurrPath, filesep, i{:}];   % updated PD
     
     if nargin==2
         sub = subfolder(sub{end},sub);
     else
         tmp = dir(sub{end});
-        fls{end+1} = {tmp(~[tmp.isdir]).name};
-        [sub fls] = subfolder(sub{end},sub,fls);
+        fls{end+1} = {tmp(~[tmp.isdir]).name}; %#ok<*AGROW>
+        [sub, fls] = subfolder(sub{end},sub,fls);
     end
 end

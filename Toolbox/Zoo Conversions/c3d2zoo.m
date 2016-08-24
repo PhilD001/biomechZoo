@@ -1,17 +1,18 @@
 function data = c3d2zoo(fld,del)
 
-% C3D2ZOO(FLD,DEL) Converts .c3d files to .zoo format
+% data = C3D2ZOO(fld,del) Converts .c3d files to .zoo format
 %
 % ARGUMENTS
-%  fld  ...   path leading to folder to operate on
-%  del  ...   option to delete original c3d file after creating zoo file. Default 'no'
+%  fld   ...  Folder (batch process) or full path to individual file (string).
+%  del   ...  option to delete original c3d file after creating zoo file. Default 'no'
 %
 % RETURNS
-%  data  ...  zoo system data. This return is mostly used by 'director'
+%  data  ...  zoo data. Return if fld is individual file (mostly used by 'director')
 %
 % See also readc3d
 %
 % NOTES:
+% - Function can operate
 % - The function attempts to fix invalid fielnames via the makevalidfield.m function
 
 
@@ -29,7 +30,7 @@ function data = c3d2zoo(fld,del)
 %
 % Updated by Philippe C. Dixon Sept 2015
 % - implements the new 'zsave' procedure in which the processing information
-%   is saved to the zoo file in the branch 'data.zoosystem.processing'
+%   is saved to the zoo file in the branch 'data.zoosystem.Processing'
 % - c3d files with no 'EVENT' information can now be read without error
 % - updated algorithm to find force plate locations. Unlimited number of
 %   force plates can now be used
@@ -46,15 +47,18 @@ function data = c3d2zoo(fld,del)
 % - added additional meta info describing force plate channel names
 % - added a copy of ALL c3d meta info to data.zoosystem.OriginalC3dMetaInfo
 % - renamed units subfiled 'moments' to 'Moments'
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016 
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
+%
+% Updated by Philippe C. Dixon July 2016
+% - version 1.3 of the zoosystem
+% - checks that channels are appropriate for storage in a structured array
+%   using 'makevalidfield'
 
 
 % SET DEFAULTS ---------------------------------------------------------------------------
 %
 tic                                                                          % start timer
+
+ver = '1.3';                                                                 % zoo version
 
 if nargin==0
     fld = uigetfolder;
@@ -209,7 +213,6 @@ for i = 1:length(fl)
     % Add force plate metainformation to zoosystem branch of data struct
     %
     if isfield(r.Parameter,'FORCE_PLATFORM')
-        
         a =r.Parameter.FORCE_PLATFORM.CORNERS.data;
         a= reshape(a,3,[]);
         ln = length(a);
@@ -223,8 +226,6 @@ for i = 1:length(fl)
             else
                 b(:,:,j) = a(:,4*(j-1)+1:4*j);
             end
-            
-          
         end
              
         if ~isempty(b)
@@ -236,7 +237,7 @@ for i = 1:length(fl)
             
             temp = cell(r.Parameter.FORCE_PLATFORM.USED.data*6,1);
             for j = 1:(r.Parameter.FORCE_PLATFORM.USED.data)*6
-             temp{j} = deblank(a(:,j)');
+             temp{j} = makevalidfield(deblank(a(:,j)'));
             end
             data.zoosystem.Analog.FPlates.LABELS = temp;
 
@@ -275,7 +276,7 @@ for i = 1:length(fl)
     
     % Add zoosystem version number to zoosystem branch of data struct
     %
-    data.zoosystem.Version = '1.2';
+    data.zoosystem.Version = ver;
     
     % Add events metainformation (if available) to zoosystem branch of data struct
     %
@@ -289,7 +290,7 @@ for i = 1:length(fl)
                 sides = r.Parameter.EVENT.CONTEXTS.data;
                 type =  r.Parameter.EVENT.LABELS.data;
                 
-                [rows,cols] = size(sides);
+                [~,cols] = size(sides);
                 
                 stk = zeros(1,cols);
                 events = struct;

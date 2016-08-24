@@ -13,6 +13,7 @@ FigColor =  [.8 .8 .8];
 BgColor = [0 0 0];
 FgColor = [1 1 0];   % original [1 1 0]
 Settings.FontSize = 14;
+Settings.Interpreter = 'none';
 
 if iscell(action)
     if nargin ==3
@@ -203,8 +204,10 @@ tpch = findobj(gcf,'type','patch','tag','target');
 tpos = get(tpch,'vertices');
 tpos = mean(tpos(:,2));
 
-t1 = text('string','','position',[-.1 tpos],'horizontalalignment','right','verticalalignment','middle','color',[1 1 0],'tag','elements','buttondownfcn','associatedlg(''buttondown'')');
-t2 = text('string','','position',[.1 tpos],'horizontalalignment','left','verticalalignment','middle','color',[0 1 0],'userdata',t1,'tag','elements','buttondownfcn','associatedlg(''buttondown'')');
+t1 = text('string','','position',[-.1 tpos],'horizontalalignment','right','verticalalignment',...
+          'middle','color',[1 1 0],'tag','elements','buttondownfcn','associatedlg(''buttondown'')');
+t2 = text('string','','position',[.1 tpos],'horizontalalignment','left','verticalalignment',...
+          'middle','color',[0 1 0],'userdata',t1,'tag','elements','buttondownfcn','associatedlg(''buttondown'')');
 set(t1,'userdata',t2);
 adjustelements;
 hnd = {t1,t2};

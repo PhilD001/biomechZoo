@@ -1,9 +1,7 @@
 function indx = ZeniEventDetect(data,side,evt,delta)
 
 % ind = ZENIEVENTDETECT(data,side,evt,delta) estimates FS and FO based on oscillation of the
-% heel marker about the sacrum (coord method) acording to:
-% Zeni et al. (2008) "Two simple methods for determining gait events during treadmill and
-% overground walking using kinematic data" Gait and Posture 27. 710-14
+% heel marker about the sacrum (coord method) acording to the Zeni method 
 %
 % ARGUMENTS
 % data     ...   zoo data to be operated on
@@ -13,8 +11,10 @@ function indx = ZeniEventDetect(data,side,evt,delta)
 %
 % RETURNS
 % indx     ...  indx of event
-%
-%
+% 
+% NOTES
+% - Refer to Zeni et al. (2008) "Two simple methods for determining gait events during 
+%   treadmill and overground walking using kinematic data" Gait and Posture 27. 710-14
 
 
 % Revision History
@@ -44,12 +44,10 @@ function indx = ZeniEventDetect(data,side,evt,delta)
 % Updated March 2016
 % - If no FS events are detect 'NaN' is returned
 %
-% Updated June 2016
+% Updated July 2016
 % - Removed reference to original c3d file
+% - fixed bug with NaN checking at SACR
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
 
 % Set defaults
@@ -170,7 +168,7 @@ if sum(isnan(msacr))~=0
     if ofin~=fin
         disp('WARNING: SACR marker data has NaNs at end')
         pad =ones(l-fin+1,1) * msacr(fin);
-        mhee(fin:l) = pad;
+        msacr(fin:l) = pad;
     end
     
     if sum(isnan(msacr))~=0

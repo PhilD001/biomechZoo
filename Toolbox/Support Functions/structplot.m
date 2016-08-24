@@ -14,10 +14,8 @@ function structplot(data)
 
 
 if nargin ==0
-    
-[f,p]=uigetfile('*.zoo');
-data=load([p,f],'-mat');
-data=data.data;
+    [f,p]=uigetfile('*.zoo');
+    data=zload([p,f],'-mat');
 end
 
 
@@ -29,7 +27,6 @@ for i = 1:length(indx)
     color = {'b','r','g','c','m','y','k'};
     plot(data.(chnames{indx(i)}).line,color{i});
     hold on
-
 end
 
 

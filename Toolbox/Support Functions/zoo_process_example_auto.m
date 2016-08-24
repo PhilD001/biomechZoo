@@ -21,7 +21,6 @@ function zoo_process_example_auto(fld)
 if nargin==0
     fld = uigetfolder('select ''raw c3d files''');
 end
-cd(fld)
 tic
 
 % Step 0: Copy c3d files to output folder -------------------------------------------------
@@ -31,17 +30,18 @@ folder = fld(indx(end)+1:end);
 tfld = strrep(fld,folder,'zoo files (auto process)');
 copyfile(fld,tfld)
 fld = tfld;
+cd(fld)
 
 % Step 1: Conversion to the Zoosystem format ----------------------------------------------
 % 
-del = 'yes';                                                              % delete c3dfiles
+del = 'yes';                                                               % delete c3dfiles
 c3d2zoo(fld,del)                                                           % run conversion
 
 % STEP 2: Processing force plate data ------------------------------------------------------
 %                                                    
 filt.cutoff = 20;                                                          % filter settings 
-filt.ftype  = 'butterworth';                                               % see function
-filt.forder = 4;                                                           % for list of all
+filt.type  = 'butterworth';                                               % see function
+filt.order = 4;                                                           % for list of all
 filt.pass   = 'low';                                                       % filter choices
 ch_fp = {'Fx1','Fy1','Fz1','Fx2','Fy2','Fz2'};
 
@@ -66,11 +66,12 @@ Pelvis = {'RASI','LASI','SACR'};                                           % mar
 Thigh  = {'KNE','THI','HipJC'};                                            % define each seg
 Shank  = {'ANK','TIB','KneeJC'};                                           % for joint angle
 Foot   = {'ANK','TOE','HEE'};                                              % computations
-joints = {'HipJC','KneeJC'};
+joints = {'HipJC','KneeJC','AnkleJC'};                                     % AnkleJC not needed
 sequence = 'yxz';                                                          % Euler sequence
 
 bmech_jointcentrePiG(fld,joints)                                           % adds hip joint
 bmech_kinemat(fld,Pelvis,Thigh,Shank,Foot,sequence)                        % comp. kinematics
+%bmech_kinematicsPiG(fld)                                                   % PiG version
 
 % Step 5: Cleaning the data ---------------------------------------------------------------
 %
@@ -95,11 +96,11 @@ bmech_normalize(fld,nlength)
 
 
 % Step 8: Visualization -------------------------------------------------------------------
-% - This step is not performed here, outlier channel is tagged as outlier (999)
+% - Visualization step is not performed here, 
+% - outlier channels are tagged as outlier (999)
 out_file = [fld,filesep,'HC002D',filesep,'Turn',filesep,'HC002D25.zoo'];
-data = zload(out_file);
-data.RFx.line = 999*data.RFx.line;
-data.RFx.event.min = [1 999 0];
+ch = {'RightGroundReactionForce_x','RGroundReactionForce_x'};
+outlier(out_file,ch)
 
 
 % Step 9: Statistical analysis ------------------------------------------------------------

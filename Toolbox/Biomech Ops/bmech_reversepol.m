@@ -1,11 +1,11 @@
 function bmech_reversepol(fld,ch)
 
-% bmech_reversepol(fld,ch) reveres the polarity of a given channel and
+% BMECH_REVERSEPOL(fld,ch) batch process polarity reversing for a given channel and
 % accompanying event if available
 %
 % ARGUMENTS
-%  fld   ...  folder to operate on. 
-%  ch    ...  channels to reverse as cell array of strings
+%  fld      ...  Folder of data to operate on
+%  ch       ...  Channels to reverse as cell array of strings
 %
 % Example
 % fld = 'c:/my documents'
@@ -34,9 +34,7 @@ function bmech_reversepol(fld,ch)
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
+
 
 % Set Defaults
 %
@@ -64,7 +62,7 @@ fl = engine('path',fld,'extension','zoo');
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'reversing polarity');
-    data = reversepol(data,ch);
+    data = reversepol_data(data,ch);
     zsave(fl{i},data);
     
     if isin(ch{1},'all')
@@ -77,29 +75,6 @@ end
 
 
 
-
-
-function data = reversepol(data,ch)
-
-
-if isin(ch{1},'all')
-    ch = setdiff(fieldnames(data),'zoosystem');
-end
-
-
-for i = 1:length(ch)
-    
-    data.(ch{i}).line = -1.*data.(ch{i}).line;
-    evt = fieldnames(data.(ch{i}).event);
-    
-    for j = 1:length(evt)
-        
-        if ~isin(evt,'rom')
-        r = data.(ch{i}).event.(evt{j});
-        data.(ch{i}).event.(evt{j}) = [r(1) -r(2) r(3)];
-        end
-    end
-end
 
 
 

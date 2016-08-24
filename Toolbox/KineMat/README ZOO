@@ -1,0 +1,12 @@
+README
+
+These files are part of the 'Kinemat' toolbox of  Reinschmidt and Van den Bogert
+see: http://isbweb.org/software/movanal/kinemat/
+
+Additional files and changes for integration into the Zoosystem toolbox
+-bmech_kinemat: batch processing file to compute kinematics across all zoo files
+-kinemat_data: file to compute kinematics for a single zoo file struc (data)
+-rad2deg and deg2rad were renamed to avoid potential name conflict with 
+ existing zoo files. The zoo system equivalent functions should perform in the 
+ same manner
+

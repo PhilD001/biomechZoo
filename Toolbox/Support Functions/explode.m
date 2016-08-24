@@ -1,5 +1,6 @@
 function [split,numpieces]=explode(string,delimiters)
-%EXPLODE    Splits string into pieces.
+
+% EXPLODE    Splits string into pieces.
 %   EXPLODE(STRING,DELIMITERS) returns a cell array with the pieces
 %   of STRING found between any of the characters in DELIMITERS.
 %

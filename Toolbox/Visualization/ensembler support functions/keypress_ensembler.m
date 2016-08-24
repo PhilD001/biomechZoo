@@ -2,7 +2,7 @@ function keypress_ensembler
 
 %  keypress_ensembler is a stand-alone suppot function for ensembler
 
-s = slash;
+s = filesep;
 
 switch get(gcf,'currentkey')
     

@@ -1,28 +1,21 @@
-function deriv = bmech_deriv(data,fsamp,f,cut)
+function bmech_deriv(fld,ch,filt)
 
-% deriv = bmech_deriv(data,fsamp,f,cut) differentiates data with the option to filter. 
+% BMECH_DERIV(fld,ch,f) batch process differentiation of given channel(s) with filter options
 %
 % ARGUMENTS
-%  data     ...  the data coming in
-%  fsamp    ...  sampling rate of data
-%  f        ...  f = 0 do not filter, f = 1 filter data (default) Default is 4th order butter lowepass
-%                f can also be a struct with the following fields
-%                'ftype','order','pass','cutoff'
-%  cut      ...  cut-off frequency for filter. Default 10hz
-%
-% RETURNS
-%  deriv    ...  differentiated data
-%
+%  fld      ...  Folder to batch process (string). 
+%  ch       ...  Channel(s) to operate on (single string or cell array of strings) 
+%  filt     ...  Filter options
+%                filt = 0: do not filter (default)
+%                filt = 1: filter data using 4th order butterworth low-pass with 10 Hz cutoff
+%                filt = struct: filter according to struc fields (see bmech_filter)
+%                
 % Notes
-%  1) To run multiple derivaties simply run bmech_deriv the required number
-%     of times.
-%  2) use the following example to test the validity of the
-%     differentiation method
-%     t = (0:0.001:1);
-%     x = sin(2*pi*t);
-%     dx1 = 2*pi*cos(2*pi*t);
-%    dx2 = bmech_deriv(x,1000,0);
-
+%  -Sampling rate will be extracted from zoofile according to channel type (Video or Analog)
+%  -Differentiated channel(s) will be appended with suffix '_dot'
+%  -To compute nth derivative, run function n times 
+%
+% See also deriv_data, deriv_line, gradient, filter_line
 
 % Revision History
 %
@@ -32,112 +25,54 @@ function deriv = bmech_deriv(data,fsamp,f,cut)
 %  - Use of function gradient. Gradient conserves length of input vector.
 %  - can handle vectors as columns or rows
 %
-% Updated by Philippe C. Dixon January 2009:
-%  - FDA is not functional and has been disabled
-%
-% Updated by Philippe C. Dixon June 2013
-%  - clean up for for better readability
-%
-% Updated by Philippe C. Dixon August 2013
+% Updated by Philippe C. Dixon 2013,2014
+% - clean up for for better readability
 % - allow choice of cutoff frequency for filtering
 % - preallocation of deriv_stk
+% - full customization of filtering properties possible by setting f as a struct
 %
-% Updated by Philippe C. Dixon february 14th 2014
-% - full customization of filtering properties possible by setting f as a
-%   struct
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+% Part of the bmechZoo toolbox v1.3 Copyright (c) 2006-2016 (Main contributors) 
 % Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
-% Set defaults
+
+% Set defaults/check arguments
 %
-if nargin < 2
-    error('missing arguments')
+if nargin==0
+    fld = uigetfolder('select folder to process');
 end
 
-if nargin == 2                      % full default settings
-    f.ftype = 'butterworth';
-    f.order = 4;
-    f.pass = 'lowpass';
-    f.cutoff = 10;
+if nargin ==1
+   error('missing channel arguments')
 end
 
-
-if nargin==3                      
-    
-    if ~isstruct(f)
-        if f==1
-            f.ftype = 'butterworth';
-            f.order = 4;
-            f.pass = 'lowpass';
-            f.cutoff = 10;
-        end
-        
-    end
-    
+if nargin == 2
+    filt = 0;
 end
 
+if isnumeric(filt) && filt ==1
+    filt = struct;
+    filt.type   = 'butterworth';
+    filt.order  = 4;
+    filt.pass   = 'lowpass';
+    filt.cutoff = 10;
+end
 
-if nargin==4
-    if ~isstruct(f)
-        if f==1
-            f.ftype = 'butterworth';
-            f.order = 4;
-            f.pass = 'lowpass';
-            f.cutoff = cut;
-        end
-        
-    end 
+if ~iscell(ch)
+   ch = {ch}; 
 end
 
 
 
-% extract info for filtering
+% Batch process
 %
-if isstruct(f)
-    ftype = f.ftype;
-    order = f.forder;
-    pass = f.pass;
-    cut = f.cutoff;
-    filt = 'on';
-else
-    filt = 'off';
+cd(fld)
+fl = engine('path',fld,'extension','zoo');
+
+for i = 1:length(fl)
+    data = zload(fl{i});
+    batchdisplay(fl{i},'differentiating:');
+    data = deriv_data(data,ch,filt);
+    zsave(fl{i},data, ch);
 end
-     
-
-
-[rw, cl]=size(data);
-
-if rw ==1
-    data = makecolumn(data);
-end
-
-[rw, cl]=size(data);
-
-
-deriv_stk = zeros(rw,cl);
-
-switch filt
-    
-    case 'off'
-        
-        for i =1:cl
-            raw_deriv  = gradient(data(:,i)).*fsamp;
-            deriv_stk(:,i) = raw_deriv;
-        end
-        
-    case 'on'
-        for i = 1:cl
-            raw_deriv  = gradient(data(:,i)).*fsamp;
-            filt_deriv = filterline(raw_deriv,fsamp,f);
-            deriv_stk(:,i) = filt_deriv;
-        end
-        
-end
-
-deriv = deriv_stk;
-
 
 

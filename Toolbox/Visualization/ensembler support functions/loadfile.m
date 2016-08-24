@@ -1,5 +1,3 @@
-
-
 function loadfile(f,p,figs)
 
 fl = [p,f];

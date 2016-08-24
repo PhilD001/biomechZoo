@@ -1,9 +1,9 @@
-function zplot(chdata)
+function zplot(r)
 
-% ZPLOT (chdata) plots zoo chdata along with event markers
+% ZPLOT(r) plots zoo chdata along with event markers
 %
 % ARGUMENTS
-%  chdata   ... struct containing line and event branches  e.g. zplot(data.vforce)
+%  r   ... struct containing line and event branches  e.g. zplot(data.vforce)
 %
 
 
@@ -22,12 +22,6 @@ function zplot(chdata)
 % - improved user interface
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
-
-
-
 
 % Set Defaults
 %
@@ -37,11 +31,21 @@ MarkerEdgeColor = 'k';
 MarkerSize = 6;
 
 
-
 % Choose action
 %
-if ~ischar(chdata)
+
+if isfield(r,'line')
     action = 'start';
+    
+elseif isstruct(r)
+    chnames = setdiff(fieldnames(r),'zoosystem');
+    indx = listdlg('liststring',chnames);
+    
+    for i = 1:length(indx)
+        zplot(r.(chnames{indx(i)}))
+        hold on
+    end
+    
 else
     action = 'buttondown';
 end
@@ -50,14 +54,14 @@ switch action
     
     case 'start'
         
-        line('ydata',chdata.line,'xdata',(0:length(chdata.line)-1));
-        evt = fieldnames(chdata.event);
+        line('ydata',r.line,'xdata',(0:length(r.line)-1));
+        evt = fieldnames(r.event);
         
         for e = 1:length(evt)
             hold on
-            line('XData',chdata.event.(evt{e})(1)-1,'YData', chdata.event.(evt{e})(2),...
+            line('XData',r.event.(evt{e})(1)-1,'YData', r.event.(evt{e})(2),...
                 'Marker',MarkerStyle,'MarkerFaceColor',MarkerFaceColor,'MarkerEdgecolor',MarkerEdgeColor,...
-                'MarkerSize',MarkerSize,'buttondownfcn','zplot(''buttondown'')','userdata',evt{e});
+                'MarkerSize',MarkerSize,'buttondownfcn','zplot(''buttondown'')','userdata',evt{e});        
         end
         
     case 'buttondown'

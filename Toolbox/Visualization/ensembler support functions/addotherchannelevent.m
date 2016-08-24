@@ -3,10 +3,8 @@ function addotherchannelevent(fld)
 
 fl = engine('path',fld,'extension','zoo');
 
-data = load(fl{1},'-mat');
-data = data.data;
+data = zload(fl{1});
 ch = setdiff(fieldnames(data),'zoosystem');
-
 
 
 evts = {};

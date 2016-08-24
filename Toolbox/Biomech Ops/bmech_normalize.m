@@ -1,69 +1,60 @@
-function bmech_normalize(fld,datalength,intmethod)
+function bmech_normalize(fld,ch,datalength,method)
 
-% BMECH_NORMALIZE(FLD,DATALENGTH,INTMETHOD) will normalize data to a given data length
+% BMECH_NORMALIZE(fld,ch,datalength,method) batch process time normalization 
 %
 % ARGUMENTS
-%  fld          ...   Folder to operate on
-%  datalength   ...   Normalize data to a specific length. Data will have
-%                     datalength+1 frames. Default 101 frames
-%  intmethod    ...   method to interpolate data. Default 'linear'.
-%                     See interp1 for more options
+%  fld        ... Folder to batch process (string). Default: folder selection window.  
+%  ch         ... Channel(s) to operate on (single string or cell array of strings). 
+%                 Use 'Video','Analog', or 'all' to filter all video, analog or all 
+%                 channels, respectively.Default 'all'
+%  datalength ... Normalize data to a specific length. Data will have datalength+1 frames.
+%                 Default: 100 (101 frames)
+%  method     ... method to interpolate data. Default 'linear'.
+%                 See interp1 for more options
 %
 % NOTES
-% - If no arguments are supplied, the function will ask for a folder to
-%   operate on and normalize to 101 frames
-% - All channels of a given file will be normalized
 % - Normalization will not recalculate an event value. It will only recalculate the 
 %   event index. Thus an event may not 'lie' exactly on a normalized line. 
-% - For processing a single vector, use standalone NORMALIZELINE.m 
-
+%
+% See also interp1, normalize_data, normalize_line
 
 % Revision history: 
 %
-% Updated by Philippe C. Dixon Jan 2010
+% Updated by Philippe C. Dixon 2010
 % - this function now normalizes event data as well
 % - function only runs in batch file mode, 
-%
-% Updated by Philippe C. Dixon June 2010
 % -Event normalization verified and improved. 
 %
-% Updated by Philippe C. Dixon May 2015
+% Updated by Philippe C. Dixon 2015
 % - Help improved
+% - implemented  'zsave' procedure 
 %
-% Updated by Philippe C. Dixon Sept 2015
-% - implements the new 'zsave' procedure in which the processing information
-%   is saved to the zoo file in the branch 'data.zoosystem.processing'
-%
-% Updated by Philippe C. Dixon Jan 11th 
-% - Interpolation can be performed using any method available in the
-%  'interp1' function
+% Updated by Philippe C. Dixon Jan 2016 
+% - Interpolation can be performed using any method available in 'interp1' function
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
 % Set defaults
 %
 if nargin==0
-    disp('normalizing to 100%, please select your folder');
-    disp(' ');
+    fld = uigetfolder('select folder to process');
+    ch = 'all';
     datalength = 100;
-    fld = uigetfolder('select zoo processed ');
-    cd(fld);  
-    intmethod = 'linear';
-
+    method = 'linear';
 end
 
 if nargin ==1
-    disp(['normalizing to 100%, using folder ',fld]);
-    datalength=101;
-    intmethod = 'linear';
+    ch = 'all';
+    datalength=100;
+    method = 'linear';
 end
 
 if nargin ==2
-    disp(['normalizing to ',num2str(datalength),'using folder ',fld])
-    intmethod = 'linear';
+    datalength=100;
+    method = 'linear';
+end
+
+if nargin ==3
+    method = 'linear';
 end
 
 
@@ -75,24 +66,10 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'normalizing:');
-    data = normalizedata(data,datalength,intmethod);
-    zsave(fl{i},data, [num2str(datalength+1) ' frames']);
+    batchdisplay(fl{i},'normalizing channel(s)');
+    data = normalize_data(data,ch,datalength,method);
+    zsave(fl{i},data, [num2str(datalength+1) ' frames, method: ',method]);
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

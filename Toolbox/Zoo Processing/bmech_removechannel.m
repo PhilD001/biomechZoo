@@ -1,11 +1,11 @@
-function bmech_removechannel(varargin)
+function bmech_removechannel(fld,ch,action)
 
-% BMECH_REMOVECHANNEL(varargin) removes unwanted channels from zoo files
+% BMECH_REMOVECHANNEL(fld,ch,action) batch process removal of unwanted channels
 %
 % ARGUMENTS
-%  chkp         ...    channels to keep as cell array of strings ex.
-%  chrm         ...    channels to remove as cell array of strings
-%  fld          ...    name of folder to operatre on
+%  fld      ...  Folder to batch process (string)
+%  ch       ...  Channel(s) to operate on (single string or cell array of strings).
+%  action   ...  Action to take on ch (string): 'keep' or 'remove' channels in ch
 %
 % Created 2008
 %
@@ -18,73 +18,48 @@ function bmech_removechannel(varargin)
 % Updated by Philippe C. Dixon Sept 2015
 % - implements the new 'zsave' procedure in which the processing information
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
-
-
-chkp = [];
-chrm = [];
-fld = [];
-
-%-------Default settings----
-
-for i = 1:2:nargin
-    
-    switch varargin{i}
-        
-        case 'chkp'
-            chkp = varargin{i+1};
-        case 'chrm'
-            chrm = varargin{i+1};
-        case 'fld'
-            fld = varargin{i+1};
-    end
-end
-
-
-if isempty(fld)
-    fld = uigetfolder('select zoo processed)');
-end
-
-cd(fld)
-
-fl = engine('path',fld,'extension','zoo');
-
-
-% error checking
 %
+% Updated by Philippe C. Dixon July 2016
+% - reformatted for zosystem v1.3
+
+
+
+% Set defaults/Error check
+%
+if ~iscell(ch)
+    ch = {ch};
+end
+
+
+% Batch process
+%
+cd(fld)
+fl = engine('path',fld,'extension','zoo');
 
 
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'removing channel');
     
-    if ~isempty(chrm)    % you've selected channels to remove
-        data = removechannel(data,chrm);
-        if ~iscell(chrm)
-            chrm = {chrm};
-        end
-        nch = length(chrm);
-    end
+    [chn,suff] = getchannels(data,ch,action);
     
-    if ~isempty(chkp)    % you've selected channels to remove
-        allch = setdiff(fieldnames(data),'zoosystem');
-        nch = length(setdiff(allch,chkp));
-        data = keepchannel(data,chkp);
-    end
-    
-    if length(nch)==1
-        suff = 'channel';
-    else
-        suff = 'channels';
-    end
-    
-    zsave(fl{i},data, ['removed ',num2str(nch),' ',suff]);
+    data = removechannel_data(data,chn);
+    zsave(fl{i},data, ['removed ',num2str(length(chn)),' ',suff]);
 end
 
+
+function [ch,suff] = getchannels(data,ch,action)
+
+if strcmp(action,'keep')
+    allch = setdiff(fieldnames(data),'zoosystem');
+    ch = (setdiff(allch,ch));
+end
+
+if length(ch)==1
+    suff = 'channel';
+else
+    suff = 'channels';
+end
 
 
 

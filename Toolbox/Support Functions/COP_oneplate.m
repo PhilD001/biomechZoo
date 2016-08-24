@@ -92,5 +92,3 @@ z_cop(e+1:end) = NaN;
 
 
 COP = [x_cop y_cop z_cop];
-
-

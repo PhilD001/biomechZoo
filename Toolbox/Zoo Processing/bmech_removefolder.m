@@ -1,15 +1,11 @@
 function bmech_removefolder(fld,sfld)
 
-%  bmech_removefolder(fld,sfld) removes trials from subfolder 'sfld' 
+% BMECH_REMOVEFOLDER(fld,sfld) batch process removal of trials from subfolder 'sfld' 
 %
 % ARGUMENTS
-%  fld      ... root folder to operate on
-%  sfld     ... subfolder to remove as cell array of strings
+%  fld      ...  Folder to batch process (string) 
+%  sfld     ...  Subfolder to remove (cell array of strings)
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
 % Error checking
 %
@@ -17,7 +13,7 @@ if ~iscell(sfld)
     sfld = {sfld};
 end
 
-s = filesep;    % determine slash direction based on computer type
+s = filesep;                                            % get slash direction based on computer 
 indx = strfind(sfld{1},s);
 
 if isempty(indx)

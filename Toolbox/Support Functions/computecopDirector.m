@@ -34,24 +34,6 @@ function data = computecopDirector(data,P,Or,fpch)
 
 
 
-% ---------Part of the Zoosystem Biomechanics Toolbox 2006-2014------------------------------%
-%                                                                                            %
-% MAIN CONTRIBUTORS                                                                          %
-%                                                                                            %
-% Philippe C. Dixon         Dept. of Engineering Science. University of Oxford, Oxford, UK   %
-% JJ Loh                    Medicus Corda, Montreal, Canada                                  %
-% Yannick Michaud-Paquette  Dept. of Kinesiology. McGill University, Montreal, Canada        %
-%                                                                                            %
-% - This toolbox is provided in open-source format with latest version available on the      %
-%   Mathworks file exchange under the name 'zoosystem'.                                      %
-%                                                                                            %
-% - Users are encouraged to edit and contribute to functions                                 %
-%                                                                                            %
-% main contact: philippe.dixon@gmail.com                                                     %
-%                                                                                            %
-%--------------------------------------------------------------------------------------------%
-
-
 
 %--DEFAULTS---
 thresh = 20 ; % cop only cacluated when magnitude of F > 20 N. Agrees with Vicon

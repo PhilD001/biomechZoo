@@ -1,12 +1,13 @@
 function bmech_explode(fld,ch)
 
-% BMECH_EXPLODE(FLD,CH) is used to split n x 3 data into three n x 1
-% channels. New channels have a dimension suffix (e.g. '_x', '_y', and '_z'
+% BMECH_EXPLODE(fld,ch) batch process split of n x 3 channel data into three n x 1
+% channels. New channels have a dimensional suffix (e.g. '_x', '_y', and '_z'
 % for the 1st, 2nd, and 3rd columns of the matrix, respectively). 
 % 
 % ARGUMENTS
-%   fld ... folder to explode
-%   ch  ... channels to explode as cell array of strings. Default is all
+%  fld      ...  Folder to batch process (string). Default: folder selection window. 
+%  ch       ...  Channels to explode (single string or cell array of strings). 
+%                Default: explode all channels 'all'
 
 
 % Revision History
@@ -24,11 +25,8 @@ function bmech_explode(fld,ch)
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
-
+% Set defaults/error check
 if nargin ==0
     fld = uigetfolder('select folder containing data to explode');
     ch = 'all';
@@ -42,13 +40,15 @@ if ~iscell(ch)
     ch = {ch};
 end
 
+% Batch process
+%
 cd(fld);
 fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'exploding data');
-    data = explodechannel(data,ch);
+    data = explode_data(data,ch);
     zsave(fl{i},data);
 end
 

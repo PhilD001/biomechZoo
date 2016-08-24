@@ -1,6 +1,5 @@
 function varargout = props(action,varargin)
 
-
 % varargout = PROPS(action,varargin) creates various props used by director
 %
 % Updated by JJ Loh and Philippe C. Dixon June 2015
@@ -491,13 +490,8 @@ switch action
         
     case 'load analog zoo'
         zdata = varargin{1};
-        
-%         if nargin==1
-            zooloadanalog(zdata);
-%         else
-%             indx = varargin{2};
-%             zooloadanalog(zdata,indx)
-%         end
+        zooloadanalog(zdata);
+
 end
 
 function bomb(hnd,vindx,findx)
@@ -1400,7 +1394,7 @@ d = which('director'); % returns path to ensemlber
 path = pathname(d) ;  % local folder where director resides
 
 ach =  zdata.zoosystem.Analog.Channels;
-[~,~,nplates] = size(zdata.zoosystem.Analog.FPlates.CORNERS);
+nplates = zdata.zoosystem.Analog.FPlates.NUMUSED;
 
 
 % attempt to catch 'standard' force plate channel names
@@ -1410,7 +1404,9 @@ fpch = cell(size(ach));
 for i = 1:length(ach)
     ch = ach{i};
     
-    if length(ch) ==3  && (isin(lower(ch(1)),'f') || isin(lower(ch(1)),'m'))
+    if length(ch) ==3  && (isin(lower(ch(1)),'f') || isin(lower(ch(1)),'m')) 
+        fpch{i} = ach{i};
+    elseif isin(ch,'Force') || isin(ch,'Moment')
         fpch{i} = ach{i};
     end
 end
@@ -1476,20 +1472,20 @@ fpnum =  get(phnd,'Tag');
 fpnum = fpnum(end); % just the number
 pud = get(phnd,'userdata');
 
-[p1,p2,p3]    = GetFPLocalOrigin(zdata);
-[Or1,Or2,Or3] = GetFPGlobalOrigin(zdata);
+% [p1,p2,p3]    = GetFPLocalOrigin(zdata);
+% [Or1,Or2,Or3] = GetFPGlobalOrigin(zdata);
+% 
+% P = struct;
+% P.p1 = p1;
+% P.p2 = p2;
+% P.p3 = p3;
+% 
+% Or = struct;
+% Or.Or1 = Or1;
+% Or.Or2 = Or2;
+% Or.Or3 = Or3;
 
-P = struct;
-P.p1 = p1;
-P.p2 = p2;
-P.p3 = p3;
-
-Or = struct;
-Or.Or1 = Or1;
-Or.Or2 = Or2;
-Or.Or3 = Or3;
-
-zdata = computecop(zdata,P,Or);
+% zdata = computecopDirector(zdata,P,Or,fp);
 
 x = zdata.(['COP',fpnum,'_X']).line(:,1);
 y = zdata.(['COP',fpnum,'_Y']).line(:,1);
@@ -1505,63 +1501,16 @@ set(phnd,'userdata',pud);
 function setfporientation(phnd,zdata)
 
 fpnum =  get(phnd,'Tag');
+fpnum = fpnum(end);
 pud = get(phnd,'userdata');
 
-[Or1,Or2,Or3] = GetFPGlobalOrigin(zdata);
+globalOr = getFPGlobalOrigin(zdata);
 
-if isin(fpnum,'1')
-    pud.vertices = displace(pud.vertices, Or1*100);         %displace FP checked good
-    
-elseif isin(fpnum,'2')
-    pud.vertices = displace(pud.vertices, Or2*100);         %displace FP checked good
-    
-elseif isin(fpnum,'3')
-    pud.vertices = displace(pud.vertices, Or3*100);         %displace FP checked good
-end
+pud.vertices = displace(pud.vertices,globalOr.(['FP',fpnum])*100);         %displace FP checked good
+
 
 set(phnd,'userdata',pud);
 
-function insertdata(phnd,ch,c3d)
-pud = get(phnd,'userdata');
-if isfield(pud,'fx')
-    indx = myfindstr(ch,'fx',pud.id);
-    if isempty(indx)
-        return
-    end
-    pud.fx = DecimateAnalog(c3d.AnalogData.(['channel',num2str(indx)]).data,c3d.Header.SamplesPerChannel);
-    
-    indx = myfindstr(ch,'fy',pud.id);
-    if isempty(indx)
-        return
-    end
-    pud.fy = DecimateAnalog(c3d.AnalogData.(['channel',num2str(indx)]).data,c3d.Header.SamplesPerChannel);
-    
-    indx = myfindstr(ch,'fz',pud.id);
-    if isempty(indx)
-        return
-    end
-    pud.fz = DecimateAnalog(c3d.AnalogData.(['channel',num2str(indx)]).data,c3d.Header.SamplesPerChannel);
-    
-    indx = myfindstr(ch,'mx',pud.id);
-    if isempty(indx)
-        return
-    end
-    pud.mx = DecimateAnalog(c3d.AnalogData.(['channel',num2str(indx)]).data,c3d.Header.SamplesPerChannel);
-    
-    indx = myfindstr(ch,'my',pud.id);
-    if isempty(indx)
-        return
-    end
-    pud.my = DecimateAnalog(c3d.AnalogData.(['channel',num2str(indx)]).data,c3d.Header.SamplesPerChannel);
-    
-    indx = myfindstr(ch,'mz',pud.id);
-    if isempty(indx)
-        return
-    end
-    pud.mz = DecimateAnalog(c3d.AnalogData.(['channel',num2str(indx)]).data,c3d.Header.SamplesPerChannel);
-    set(phnd,'userdata',pud);
-    
-end
 
 function zooinsertdata(phnd,ch,zdata)
 

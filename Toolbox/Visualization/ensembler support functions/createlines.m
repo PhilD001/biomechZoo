@@ -1,5 +1,20 @@
 function createlines(fig,data,fl)
 
+% settings = CREATELINES(fig,data,fl) used by ensembler GUI to plot lines
+%
+
+
+% Updated by Philippe C. Dixon July 2016
+% - commented code using Video Indx to draw lines
+
+
+% Set Defaults for ensembler events
+%
+settings.string = '\diamondsuit';
+settings.verticalalignment = 'middle';
+settings.horizontalalignment = 'center';
+settings.color = [1 0 0];
+
 ch = fieldnames(data);
 
 tch = unique(ch);
@@ -15,15 +30,8 @@ for j = 1:length(ch)
     end
     
     ydata = data.(ch{j}).line;
-  
-    if isfield(data.zoosystem, 'VideoSampleNum')
-        xdata = makecolumn(data.zoosystem.VideoSampleNum.Indx);
-        offset = xdata(1);
-        
-    else
-        xdata = (0:length(data.(ch{j}).line)-1);
-        offset = 0;
-    end
+    xdata = (0:length(data.(ch{j}).line)-1);
+    offset = 0;
     
     xdata = makecolumn(xdata);
     
@@ -39,8 +47,8 @@ for j = 1:length(ch)
     evt = fieldnames(data.(ch{j}).event);
     for e = 1:length(evt)
         text('parent',ax,'position',[data.(ch{j}).event.(evt{e})(1)+offset data.(ch{j}).event.(evt{e})(2)],...
-            'tag',evt{e},'string','\diamondsuit','verticalalignment',...
-            'middle','horizontalalignment','center','color',[1 0 0],...
+            'tag',evt{e},'string',settings.string,'verticalalignment',settings.verticalalignment,...
+            'horizontalalignment',settings.horizontalalignment,'color',settings.color,...
             'buttondownfcn',get(ax,'buttondownfcn'),'userdata',ln);
     end
     

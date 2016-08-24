@@ -1,14 +1,13 @@
-function bmech_renamechannel(och,nch,fld)
+function bmech_renamechannel(fld,och,nch)
       
-% This m-file will rename channels in your data
+% BMECH_RENAMECHANNEL(fld,och,nch) batch process renaming of channels
 %
-% bmech_renamechannel(och,nch,fld)
-% 
 % ARGUMENTS
-%  och        ...    name of old channels as cell array of strings ex. {'ch1','ch2','ch3'}
-%  nch        ...    name of new channels as cell array of strings ex. {'RKNA','RANK','fz'}
-%  fld        ...    optional argument. name of folder to operate on
-
+%  fld   ...  Folder (batch process) or full path to individual file (string).
+%  och   ...  Name of old channels (cell array of strings or single string) e.g. {'ch1','ch2'}
+%  nch   ...  Name of new channels (cell array of strings or single string)
+%
+% See also renamechannel_data, ebmech_removechannel
 
 % Revision History
 %
@@ -72,7 +71,7 @@ disp(' ')
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'renaming channels')
-    data = renamechannel(data,och,nch);
+    data = renamechannel_data(data,och,nch);
     zsave(fl{i},data);
 end
 

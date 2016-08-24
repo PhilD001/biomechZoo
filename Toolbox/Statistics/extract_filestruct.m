@@ -40,7 +40,7 @@ fl = engine('path',fld,'extension','zoo');
 
 % FIND 1st Level (e.g. between subject condition)
 %
-s = slash;
+s = filesep;
 subdirs = subdir(fld);
 indxfld = strfind(fld,s);
 
