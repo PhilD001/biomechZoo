@@ -1,4 +1,4 @@
-% ZOO_PROCESS_EXAMPLE demonstrates the tools available in BiomechZoo by processing
+fld% ZOO_PROCESS_EXAMPLE demonstrates the tools available in BiomechZoo by processing
 % sample data for a hypothetical study.
 %
 % NOTES
@@ -32,7 +32,7 @@
 %
 % Created by Philippe C. Dixon November 2013
 %
-% Last updated by Philippe C. Dixon August 15th 2016
+% Last updated by Philippe C. Dixon August 25th 2016
 % - Improved help
 % - Included hyperlinks
 % - Added processes for comparsion with PiG outputs
@@ -315,14 +315,15 @@ bmech_normalize(fld,ch,nlength,method)
 % 7. Repeat this process for a number of trials (including
 
 if strfind(mode,'auto')
+    events = {'RFS','RFO'};                
     out_file_turn = [fld,filesep,'HC002D',filesep,'Turn',filesep,'HC002D25.zoo'];
     out_file_straight = [fld,filesep,'HC036A',filesep,'Straight',filesep,'HC036A10.zoo'];
 
     ch = {'RightGroundReactionForce_x','RGroundReactionForce_x',...
           'RightGroundReactionForce_y','RGroundReactionForce_y'};
       
-    outlier(out_file_turn,ch)                
-    outlier(out_file_straight,ch)            
+    outlier(out_file_turn,ch,events)                
+    outlier(out_file_straight,ch,events)            
 end
 
 

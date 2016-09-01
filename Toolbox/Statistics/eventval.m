@@ -500,8 +500,31 @@ for i = 1:length(fl)
             yd = evt;
             
             if ~isnumeric(yd)
+                
+%                 if strcmp(anthroevtnames(k),'Gender')
+% %                     anthroevtnames(k) = {'Gender F=0,M=1'};
+%                     if strcmp(yd,'F')
+%                         yd = 0;
+%                     elseif strcmp(yd,'M')
+%                         yd = 1;
+%                     end
+%                     
+%                 elseif strcmp(anthroevtnames(k),'Handness')
+% %                     anthroevtnames(k) = {'Handness R=0,L=1'};
+%                     if strcmp(yd,'R')
+%                         yd = 0;
+%                     elseif strcmp(yd,'L')
+%                         yd = 1;
+%                     end
+%                     
+%                 else
+%                     yd = 999;
+%                 end
+%                 
                 yd = 999;
+                
             end
+        
             
             if strcmp(excelserver,'on')
                 xlswrite1(evalFile,{anthroevtnames(k)},chname,[ecell1{k},'2']);

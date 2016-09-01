@@ -10,7 +10,7 @@ function samplestudy
 % environment while fit with the Plug-in Gait (PiG) markers.
 %
 % To explore the sample study, follow these steps: 
-%  1) Download the sample study <a href="https://github.com/PhilD001/the-zoosystem-sample-study">here</a>
+%  1) Download the sample study data <a href="https://github.com/PhilD001/the-zoosystem-sample-study">here</a>
 %  2) Explore the sample study <a href="matlab:edit zoo_process_example">workflow</a> 
 %
 % NOTE: 

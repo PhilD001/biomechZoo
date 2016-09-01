@@ -1,8 +1,13 @@
-function outlier(fl,ch)
+function outlier(fl,ch,events)
 
-% OUTLIER(fl,chns) makes line and event data for 'fl' an outlier, i.e. line and event data
+% OUTLIER(fl,ch,events) makes line and event data for 'fl' an outlier, i.e. line and event data
 % become 999
 %
+% ARGUMENTS
+%  fl     ...  File to operate on (string)
+%  ch     ...  Channel to turn into outlier
+%  events ...  List of events to ignore, i.e., keep unchanged
+
 
 if isempty(strfind(fl,filesep))
     fl = engine('fld',pwd,'search file',fl);
@@ -21,8 +26,11 @@ for i = 1:length(ch)
     evts = fieldnames(data.(ch{i}).event);
     if ~isempty(evts)
         for j = 1:length(evts)
-            disp(['replacing event data for ',evts{j},' to [exd 999 0]'])
-            data.(ch{i}).event.(evts{j})(2) = 999;
+            
+            if ~ismember(evts{j},events)
+                disp(['replacing event data for ',evts{j},' to [exd 999 0]'])
+                data.(ch{i}).event.(evts{j})(2) = 999;
+            end
         end
     end
 end

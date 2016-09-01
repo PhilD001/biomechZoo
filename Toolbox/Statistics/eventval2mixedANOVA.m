@@ -170,9 +170,13 @@ end
 
 for j = 1:length(ch)
     count = 1;
-%     [rr,txt,raw] = xlsread([p,f],ch{j},'basic'); % basic is default on mac
-    [num,txt,xlsdata] = xlsread([p,f],ch{j},'basic'); % basic is default on mac
-
+    
+    if strcmp(computer,'MACI')
+        [num,txt,xlsdata] = xlsread([p,f],ch{j},'basic'); % basic is default on mac
+    else
+        [num,txt,xlsdata] = xlsread([p,f],ch{j}); % basic is default on mac
+    end
+    
     [~,dcols] = size(num);                             % dcols = number of data columns
     
     xlsdata = xlsdata(4:end,4:end);

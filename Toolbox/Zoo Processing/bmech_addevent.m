@@ -1,4 +1,4 @@
-function bmech_addevent(fld,ch,ename,type,sfld)
+sdsdsdsadsafunction bmech_addevent(fld,ch,ename,type,sfld)
 
 % BMECH_ADDEVENT(fld,ch,ename,type,sfld) batch process of event addition
 %

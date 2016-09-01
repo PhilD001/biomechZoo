@@ -1,4 +1,4 @@
-function [P,t,df,e,md,CIdiff,plus,minus] = omni_ttest(data1,data2,type,alpha,thresh,mode,bonf)
+function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,mode,bonf)
 
 % [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode,bonf) performs statistical 
 % comparison of two groups taking into account parametric assumptions. 
@@ -33,7 +33,7 @@ function [P,t,df,e,md,CIdiff,plus,minus] = omni_ttest(data1,data2,type,alpha,thr
 % - for zoo files, data1 and data2 argments can be obtained using
 %   'extractevents.m'. Some editing may be necessary for your project
 % - only two-tailed tests can be performed
-
+%
 % Revision History
 %
 % Created by Philippe C Dixon Feb 2012
@@ -42,11 +42,12 @@ function [P,t,df,e,md,CIdiff,plus,minus] = omni_ttest(data1,data2,type,alpha,thr
 % - removed reliace on 'decimals2' function
 % - improved interface
 % - removed option to run 'right' or 'left' sided 
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
+%
+%
+% Part of the biomechZoo toolbox v1.3 Copyright (c) 2006-2016
 % Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
+% More info: type 'zooinfo' in the command prompt or visit
+% http://www.biomechzoo.com
 
 % Set Defaults
 %
@@ -76,6 +77,7 @@ switch nargin
         thresh = 0.01;
         tail = 'both';
         mode = 'full';
+         bonf = 1;
             
     case 5
         tail = 'both';

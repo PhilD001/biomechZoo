@@ -51,6 +51,9 @@ if nargin==2
     method = 'linear';
 end
 
+if nargin==4
+    method = 'linear';
+end
 
 fl = engine('path',fld,'extension','zoo');
 
