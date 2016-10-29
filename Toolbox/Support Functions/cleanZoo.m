@@ -43,6 +43,8 @@ for i = 1:length(sub)
     end
 end
 
+pfl = engine('fld',efld,'extension','.prop');
+delfile(pfl)
 
 % remove some mac junk
 %fl
