@@ -34,3 +34,24 @@ for i = 1:length(ax)
     set(evt,'parent',ax(i));
     bottomhnd(pch);
 end
+
+% Update figure names
+%
+figs = findobj('type','figure');
+name = ' ';
+for i = 1:length(figs)
+    n = get(figs(i),'name');
+    if i == 1
+        name = n;
+    else
+        name = [name ' and ',n];
+        delete(figs(i))
+    end
+    
+    
+end
+
+set(gcf,'name',name)
+
+
+

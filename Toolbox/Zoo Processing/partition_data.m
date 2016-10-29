@@ -36,8 +36,9 @@ function data = partition_data(data,evt1,evt2,ch)
 % Updated by Philippe C. Dixon March 2016
 % - Fixed CURRENT_START_FRAME and CURRENT_END_FRAME bug so that format:
 %  [frame 0 0] is resepcted
-
-
+%
+% Updated by Philippe C. Dixon October 2016
+% - Partition updates .Indx fields (not fully tested)
 
 % Set Defaults
 %
@@ -109,13 +110,11 @@ for i = 1:length(ch)
     if ismember(ch{i},data.zoosystem.Video.Channels) && v==0
         data.zoosystem.Video.CURRENT_START_FRAME = [e1(1) 0 0];
         data.zoosystem.Video.CURRENT_END_FRAME = [e2(1) 0 0];
-        %data.zoosystem.Video.Indx = e1(1):1:e2(2);
-        v = 1;
+        data.zoosystem.Video.Indx = (e1(1):1:e2(1))';
     elseif ismember(ch{i},data.zoosystem.Analog.Channels) && a ==0
         data.zoosystem.Analog.CURRENT_START_FRAME = [e1(1) 0 0];
         data.zoosystem.Analog.CURRENT_END_FRAME = [e2(1) 0 0];   
-        %data.zoosystem.Analog.Indx = e1(1):1:e2(2);
-
+        data.zoosystem.Analog.Indx = (e1(1):1:e2(1))';
     end
     
 end

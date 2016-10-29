@@ -13,6 +13,7 @@ function createlines(fig,data,fl)
 settings.string = '\diamondsuit';
 settings.verticalalignment = 'middle';
 settings.horizontalalignment = 'center';
+settings.FontSize = 14;
 settings.color = [1 0 0];
 
 ch = fieldnames(data);
@@ -49,7 +50,7 @@ for j = 1:length(ch)
         text('parent',ax,'position',[data.(ch{j}).event.(evt{e})(1)+offset data.(ch{j}).event.(evt{e})(2)],...
             'tag',evt{e},'string',settings.string,'verticalalignment',settings.verticalalignment,...
             'horizontalalignment',settings.horizontalalignment,'color',settings.color,...
-            'buttondownfcn',get(ax,'buttondownfcn'),'userdata',ln);
+            'FontSize',settings.FontSize,'buttondownfcn',get(ax,'buttondownfcn'),'userdata',ln);
     end
     
 end

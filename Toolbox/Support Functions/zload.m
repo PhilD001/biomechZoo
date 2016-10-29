@@ -13,14 +13,31 @@ function data = zload(fl)
 % Revision history
 %
 % Created by Philippe C. Dixon January 2012
+%
+% Updated by Philippe C. Dixon October 2016
+% - Added additional error checking
 
 
+% Error checking
+%
+if iscell(fl)    
+    if length(fl)==1
+        fl = fl{1};
+    else
+        error('zload requires a single file input, not cell of strings (from engine?)')
+    end
+end
+    
 if ~exist(fl,'file')
     error(['file :',fl,' does not exist'])
 end
 
+if ~strcmp(extension(fl),'.zoo')
+    error('Only zoo files can be loaded, convert your file to .zoo before loading')
+end
+
+
+% Load file to workspace
+%
 data = load(fl,'-mat');
-%data = matfile(fl,'Writable',true);
-
-
 data = data.data;

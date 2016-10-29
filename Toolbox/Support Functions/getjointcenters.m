@@ -1,4 +1,4 @@
-function r = getjointcenters
+function r = getJointCenters
 
 % Lhipvec = [0.001047173543632   0.008637260481034   0.987698733491366];
 % Rhipvec = [0.001186173781980  -0.003963635061499   0.986562214450295];

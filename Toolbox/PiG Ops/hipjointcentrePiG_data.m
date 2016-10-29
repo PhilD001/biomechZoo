@@ -67,9 +67,9 @@ end
 % Extract info from data
 %
 if isfield(data.zoosystem,'Anthro') 
-   mDiam = data.zoosystem.Anthro.MarkerDiameter;
-   rLegLength = data.zoosystem.Anthro.RLegLength;
-   lLegLength = data.zoosystem.Anthro.LLegLength;
+   mDiam = getAnthro(data,'MarkerDiameter');
+   rLegLength = getAnthro(data,'RLegLength');
+   lLegLength = getAnthro(data,'LLegLength');
 else
     error('anthropometric info must be added before running this process')
 end

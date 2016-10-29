@@ -8,7 +8,8 @@ function bmech_explode(fld,ch)
 %  fld      ...  Folder to batch process (string). Default: folder selection window. 
 %  ch       ...  Channels to explode (single string or cell array of strings). 
 %                Default: explode all channels 'all'
-
+%
+% See also explode_data, bmech_merch 
 
 % Revision History
 %

@@ -30,7 +30,7 @@ for i = 1:length(ax)
         if ~isin(ch,'legend')
             alpha = 0.05;
             nboots = 1000;
-            [maxvalstk(i),temp,multstk(i)] = getmaxval(fld,ch,alpha,ax(i),nboots,check);
+            [maxvalstk(i),temp,multstk(i)] = getMaxVal(fld,ch,alpha,ax(i),nboots,check);
             r.(ch) = temp.(ch);
         end
     end

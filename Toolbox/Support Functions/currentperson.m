@@ -1,3 +1,12 @@
 function r = currentperson
+
+% Updated Sept 2016
+% - r returns as empty if hnd is empty
+
 hnd = finddobj('person menu');
-r = get(hnd,'label');
+
+if ~isempty(hnd)
+    r = get(hnd,'label');
+else
+    r = '';
+end

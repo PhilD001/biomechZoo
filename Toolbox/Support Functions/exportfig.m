@@ -75,18 +75,16 @@ end
 
 % figure out platform
 %
-export_fig(filename{1}, '-pdf', '-transparent','-q101')  % default opengl
-
-
 
 
 % export to figure
 %
-% if isempty( findobj('tag','colormap'))
-%     export_fig(filename{1}, '-pdf', '-transparent','-q101')  % painters used by default
-% else
-%     export_fig(filename{1}, '-png', '-transparent','-r150')     % cannot vectorize colorbars
-% end
+if isempty( findobj('tag','colormap'))
+    export_fig(filename{1}, '-pdf', '-transparent','-q101')  % painters used by default
+else
+    export_fig(filename{1}, '-png', '-transparent','-r150')     % cannot vectorize colorbars
+end
+
 % if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
 %
 %     if isempty( findobj('tag','colormap'))

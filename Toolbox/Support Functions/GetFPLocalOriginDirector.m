@@ -1,4 +1,4 @@
-function P = GetFPLocalOriginDirector(zdata)
+function P = getFPLocalOriginDirector(zdata)
 
 % P = GetFPLocalOrigin(zdata) extracts local origin from zdata.
 %

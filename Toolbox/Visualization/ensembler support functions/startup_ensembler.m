@@ -7,7 +7,12 @@ if nargin < 10
     nfigs = 1;
 end
 
-fig = figure('name',nm,'units','inches','position',[0 0 fw fh],'menubar','none','numbertitle','off','keypressfcn','ensembler(''keypress'')');
+
+FontName = 'Arial'; % default axis font
+FontSize = 14;      % default axis font size
+
+fig = figure('name',nm,'units','inches','position',[0 0 fw fh],'menubar','none',...
+             'numbertitle','off','keypressfcn','ensembler(''keypress'')');
 % ,  th = uitoolbar(fig)
 
 if i == nfigs % only the master gets uimenu
@@ -122,7 +127,8 @@ if i == nfigs % only the master gets uimenu
 end
 
 fpos = get(fig,'position');
-uicontrol('units','inches','style','text','position',[0 fpos(4)-.5 fpos(3) .25],'tag','prompt','backgroundcolor',get(gcf,'color'));
+uicontrol('units','inches','style','text','position',[0 fpos(4)-.5 fpos(3) .25],'tag',...
+          'prompt','backgroundcolor',get(gcf,'color'),'FontSize',FontSize);
 fpos(4) = fpos(4)-.25;
 
 xvec = getspacing(ncols,xwid,xspace,fpos(3));
@@ -144,7 +150,8 @@ for i = 1:length(xvec)
         end
         
         ax = axes('units','inches','position',[xpos,ypos,xwid,ywid],'tag',num2str([lyvec-rnum+1 cnum]),'box','on','userdata',...
-            [rnum,cnum],'buttondownfcn','ensembler(''buttondown'')');
+            [rnum,cnum],'buttondownfcn','ensembler(''buttondown'')',...
+            'FontName',FontName,'FontSize',FontSize);
         
         hnd = title(ax,get(ax,'tag'));
         set(hnd,'units','normalized','position',[.5 1 0],'horizontalalignment','center','verticalalignment','bottom');

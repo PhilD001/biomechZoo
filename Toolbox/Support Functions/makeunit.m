@@ -12,6 +12,7 @@ function r = makeunit(unt)
 
 [~,c] = size(unt);
 
+
 if c==3
     r = [];
     if iscell(unt)

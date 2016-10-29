@@ -6,20 +6,22 @@ function SegmentPar = getSegmentPar(file)
 %
 % See also kinetics_data
 
+% Updated by Philippe C. Dixon Sept 2016
+% - read numeric data instead of text (excel sheet also updated)
 
-[~,txt] = xlsread(file);
+[num,txt] = xlsread(file);
 
 segment = txt(3:end,1);
-CoM = txt(3:end,2);
-Mass = txt(3:end,3);
-Rox = txt(3:end,4);
-Roy = txt(3:end,5);
-Roz = txt(3:end,6);
+CoM = num(:,1);
+Mass = num(:,2);
+Rox = num(:,3);
+Roy = num(:,4);
+Roz = num(:,5);
 
 for i = 1:length(segment)
-    SegmentPar.(segment{i}).com = str2double(CoM{i});
-    SegmentPar.(segment{i}).mass = str2double(Mass{i});
-    SegmentPar.(segment{i}).RadiusGyr_x = str2double(Rox{i});
-    SegmentPar.(segment{i}).RadiusGyr_y = str2double(Roy{i});
-    SegmentPar.(segment{i}).RadiusGyr_z = str2double(Roz{i});
+    SegmentPar.(segment{i}).com = CoM(i);
+    SegmentPar.(segment{i}).mass = Mass(i);
+    SegmentPar.(segment{i}).RadiusGyr_x = Rox(i);
+    SegmentPar.(segment{i}).RadiusGyr_y = Roy(i);
+    SegmentPar.(segment{i}).RadiusGyr_z = Roz(i);
 end

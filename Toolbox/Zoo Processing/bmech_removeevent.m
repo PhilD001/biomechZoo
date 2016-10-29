@@ -27,10 +27,6 @@ function bmech_removeevent(fld,evt,ch)
 % - fixed bug in channel selection
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
-
 
 
 % Set Defaults
@@ -50,8 +46,11 @@ if nargin==2
     ch = 'all';
 end
 
+evt = makerow(evt);
+
     
 cd(fld);
+
 
 
 % Batch Process
@@ -61,7 +60,7 @@ fl = engine('path',fld,'extension','zoo');
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'removing events');
-    data = removeevent(data,evt,ch);
+    data = removeevent_data(data,evt,ch);
     
     if isin(ch,'all')
         zsave(fl{i},data,['removed ',evt,' from all channels'])
@@ -73,54 +72,3 @@ end
 
 
  
-function data = removeevent(data,evt,ch)
-    
-if ~iscell(evt)
-    evt = {evt};
-end
-
-if ~iscell(ch)
-    ch = {ch};
-end
-
-
-if isin(ch{1},'all') 
-    ch = setdiff(fieldnames(data),{'zoosystem'});
-end
-
-if strcmp(evt{1},'all')
-   
-    for i = 1:length(ch)
-        evts = fieldnames(data.(ch{i}).event);
-        
-        for j = 1:length(evts)
-            data.(ch{i}).event = rmfield(data.(ch{i}).event,evts(j));
-        end
-    end
-    
-else
-    
-    
-    for a = 1:length(evt)
-        
-        for i = 1:length(ch)
-            evts = fieldnames(data.(ch{i}).event);
-            
-            if ~isempty(evts)
-                
-                for j =1:length(evts)
-                    
-                    if strcmp(evt{a},evts{j})
-                        
-                        data.(ch{i}).event = rmfield(data.(ch{i}).event,evts(j));
-                    end
-                end
-            end
-            
-        end
-        
-        
-        
-    end
-    
-end

@@ -1,6 +1,6 @@
 function batchdisplay(fl,type)
 
-% batchdisplay(fl,type) produces a shortened display of file path 
+% BATCHDISPLAY(fl,type) produces a shortened display of file path 
 %
 % ARGUMENTS
 % fl    ... name of file being processed
@@ -15,8 +15,16 @@ function batchdisplay(fl,type)
 % Updated Sept 23rd 2014 by Philippe C. Dixon
 % - fixed bug when length(indx)==4
 
+
 if nargin==1
     type = 'processing';
+end
+
+
+if isin(type,'copying')
+    eword = ' from: ';
+else
+    eword = ' for: ';
 end
 
 s = filesep; 
@@ -28,4 +36,5 @@ else
     fl_cat = fl(indx(end-4):end);
 end
 
-disp([type,' for: ',fl_cat])
+
+disp([type,eword,fl_cat])

@@ -1,7 +1,6 @@
 function COM=comass(data,f)
 
-
-%   COM returns center of mass quantities for inverse dynamics 
+% COM = COMASS(data,f) returns center of mass quantities for inverse dynamics 
 %
 %   ARGUMENTS
 %   data    ...  structured array of segment data retured from c3d2com
@@ -25,8 +24,6 @@ function COM=comass(data,f)
 
 % -----1 - PLUGINGAIT BONES--------
 fsamp = data.fsamp;
-
-
 
 dsegments = {'RightFemur','LeftFemur','RightTibia','LeftTibia','RightFoot','LeftFoot'};
 comsegments = {'RightThigh','LeftThigh','RightShank','LeftShank','RightFoot','LeftFoot'};

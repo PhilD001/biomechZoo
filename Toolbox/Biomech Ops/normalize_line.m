@@ -1,6 +1,6 @@
 function [nr,nlength]=normalize_line(r,datalength,method)
 
-% [nline,nlength]=normalize_line(r,datalength) normalizes data to specific length
+% [nline,nlength] = NORMALIZE_LINE(r,datalength) normalizes data to specific length
 %
 % ARGUMENTS
 %  r          ... Matrix data (n x 1 or n x3)

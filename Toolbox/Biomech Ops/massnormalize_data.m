@@ -31,14 +31,17 @@ if nargin==2
     type = [];
 end
 
-if ~isfield(data.zoosystem.Anthro,'Bodymass')
-    error('no body mass stored in anthro branch of zoo file')
-end
+
 
 
 % Normalize quantities by mass and update zoosystem
 %
-mass = getanthro(data,'Bodymass');
+mass = getAnthro(data,'Bodymass');
+
+if isempty(mass)
+    error('no mass information found')
+end
+
 for i = 1:length(ch)
     data.(ch{i}).line = data.(ch{i}).line/mass;
     

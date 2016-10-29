@@ -157,14 +157,21 @@ switch action
         
         if nlines ==1
             fl= get(lines,'userdata');           % this is the line handle
-            data = load(fl,'-mat');
-            data = data.data;
+            data = zload(fl);
+            
             [mmax,indx] = max(data.(ch).line);
             data.(ch).event.max = [indx mmax 1];
             save(fl,'data');
         else
-            bmech_addevent(fld, ch,'max','max')
+             bmech_addevent(fld, ch,'max','max')
         end
+        
+%         for i = 1:length(nlines)
+%             fl= get(lines(i),'userdata');           % this is the line handle
+%             data = zload(fl);
+%             data = addevent_data(data,ch,'max','max');
+%             zsave(fl,data,action);
+%         end
         
         update_ensembler_lines(p,f,fld)
         

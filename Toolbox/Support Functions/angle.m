@@ -18,14 +18,18 @@ function r = angle(m1,m2,ref)
 % updated by Phil Dixon Oct 2008
 %
 %
-% © Part of the Biomechanics Toolbox, Copyright ©2008, 
-% Phil Dixon, Montreal, Qc, CANADA
 
 
 if nargin ==2
     ref = 'deg';
 end
 
+[~,cols] = size(m1);
+
+if cols ==1
+    m1 = makerow(m1);
+    m2 = makerow(m2);
+end
 
 dotp = diag(m1*m2');
 
@@ -49,7 +53,6 @@ switch ref
         
 end
 
-end
 
 
 

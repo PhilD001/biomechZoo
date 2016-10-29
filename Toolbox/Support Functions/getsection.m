@@ -1,4 +1,4 @@
-function section = getsection(data,ch)
+function section = getSection(data,ch)
 
 % section = GETSECTION(data,ch) returns section ('Video' or 'Analog') of channel
 %

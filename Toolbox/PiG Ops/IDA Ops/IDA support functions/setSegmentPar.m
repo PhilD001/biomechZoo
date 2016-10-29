@@ -1,8 +1,10 @@
 function [data,body] = setSegmentPar(dim,bone,data,SegmentPar,body)
 
+% [data,body] = SETSEGMENTPAR(dim,bone,data,SegmentPar,body) is standalone function used 
+% primarily by kinetics_data
 
 
-% standalone function used primarily by vicon2ida. 
+% Revision History
 %
 % Updated Nov 11th 2013
 % - Made standalone for use with other functions on Nov 11th 2013
@@ -23,7 +25,38 @@ for i = 1:length(bone(:,1))
     
     switch bn
         
+        case 'RightHand'
+            pjoint = data.RRAO.line;
+            djoint = data.RHNO.line;
+            com = SegmentPar.Hand.com;
+            
+        case 'LeftHand'
+            pjoint = data.LRAO.line;
+            djoint = data.LHNO.line;
+            com = SegmentPar.Hand.com;
+        
+        case 'RightHumerus'
+            pjoint = data.RHUP.line;
+            djoint = data.RHUO.line;
+            com = SegmentPar.Humerus.com;
+            
+        case 'LeftHumerus'
+            pjoint = data.LHUP.line;
+            djoint = data.LHUO.line;
+            com = SegmentPar.Humerus.com;
+            
+        case 'RightRadius'
+            pjoint = data.RHUO.line;
+            djoint = data.RRAO.line;
+            com = SegmentPar.Radius.com;
+            
+        case 'LeftRadius'
+            pjoint = data.LHUO.line;
+            djoint = data.LRAO.line;
+            com = SegmentPar.Radius.com;
+            
         case 'Pelvis'
+            
             pjoint = data.SACR.line; % garbage data
             
             if isfield(data,'LTRO')
@@ -45,8 +78,8 @@ for i = 1:length(bone(:,1))
             com = SegmentPar.Tibia.com;
             
         case 'LeftFoot'
-            pjoint = data.LFOO.line;
-            djoint = data.LTOE.line;
+            pjoint = data.LFOP.line;    % edited by PD Sept 2016 LFOO
+            djoint = data.LFOO.line;    % edited by PD Sept 2016 LTOE
             com = SegmentPar.Foot.com;
             
         case 'RightFemur'
@@ -60,8 +93,8 @@ for i = 1:length(bone(:,1))
             com = SegmentPar.Tibia.com;
             
         case 'RightFoot'
-            pjoint = data.RFOO.line;
-            djoint = data.RTOE.line;
+            pjoint = data.RFOP.line;   % edited by PD Sept 2016 RFOO
+            djoint = data.RFOO.line;   % edited by PD Sept 2016 RTOE
             com = SegmentPar.Foot.com;
             
         case 'LeftTibiaOFM'
@@ -106,5 +139,5 @@ for i = 1:length(bone(:,1))
     body.(bn).com = cm/1000;              % output is in m
     
     data = addchannel_data(data,[(bn),'com'],cm,'Video');    % add to zoofile
-
+    
 end

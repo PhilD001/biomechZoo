@@ -29,7 +29,7 @@ cd(fld)
 
 if nargin==1
     filt = setFilt;
-    settings.segpar = 'PiG_segments.xls';                       % see getSegmentPar
+    settings.segpar = 'segments.xls';                           % see getSegmentPar
     settings.graph  = false;                                    % graph results
     settings.city   = 'standard';                               % choose g based on city
     settings.filt   = false;                                    % Filter intermediate calc

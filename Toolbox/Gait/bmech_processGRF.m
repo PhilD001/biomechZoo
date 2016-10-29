@@ -1,15 +1,19 @@
 function bmech_processGRF(fld,filt)
 
-% BMECH_FORCEPLATEPIG(fld,ch,filt) processess raw force plate data in a manner similar
+% BMECH_PROCESSGRF(fld,filt) processess raw force plate data in a manner similar
 % to the Vicon Plug-in Gait (PiG) modeller
+%
+% ARGUMENTS
+%  fld    ... Folder to operate on
+%  filt   ... Filter settings (struct)
 
 
 % Set defaults
 
 if nargin ==1
-    filt.cutoff = 20;                                                            % filter settings
-    filt.type   = 'butterworth';                                                 % see function
-    filt.order  = 4;                                                             % for list of all
+    filt.cutoff = 20;                                  % filter settings
+    filt.type   = 'butterworth';                       % see function
+    filt.order  = 4;                                   % for list of all
     filt.pass   = 'low';
 end
 

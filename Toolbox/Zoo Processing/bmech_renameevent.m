@@ -4,8 +4,8 @@ function bmech_renameevent(fld,evt,nevt)
 %
 % ARGUMENTS
 %  fld   ...  folder to operate on
-%  evt   ...  name of existing event as a string
-%  nevt  ...  name of new event as a string
+%  evt   ...  name of existing event as cell array of strings
+%  nevt  ...  name of new events as cell array of string
 
 
 % Revision History
@@ -18,40 +18,54 @@ function bmech_renameevent(fld,evt,nevt)
 % Updated by Philippe C. Dixon Sept 2015
 % - implements the new 'zsave' procedure in which the processing information
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
+%
+% Updated by Philippe C. Dixon Oct 2016
+% - Function can handle cell array of strings
+% - Added extra error checking
 
 
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
+
+% Error checking
+%
+% check for single string instead of cell array of strings
+%
+if ~iscell(evt)
+    evt = {evt};
+end
+
+if ~iscell(nevt)
+    nevt= {nevt};
+end
+
+
+if length(evt)~=length(nevt)
+    error('number of new name events does not match number of old channel names to replace')
+end
+    
+disp(' ')
+disp('renaming the following events:')
+for i = 1:length(evt)
+    disp(['renaming ', evt{i}, ' to ',nevt{i}])
+end
+
+disp(' ')
 
 
 
+% Batch process
+%
 cd(fld);
 fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
-    batchdisplay(fl{i},['renaming event from ',evt,' to ',nevt])
+    batchdisplay(fl{i},'renaming events')
     data = zload(fl{i});
-    data = renameevent(data,evt,nevt,fl{i});
+    data = renameevent_data(data,evt,nevt);
     zsave(fl{i},data);
 end
 
 
 
-function data = renameevent(data,evt,nevt,fl)
-
-
-ch = fieldnames(data);
-ch = setdiff (ch,{'zoosystem'});
-
-for i = 1:length(ch)
-
-    if isfield(data.(ch{i}).event,evt)
-        disp(['rename event:',fl]);
-        data.(ch{i}).event.(nevt)=data.(ch{i}).event.(evt);  
-        data.(ch{i}).event = rmfield(data.(ch{i}).event, evt);
-    end
-end
 
 
 

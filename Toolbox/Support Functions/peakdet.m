@@ -1,6 +1,6 @@
 function [maxtab, mintab]=peakdet(v, delta)
 
-% [MAXTAB, MINTAB] = PEAKDET detects peaks in a vector
+% [maxtab, mintab] = PEAKDET(v,delta) detects peaks in a vector
 %
 %   ARGUMENTS
 %   v     ...  vector to search.

@@ -1,4 +1,4 @@
-function [r,data] = getanthro(data,field)
+function [r,data] = getAnthro(data,field)
 
 % ANTHRO = GETANTHRO(DATA) extracts anthropometric data from zoo file. If
 % data are not available an attempt to compute information is made. This 
@@ -9,7 +9,6 @@ function [r,data] = getanthro(data,field)
 %  
 % RETURNS
 %  anthro   ...   structured array containing all available zoo fields
-
 
 
 if ~isfield(data.zoosystem,'Anthro')
@@ -44,17 +43,15 @@ if isempty(r)
         case 'ranklewidth'
             markerDiam = getanthro(data,'MarkerDiameter');
             [~,~,~,r] = jointWidthPiG(data,markerDiam);
-          
-            
+              
         case 'lanklewidth'
              markerDiam = getanthro(data,'MarkerDiameter');
             [~,~,~,~,r] = jointWidthPiG(data,markerDiam);
           
-         
         case 'mass'
-            r = getanthro(data,'Bodymass');
-            
-    
+            r = getAnthro(data,'bodymass');
+        
+       
            
         otherwise
             error(['missing field: ',field]) 

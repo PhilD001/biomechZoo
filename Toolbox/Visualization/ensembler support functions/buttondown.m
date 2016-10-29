@@ -5,9 +5,13 @@ function buttondown
 
 % Created by JJ Loh 2006
 %
-% Updated bu Philippe C. Dixon March 2016
+% Updated by Philippe C. Dixon March 2016
 % - improved behavior for ensembled lines
 % - improved contrast of selected line
+%
+% Updated  by Philippe C. Dixon October 2016
+% - use of new function concatEnsPrompt to shorten long ensembler prompts
+
 
 hnd = gcbo;
 
@@ -35,7 +39,9 @@ switch get(gcf,'selectiontype')
         
         if ischar(get(gcbo,'userdata'))
             txt = findensobj('prompt',gcf);
-            set(txt,'string',get(gcbo,'userdata'));
+            temp = get(gcbo,'userdata');
+            temp = concatEnsPrompt(temp);
+            set(txt,'string',temp);
             
             if isempty(strfind(get(gcbo,'userdata'),'average_'))
                 set(findobj('string','\diamondsuit'),'color',[1 0 0]); % set back to red
@@ -66,7 +72,7 @@ switch get(gcf,'selectiontype')
                     
                 end
                 
-                if ~isin(get(hnd,'type'),'hggroup')
+               if ~isin(get(hnd,'type'),'hggroup')
                     set(gcbo,'color',[0 0 .98],'LineWidth',2,'LineStyle','--')
                 else
                     set(gcbo,'LineStyle',':')

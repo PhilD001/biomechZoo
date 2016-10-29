@@ -13,7 +13,7 @@ if nargin==1
     
     if isfield(data,'LPSI')
         SACR = (data.LPSI.line + data.RPSI.line)/2;
-        data = addchannel(data,'SACR',SACR,'video');
+        data = addchannel_data(data,'SACR',SACR,'video');
     end
     ch = 'SACR';
 end

@@ -88,7 +88,7 @@ for i = 1:length(ch)
             end
             units = data.zoosystem.Units.Forces;
             if strcmp(units,'N/kg')
-                m = getanthro(data,'Bodymass');
+                m = getAnthro(data,'Bodymass');
             else
                 m = 1;
             end

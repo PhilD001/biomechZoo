@@ -55,8 +55,7 @@ end
 
 
 if length(och)~=length(nch)
-    disp('number of new name channels does not match number of old channel names to replace')
-    return    
+    error('number of new name channels does not match number of old channel names to replace')
 end
     
 disp(' ')

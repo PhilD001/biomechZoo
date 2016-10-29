@@ -1,4 +1,4 @@
-function [Or,C] = GetFPGlobalOriginDirector(zdata)
+function [Or,C] = getFPGlobalOriginDirector(zdata)
 
 % GetFPGlobalOrigin extracts the coordinates of the centre of each force
 % plate in GCS
@@ -44,6 +44,7 @@ for i =1:plates
     
     
 end
+
 
 
 

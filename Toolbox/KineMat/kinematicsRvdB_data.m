@@ -41,6 +41,11 @@ if nargin ==2
     test = false;
 end
 
+if nargin ==6
+    sequence = 'yxz';
+    test = false;
+end
+
 if nargin==7
     test = false;
 end
@@ -64,21 +69,34 @@ end
 
 
 
-% Initialize Stat anatomical position matrices
+% Initialize Stat and Dyn position matrices
 %
-rowsStat   = length(sdata.(Pelvis{1}).line);
-pelvisStat = zeros(rowsStat,length(Pelvis)*3);
-thighStat  = zeros(rowsStat,length(Thigh)*3);
-shankStat  = zeros(rowsStat,length(Shank)*3);
-footStat   = zeros(rowsStat,length(Foot)*3);
+rowsStat = length(sdata.zoosystem.Video.Indx);
+rowsDyn = length(data.zoosystem.Video.Indx);
 
-% Initialze Dyn trial matrices
-%
-rowsDyn   = length(data.(Pelvis{1}).line);
-pelvisDyn = zeros(rowsDyn,length(Pelvis)*3);
-thighDyn  = zeros(rowsDyn,length(Thigh)*3);
-shankDyn  = zeros(rowsDyn,length(Shank)*3);
-footDyn   = zeros(rowsDyn,length(Foot)*3);
+
+if ~isempty(char(Pelvis))
+    pelvisStat = zeros(rowsStat,length(Pelvis)*3);
+    pelvisDyn = zeros(rowsDyn,length(Pelvis)*3);
+end
+
+if ~isempty(char(Thigh))
+    thighStat  = zeros(rowsStat,length(Thigh)*3);
+    thighDyn  = zeros(rowsDyn,length(Thigh)*3);
+end
+
+
+if ~isempty(char(Shank))
+    shankStat  = zeros(rowsStat,length(Shank)*3);
+    shankDyn  = zeros(rowsDyn,length(Shank)*3);
+end
+
+if ~isempty(char(Foot))
+    footStat   = zeros(rowsStat,length(Foot)*3);
+    footDyn   = zeros(rowsDyn,length(Foot)*3);
+end
+
+
 
 
 
@@ -86,75 +104,119 @@ footDyn   = zeros(rowsDyn,length(Foot)*3);
 %
 side = {'R','L'};
 
-for j = 1:length(Pelvis)
-    pelvisStat(:,3*j-2:3*j) = sdata.(Pelvis{j}).line;
-    pelvisDyn(:,3*j-2:3*j)  = data.(Pelvis{j}).line;
+if ~isempty(char(Pelvis))
+    for j = 1:length(Pelvis)
+        pelvisStat(:,3*j-2:3*j) = sdata.(Pelvis{j}).line;
+        pelvisDyn(:,3*j-2:3*j)  = data.(Pelvis{j}).line;
+    end
+    pelvisStatMean = nanmean(pelvisStat,1);
+    
 end
 
 for i = 1:length(side)
     
-    for j = 1:length(Thigh)
-        thighStat(:,3*j-2:3*j) = sdata.([side{i},Thigh{j}]).line;
-        thighDyn(:,3*j-2:3*j)  = data.([side{i},Thigh{j}]).line;
-    end
-    
-    for j = 1:length(Shank)
-        shankStat(:,3*j-2:3*j) = sdata.([side{i},Shank{j}]).line;
-        shankDyn(:,3*j-2:3*j)  = data.([side{i},Shank{j}]).line;
-    end
-    
-    for j = 1:length(Foot)
-        footStat(:,3*j-2:3*j) = sdata.([side{i},Foot{j}]).line;
-        footDyn(:,3*j-2:3*j)  = data.([side{i},Foot{j}]).line;
-    end
-    
-    pelvisStatMean = nanmean(pelvisStat,1);
-    thighStatMean  = nanmean(thighStat,1);
-    shankStatMean  = nanmean(shankStat,1);
-    footStatMean   = nanmean(footStat,1);
-    
-    % compute angles
-    %
-    [hipAngles]   = cardan(pelvisStatMean,thighStatMean,pelvisDyn,thighDyn,sequence);
-    [kneeAngles]  = cardan(thighStatMean,shankStatMean,thighDyn,shankDyn,sequence);
-    [ankleAngles] = cardan(shankStatMean,footStatMean,shankDyn,footDyn,sequence);
-    
-    % convert to PiG ref system
-    %
-    kneeAngles(:,1) = -kneeAngles(:,1);
-    if side{i} == 'R'
-        kneeAngles(:,3)  = -kneeAngles(:,3);
-        hipAngles(:,3)   = -hipAngles(:,3);
-    else
-        hipAngles(:,2)   = -hipAngles(:,2);
-        kneeAngles(:,2)  = -kneeAngles(:,2);
-    end
-    
-    if isfield(sdata,'RHipAngles')
-        disp('adding PiG static offset angles')
-        for j = 1:3
-            ankleAngles(:,j) = ankleAngles(:,j) + nanmean(sdata.([side{i},'AnkleAngles']).line(:,j));
-            kneeAngles(:,j)  = kneeAngles(:,j)  + nanmean(sdata.([side{i},'KneeAngles']).line(:,j));
-            hipAngles(:,j)   = hipAngles(:,j)   + nanmean(sdata.([side{i},'HipAngles']).line(:,j));
+    if ~isempty(char(Thigh))
+        for j = 1:length(Thigh)
+            thighStat(:,3*j-2:3*j) = sdata.([side{i},Thigh{j}]).line;
+            thighDyn(:,3*j-2:3*j)  = data.([side{i},Thigh{j}]).line;
         end
+        thighStatMean  = nanmean(thighStat,1);
+        
     end
     
-    % Add to zoosystem channels
-    %
+    if ~isempty(char(Shank))
+        for j = 1:length(Shank)
+            shankStat(:,3*j-2:3*j) = sdata.([side{i},Shank{j}]).line;
+            shankDyn(:,3*j-2:3*j)  = data.([side{i},Shank{j}]).line;
+        end
+        shankStatMean  = nanmean(shankStat,1);
+        
+    end
+    
+    if ~isempty(char(Foot))
+        for j = 1:length(Foot)
+            footStat(:,3*j-2:3*j) = sdata.([side{i},Foot{j}]).line;
+            footDyn(:,3*j-2:3*j)  = data.([side{i},Foot{j}]).line;
+        end
+        footStatMean   = nanmean(footStat,1);
+        
+    end
+    
+    hipAngles = [];
+    kneeAngles = [];
+    ankleAngles = [];
+    
+    % compute hip angles
+    if ~isempty(char(Pelvis)) &&   ~isempty(char(Thigh))
+        [hipAngles]   = cardan(pelvisStatMean,thighStatMean,pelvisDyn,thighDyn,sequence);
+            
+        if side{i} == 'R'
+            hipAngles(:,3)   = -hipAngles(:,3);
+        else
+            hipAngles(:,2)   = -hipAngles(:,2);
+        end
+        
+        if isfield(sdata,'RHipAngles')
+            disp('adding PiG static offset angles')
+            for j = 1:3
+                hipAngles(:,j)   = hipAngles(:,j)   + nanmean(sdata.([side{i},'HipAngles']).line(:,j));
+            end
+        end
+        
     data = addchannel_data(data,[side{i},'HipKinemat'],hipAngles(:,1:3),'Video');
+  
+    end
+    
+    % compute knee angles
+    if ~isempty(char(Thigh)) &&   ~isempty(char(Shank))
+        [kneeAngles]  = cardan(thighStatMean,shankStatMean,thighDyn,shankDyn,sequence);
+        kneeAngles(:,1) = -kneeAngles(:,1);
+        
+        if side{i} == 'R'
+            kneeAngles(:,3)  = -kneeAngles(:,3);
+        else
+            kneeAngles(:,2)  = -kneeAngles(:,2);
+        end
+        
+        if isfield(sdata,'RHipAngles')
+            disp('adding PiG static offset angles')
+            for j = 1:3
+                kneeAngles(:,j)  = kneeAngles(:,j)  + nanmean(sdata.([side{i},'KneeAngles']).line(:,j));
+            end
+        end
+                
     data = addchannel_data(data,[side{i},'KneeKinemat'],kneeAngles(:,1:3),'Video');
+   
+    end
+    
+    % compute ankle angles
+    if ~isempty(char(Shank)) &&   ~isempty(char(Foot))
+        [ankleAngles] = cardan(shankStatMean,footStatMean,shankDyn,footDyn,sequence);
+        
+        if isfield(sdata,'RHipAngles')
+            disp('adding PiG static offset angles')
+            for j = 1:3
+                ankleAngles(:,j) = ankleAngles(:,j) + nanmean(sdata.([side{i},'AnkleAngles']).line(:,j));
+            end
+        end
+       
     data = addchannel_data(data,[side{i},'AnkleKinemat'],ankleAngles(:,1:3),'Video');
+    end
     
-    
-    if test ==1
+   
+    if test 
         f = figure;
         set(f,'name',[side{i},' side kinematics'])
+        
+        if ~isempty(hipAngles)
+
         subplot(3,3,1)
         plot(data.([side{i},'HipKinemat']).line(:,1))
         hold on
         plot(data.([side{i},'HipAngles']).line(:,1))
         title('x')
         ylabel('Hip Angles')
+
         
         subplot(3,3,2)
         plot(data.([side{i},'HipKinemat']).line(:,2))
@@ -167,7 +229,9 @@ for i = 1:length(side)
         hold on
         plot(data.([side{i},'HipAngles']).line(:,3))
         title('z')
+        end
         
+        if ~isempty(kneeAngles)
         subplot(3,3,4)
         plot(data.([side{i},'KneeKinemat']).line(:,1))
         hold on
@@ -183,24 +247,27 @@ for i = 1:length(side)
         plot(data.([side{i},'KneeKinemat']).line(:,3))
         hold on
         plot(data.([side{i},'KneeAngles']).line(:,3))
+        end
         
+        if ~isempty(ankleAngles)
         subplot(3,3,7)
         plot(data.([side{i},'AnkleKinemat']).line(:,1))
         hold on
         plot(data.([side{i},'AnkleAngles']).line(:,1))
         ylabel('Ankle Angles')
+        end
         
-%         subplot(3,3,8)
-%         plot(data.([side{i},'AnkleKinemat']).line(:,2))
-%         hold on
-%         plot(data.([side{i},'AnkleAngles']).line(:,2))
-%         
-%         subplot(3,3,9)
-%         plot(data.([side{i},'AnkleKinemat']).line(:,3))
-%         hold on
-%         plot(data.([side{i},'AnkleAngles']).line(:,3))
-%         legend('Kinemat','PiG')
-%         
+        %         subplot(3,3,8)
+        %         plot(data.([side{i},'AnkleKinemat']).line(:,2))
+        %         hold on
+        %         plot(data.([side{i},'AnkleAngles']).line(:,2))
+        %
+        %         subplot(3,3,9)
+        %         plot(data.([side{i},'AnkleKinemat']).line(:,3))
+        %         hold on
+        %         plot(data.([side{i},'AnkleAngles']).line(:,3))
+        %         legend('Kinemat','PiG')
+        %
     end
     
     

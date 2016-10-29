@@ -1,13 +1,14 @@
 function director(action,varargin)
 
-% Director is a three-dimensional virtual environment that can be used to
-% visualize motion capture data within MatLab. Current version is able to read
+% director(action,varargin) is a three-dimensional virtual environment that can be used
+% to visualize motion capture data within MatLab. Current version is able to read
 % files in which standard Plug-in Gait (lower or full) marker set is used
+% and display body using 'bones'. Otherwise, only markers will show
 %
 %
 % NOTES
 % - If trials contain force plate data, force plates and ground reaction
-%   force vectors (for up to three plates) will appear in the virual space
+%   force vectors (for up to three plates) will appear in the virtual space
 %
 % - Additional objects ('props') can be loaded (see 'cinema objects' sub-folder
 %   of 'Visualization' folder. Limited functionality currently exists for
@@ -47,10 +48,6 @@ function director(action,varargin)
 % Updated by Philippe C. Dixon March 2016
 % - fixed bug with slider mark not updating graph mark (*)
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
 global producer;
 global p;
@@ -195,7 +192,7 @@ switch action
         director('clear all objects')
         director('load bones');       % loads the bone props
         
-        [f,p] = uigetfile('*.*','Pick a file');   % default is c3d or zoo file
+        [f,p] = uigetfile({'*.zoo';'*.c3d'},'Pick a file');   % default is c3d or zoo file
         cd(p);
         
         if f == 0

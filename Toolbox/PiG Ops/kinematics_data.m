@@ -20,6 +20,9 @@ function data = kinematics_data(data,settings)
 % - For PiG, choice of axes for angle computation based on detailed work of Vaughan
 %   (Dynamics of Human Gait 1999, Appendix B p94-96). This is the Grood and Suntay method.
 % - For OFM choice of axes based on trial and error.
+% - Only the lower limb PiG outputs of this funciton have been validated to date
+%   (see Fig4.dpf and Supplemental Fig2.pdf in ~\biomechZoo-samplestudy\Figures\manuscript\ 
+% -  
 %
 % SUMMARY OF CALCULATIONS
 %
@@ -27,7 +30,7 @@ function data = kinematics_data(data,settings)
 %
 % Pelvis
 % flx = asind(dot(-long_dist,lat_prox,2));
-% abd = asind(dot(long_dist,ant_prox,2));
+% abd = asind(dot(long_dist,ant_prox,2)./cosd(flx));
 % twix = asind( dot(ant_dist,ant_prox,2)./cosd(flx));
 % twiy = asind( dot(ant_dist,lat_prox,2)./cosd(flx));
 % * adjustments made on direction of travel
@@ -67,7 +70,11 @@ function data = kinematics_data(data,settings)
 %   to the OFM data
 % - Static trial is used to correctly adjust ankle offset values
 % - Foot flat option matches option in Vicon
-
+%
+% Updated by Philippe C. Dixon Sept 2016
+% - biomechZoo pelvis angles validated against PiG outputs for straight
+%   walking see ~/biomechZoo-samplestudy/Figures/Pelvis_kinematics_Straight.pdf
+% - improved graphical outputs
 
 % Set defaults
 %
@@ -203,7 +210,7 @@ end
 %=================EMBEDDED FUNCTIONS=======================================
 
 
-function [zdata,settings] = testmode
+function [data,settings] = testmode
 
 [f,p]=uigetfile({'*.c3d;*.zoo'});
 fpath = [p,f];
@@ -211,9 +218,9 @@ cd(p)
 ext = extension(fpath);
 
 if isin(ext,'c3d');
-    zdata= c3d2zoo(fpath);
+    data= c3d2zoo(fpath);
 elseif isin(ext,'zoo')
-    zdata = zload(fpath);
+    data = zload(fpath);
 else
     error('only c3d and zoo files can be input')
 end
@@ -277,7 +284,6 @@ end
 
 function [flx,abd,tw] = groodsuntay(r,jnt,dir)
 
-
 % Grood and Suntay angle calculations based on adaptation by Vaughan 'The
 % Gait Book' Appendix B, p95. Offsets made to match oxford foot model
 % outputs
@@ -311,7 +317,7 @@ switch bone
         [~,ant_prox,ant_dist,lat_prox,~,~,long_dist] = makeaxPiG(pax,dax);
         
         flx = asind(dot(-long_dist,lat_prox,2));
-        abd = asind(dot(long_dist,ant_prox,2));
+        abd = asind(dot(long_dist,ant_prox,2)./cosd(flx));
         twix = asind(dot(ant_dist,ant_prox,2)./cosd(flx));
         twiy = asind(dot(ant_dist,lat_prox,2)./cosd(flx));
         
@@ -363,8 +369,13 @@ switch bone
         abd = angle(lat_prox,ant_dist);       % int / ext
         tw  = angle(floatax,lat_dist);        % pro / suppination
         
+    otherwise
+        [floatax,~,~,lat_prox,lat_dist,long_prox,long_dist] = makeaxPiG(pax,dax);
+                
+        flx = asind(dot(floatax,long_prox,2));
+        abd = asind(dot(lat_prox,long_dist,2));
+        tw  = asind(dot(floatax,lat_dist,2));
 end
-
 
 
 function [phi,theta,psi] = checkdir(phi,theta,psix,psiy,dir)
@@ -813,7 +824,6 @@ ch = fieldnames(ERR);
 
 function graphresults(data,gsettings)
 
-
 vcol = gsettings.vcol;                              % color for vicon PiG
 zcol = gsettings.zcol;                              % color for zoo version of PiG
 
@@ -825,7 +835,6 @@ FontSize = gsettings.FontSize;
 FontName = gsettings.FontName;
 
 dlength = find(~isnan(data.RightAnkleAngle_x.line(:,1)),1,'last');
-
 
 figure
 sides = {'Right','Left'};
@@ -846,22 +855,26 @@ for i = 1:length(sides)
         hold on
         plot(data.PelvisAngle_x.line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
         title('Pelvis','FontSize',FontSize,'FontName',FontName)
-        ylabel({'Sagittal','Angles (deg)'},'FontSize',FontSize,'FontName',FontName)
+        ylabel({'Sagittal','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
         axis('square')
+        set(gca,'tag','PelvisAnglesSagittal')
         
         subplot(3,7,8);
         plot(data.([s,'PelvisAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
         hold on
         plot(data.PelvisAngle_y.line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
-        ylabel({'Coronal','Angles (deg)'},'FontSize',FontSize,'FontName',FontName)
+        ylabel({'Coronal','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
         axis('square')
-        
+        set(gca,'tag','PelvisAnglesCoronal')
+
         subplot(3,7,15);
         plot(data.([s,'PelvisAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
         hold on
         plot(data.PelvisAngle_z.line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
-        ylabel({'Transverse','Angles (deg)'},'FontSize',FontSize,'FontName',FontName)
+        ylabel({'Transverse','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
         axis('square')
+        set(gca,'tag','PelvisAnglesTransverse')
+
     end
     
     subplot(3,7,2+offset);
@@ -870,32 +883,38 @@ for i = 1:length(sides)
     plot(data.([side,'HipAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     title([s,'Hip'],'FontSize',FontSize,'FontName',FontName)
     axis('square')
-    
+    set(gca,'tag','HipAnglesSagittal')
+
     subplot(3,7,3+offset);
     plot(data.([s,'KneeAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
     hold on
     plot(data.([side,'KneeAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     title([s,'Knee'],'FontSize',FontSize,'FontName',FontName)
     axis('square')
-    
+    set(gca,'tag','KneeAnglesSagittal')
+
     subplot(3,7,4+offset);
     plot(data.([s,'AnkleAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
     hold on
     plot(data.([side,'AnkleAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     title([s,'Ankle'],'FontSize',FontSize,'FontName',FontName)
     axis('square')
-    
+    set(gca,'tag','AnkleAnglesSagittal')
+
     subplot(3,7,9+offset);
     plot(data.([s,'HipAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
     hold on
     plot(data.([side,'HipAngle_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
+    set(gca,'tag','HipAnglesCoronal')
     
     subplot(3,7,10+offset);
     plot(data.([s,'KneeAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
     hold on
     plot(data.([side,'KneeAngle_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
+    set(gca,'tag','KneeAnglesCoronal')
+
     
     %         subplot(3,7,11+offset);
     %         plot(data.([s,'AnkleAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
@@ -909,13 +928,15 @@ for i = 1:length(sides)
     hold on
     plot(data.([side,'HipAngle_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
-    
+    set(gca,'tag','HipAnglesTransverse')
+
     subplot(3,7,17+offset);
     plot(data.([s,'KneeAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
     hold on
     plot(data.([side,'KneeAngle_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
-    
+    set(gca,'tag','KneeAnglesTransverse')
+
     %         subplot(3,7,18+offset);
     %         plot(data.([s,'AnkleAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
     %         hold on
@@ -936,29 +957,39 @@ end
 
 if isfield(data,[side(1),'HFTBA'])  % OFM is included
     
+    figure
+   
     sides = {'Right','Left'};
     for i = 1:length(sides)
         side = sides{i};
         s = side(1);
         
-        figure
-        
-        subplot(3,6,4);
+        if strcmp(side,'Left')
+            offset= 3;
+        else
+            offset = 0;
+        end
+            
+        subplot(3,6,offset+1);
         plot(data.([s,'HFTBA']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'HFTBA_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
         title([s,'HF/TB'],'FontSize',FontSize,'FontName',FontName)
         axis('square')
         
+        if i==1
+           ylabel({'Sagittal','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
+        end
         
-        subplot(3,6,5);
+        
+        subplot(3,6,offset+2);
         plot(data.([s,'FFHFA']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'FFHFA_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
         title([s,'FF/HF'],'FontSize',FontSize,'FontName',FontName)
         axis('square')
         
-        subplot(3,6,6);
+        subplot(3,6,offset+3);
         plot(data.([s,'HXFFA']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'HXFFA_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
@@ -966,31 +997,40 @@ if isfield(data,[side(1),'HFTBA'])  % OFM is included
         axis('square')
         
         
-        subplot(3,6,10);
+        subplot(3,6,offset+7);
         plot(data.([s,'HFTBA']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'HFTBA_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
         axis('square')
         
-        subplot(3,6,11);
+        if i==1
+           ylabel({'Coronal','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
+        end
+        
+        
+        subplot(3,6,offset+8);
         plot(data.([s,'FFHFA']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'FFHFA_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
         axis('square')
         
-        subplot(3,6,12);
+        subplot(3,6,offset+9);
         plot(data.([s,'HXFFA']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'HXFFA_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
         axis('square')
         
-        subplot(3,6,16);
+        subplot(3,6,offset+13);
         plot(data.([s,'HFTBA']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'HFTBA_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
         axis('square')
         
-        subplot(3,6,17);
+         if i==1
+           ylabel({'Transverse','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
+        end
+        
+        subplot(3,6,offset+14);
         plot(data.([s,'FFHFA']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
         hold on
         plot(data.([side,'FFHFA_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
@@ -998,43 +1038,20 @@ if isfield(data,[side(1),'HFTBA'])  % OFM is included
         
     end
     
-    ax = findobj('type','axes');
-    ln = findobj('type','line');
-    ln1 = get(ln(1),'XData');
-    XLim = [ln1(1) ln1(end)];
-    for j = 1:length(ax)
-        set(ax(j),'XLim',XLim,'FontSize',FontSize,'FontName',FontName,...
-            'XTick',80:40:160)
-        %         axes(ax(j))
-        %         hline(0,'k')
-    end
+%     ax = findobj('type','axes');
+%     ln = findobj('type','line');
+%     ln1 = get(ln(1),'XData');
+%     XLim = [ln1(1) ln1(end)];
+%     for j = 1:length(ax)
+%         set(ax(j),'XLim',XLim,'FontSize',FontSize,'FontName',FontName,...
+%             'XTick',80:40:160)
+%         %         axes(ax(j))
+%         %         hline(0,'k')
+%     end
     
-    legend('Vicon','custom')
+    legend('ViconOFM','biomechZoo')
     
 end
-
-
-
-
-legend('Vicon','custom')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

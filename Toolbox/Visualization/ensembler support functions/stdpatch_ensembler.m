@@ -1,4 +1,3 @@
-
 function [vr,fc] = stdpatch_ensembler(xd,yd,st)
 
 if nargin == 2

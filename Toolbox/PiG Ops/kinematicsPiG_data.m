@@ -1,4 +1,4 @@
-function data = kinematics_data(data,graph)
+function data = kinematicsPiG_data(data,graph)
 
 % data = KINEMATICSPIG_DATA(data,settings) computes global pelvis and lower-limb
 % joint angles based on the joint coordinate system of Grood and Suntay (1983)

@@ -64,6 +64,9 @@ function data = kinetics_data(data,settings,filt)
 % Updated by Philippe C. Dixon August 2016
 % - Improved functionality with BiomechZoo version 1.3
 % - No backwards compatibility
+%
+% Updated by Philippe C. Dixon October 2016
+% - improved graphical outputs
 
 
 
@@ -89,7 +92,7 @@ end
 
 if nargin==1
     filt = setFilt;
-    settings.segpar = 'PiG_segments.xls';                       % see getSegmentPar
+    settings.segpar = 'segments.xls';                           % see getSegmentPar
     settings.graph  = false;                                    % graph results
     settings.city   = 'standard';                               % choose g based on city
     settings.filt   = false;                                    % Filter intermediate calc
@@ -130,12 +133,12 @@ end
 % - Set value of g (gravitation constant)
 
 body = struct;                                                  % build new struct
-body.bodymass = getanthro(data,'Bodymass');                     % extract mass info
+body.bodymass = getAnthro(data,'Bodymass');                     % extract mass info
 body.fsamp = data.zoosystem.Video.Freq;
 
 localOr = getFPLocalOrigin(data);                               % true local FP origin
 [globalOr,orientFP] = getFPGlobalOrigin(data);                  % FP global origin/orient
-SegmentPar = getSegmentPar([functionpath,settings.segpar]);
+segmentPar = getSegmentPar([functionpath,settings.segpar]);
 
 if ~isfield(data,'RightGroundReactionForce')  && ~isfield(data,'LeftGroundReactionForce')
     data = processGRF_data(data,filt,localOr,globalOr,orientFP);        % process GRF for IDA
@@ -164,7 +167,7 @@ pgbone = pgbone(2:end,:);
 % P is the proximal joint
 
 pgdim = {'O','A','L','P'};
-[data,body] = setSegmentPar(pgdim,pgbone,data,SegmentPar,body);
+[data,body] = setSegmentPar(pgdim,pgbone,data,segmentPar,body);
 
 % set segment par for OFM  (inc com)
 % 0 is origin of bone (zero)
@@ -174,7 +177,7 @@ pgdim = {'O','A','L','P'};
 
 if ~isempty(oxbone)
     oxdim = {'0','1','2','3'};
-    [data,body] = setSegmentPar(oxdim,oxbone,data,SegmentPar,body);
+    [data,body] = setSegmentPar(oxdim,oxbone,data,segmentPar,body);
 end
 
 
@@ -193,7 +196,7 @@ end
 % - Segment length (m)
 % - Segment moment of inertia (kg*m^2 )
 
-ANTHRO = anthro(body,SegmentPar);
+ANTHRO = anthro(body,segmentPar);
 
 
 %----------------- PART IV: LINEAR KINEMATIC zdata ---------------------------------------
@@ -252,7 +255,6 @@ end
 %----------------PART X: GRAPH RESULTS AGAINST VICON (OPTIONAL) -------------------------
 %
 if settings.graph == true
-    disp('graph function incomplete')
     graphresults(data,gsettings)
 end
 
@@ -287,7 +289,7 @@ else
     error('only c3d and zoo files can be input')
 end
 
-settings.segpar = 'PiG_segments.xls';                       % see getSegmentPar
+settings.segpar = 'segments.xls';                       % see getSegmentPar
 settings.graph  = true;                                    % graph results
 settings.city   = 'standard';                               % choose g based on city
 settings.filt   = false;                                    % Filter intermediate calc
@@ -295,9 +297,6 @@ settings.comp   = true;
 settings.static = 'Static';
 
 filt = setFilt;
-
-
-                                     % cut-of freq GRF data
 
 
 function [FR,FL,COPR,COPL,TzR,TzL] = free_torque(data,globalOr)
@@ -309,7 +308,7 @@ cUnit = data.zoosystem.Units.CentreOfPressure;     % expected mm
 mUnit = data.zoosystem.Units.Moment;               % expected Nmm
 
 if strcmp(fUnit,'N/kg')
-    mass = getanthro(data,'mass');
+    mass = getAnthro(data,'mass');
 elseif strcmp(fUnit,'N')
     mass = 1;
 else
@@ -705,31 +704,258 @@ end
 
 function graphresults(data,gsettings)
 
-FP = data.zoosystem.Analog.FPlates.LIMBSIDES;
+% FP = data.zoosystem.Analog.FPlates.LIMBSIDES;
+% 
+% if ~isin(FP.Right,'invalid') && ~isin(FP.Left,'invalid')
+%     side = {'Right','Left'};
+% elseif ~isin(FP.Right,'invalid') && isin(FP.Left,'invalid')
+%     side = {'Right'};
+% elseif isin(FP.Right,'invalid') && ~isin(FP.Left,'invalid')
+%     side = {'Left'};
+% end
+% 
+% vcol = gsettings.vcol;                              % color for vicon PiG
+% zcol = gsettings.zcol;                              % color for zoo version of PiG
+% ocol = gsettings.ocol;                              % color for OFM
+% 
+% vstyle = gsettings.vstyle;                          % style for vicon PiG
+% zstyle = gsettings.zstyle;                          % style for zoo version of PiG
+% ostyle = gsettings.ostyle;                          % stylefor OFM
+% 
+% LineWidth = gsettings.LineWidth;
+% FontSize = gsettings.FontSize;
+% FontName = gsettings.FontName;
 
-if ~isin(FP.Right,'invalid') && ~isin(FP.Left,'invalid')
-    side = {'Right','Left'};
-elseif ~isin(FP.Right,'invalid') && isin(FP.Left,'invalid')
-    side = {'Right'};
-elseif isin(FP.Right,'invalid') && ~isin(FP.Left,'invalid')
-    side = {'Left'};
-end
 
 vcol = gsettings.vcol;                              % color for vicon PiG
 zcol = gsettings.zcol;                              % color for zoo version of PiG
-ocol = gsettings.ocol;                              % color for OFM
 
 vstyle = gsettings.vstyle;                          % style for vicon PiG
 zstyle = gsettings.zstyle;                          % style for zoo version of PiG
-ostyle = gsettings.ostyle;                          % stylefor OFM
 
 LineWidth = gsettings.LineWidth;
 FontSize = gsettings.FontSize;
 FontName = gsettings.FontName;
 
-Sidevicon = {'R','L'};
+dlength = find(~isnan(data.RightAnkleMoment_x.line(:,1)),1,'last');
 
-start = 1;
-ende = length(data.RAnkleForce.line);
+figure
+sides = {'Right','Left'};
+
+for i = 1:length(sides)
+    side = sides{i};
+    s = side(1);
+    
+    if strcmp(side,'Left')
+        offset= 4;
+    else
+        offset = 1;
+    end
+    
+    % power plots
+    subplot(4,6,offset);
+    plot(data.([s,'HipPower']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+    hold on
+    plot(data.([side,'HipPower']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    title([s,'Hip'],'FontSize',FontSize,'FontName',FontName)
+    axis('square')
+    set(gca,'tag','HipPower')
+    
+    if i==1
+        ylabel({'Power','(W/kg)'},'FontSize',FontSize,'FontName',FontName)
+    end
+
+    subplot(4,6,offset+1);
+    plot(data.([s,'KneePower']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+    hold on
+    plot(data.([side,'KneePower']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    title([s,'Knee'],'FontSize',FontSize,'FontName',FontName)
+    axis('square')
+    set(gca,'tag','KneePower')
+    
+    subplot(4,6,offset+2);
+    plot(data.([s,'AnklePower']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+    hold on
+    plot(data.([side,'AnklePower']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    title([s,'Ankle'],'FontSize',FontSize,'FontName',FontName)
+    axis('square')
+    set(gca,'tag','AnklePower')
+    
+    
+    % moment plots
+    subplot(4,6,offset+6);
+    plot(data.([s,'HipMoment']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+    hold on
+    plot(data.([side,'HipMoment_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    axis('square')
+    set(gca,'tag','HipMomentSagittal')
+    
+    if i==1
+        ylabel({'Sagittal','Moment','(Nmm/kg)'},'FontSize',FontSize,'FontName',FontName)
+    end
+
+    
+    subplot(4,6,offset+7);
+    plot(data.([s,'KneeMoment']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    hold on
+    plot(data.([side,'KneeMoment_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    axis('square')
+    set(gca,'tag','KneeMomentSagittal')
+
+    subplot(4,6,offset+8);
+    plot(data.([s,'AnkleMoment']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    hold on
+    plot(data.([side,'AnkleMoment_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    axis('square')
+    set(gca,'tag','AnkleMomentSagittal')
+
+    subplot(4,6,offset+12);
+    plot(data.([s,'HipMoment']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    hold on
+    plot(data.([side,'HipMoment_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    axis('square')
+    set(gca,'tag','HipMomentCoronal')
+    
+    if i==1
+        ylabel({'Coronal','Moment','(Nmm/kg)'},'FontSize',FontSize,'FontName',FontName)
+    end
+    
+    
+    subplot(4,6,offset+13);
+    plot(data.([s,'KneeMoment']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    hold on
+    plot(data.([side,'KneeMoment_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    axis('square')
+    set(gca,'tag','KneeMomentCoronal')
+
+    
+    %         subplot(4,6,8+offset);
+    %         plot(data.([s,'AnkleMoment']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    %         hold on
+    %         plot(data.([side,'AnklePGMoment_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    %         axis('square')
+    %         xlim([0 dlength])
+    
+    subplot(4,6,offset+18);
+    plot(data.([s,'HipMoment']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    hold on
+    plot(data.([side,'HipMoment_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    axis('square')
+    set(gca,'tag','HipMomentTransverse')
+
+    if i==1
+        ylabel({'Transverse','Moment','(Nmm/kg)'},'FontSize',FontSize,'FontName',FontName)
+    end
+    
+    subplot(4,6,offset+19);
+    plot(data.([s,'KneeMoment']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    hold on
+    plot(data.([side,'KneeMoment_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    axis('square')
+    set(gca,'tag','KneeMomentTransverse')
+
+    %         subplot(4,6,14+offset);
+    %         plot(data.([s,'AnkleMoment']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+    %         hold on
+    %         plot(data.([side,'AnklePGMoment_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+    %         axis('square')
+    %         xlim([0 dlength])
+    
+    if i==2
+        legend('Vicon','BiomechZoo')
+    end
+    
+    ax = findobj('type','axes');
+    for j = 1:length(ax)
+        set(ax(j),'XLim',[0 dlength]);
+    end
+    
+end
+
+
+% Also plot OFM moments if available
+%
+if isfield(data,[sides{1},'AnkleMomentOFM'])  % OFM is included
+    
+    figure
+
+    for i = 1:length(sides)
+        side = sides{i};
+        s = side(1);
+   
+        if strcmp(side,'Left')
+            offset= 3;
+        else
+            offset = 1;
+        end
+        
+        subplot(4,4,offset);
+        plot(data.([s,'AnklePower']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+        plot(data.([side,'AnklePowerOFM']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        title([s,'Ankle'],'FontSize',FontSize,'FontName',FontName)
+        axis('square')
+        
+        if i==1
+            ylabel({'Power','(W/kg)'},'FontSize',FontSize,'FontName',FontName)
+        end
+        
+        if i ==1
+                legend('Vicon','biomchZoo')
+        end
+        
+        subplot(4,4,offset+1);
+        plot(data.([side,'MidFootPower']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        title([s,'Midfoot'],'FontSize',FontSize,'FontName',FontName)
+        axis('square')
+        
+       
+        subplot(4,4,offset+4);
+        plot(data.([s,'AnkleMoment']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+        plot(data.([side,'AnkleMomentOFM']).line(:,1),'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        axis('square')
+        
+         if i==1
+            ylabel({'Sagittal','Moment','(Nmm/kg)'},'FontSize',FontSize,'FontName',FontName)
+         end
+        
+        subplot(4,4,offset+5);
+        plot(data.([side,'MidFootMoment']).line(:,1),'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        axis('square')
+        
+        
+        subplot(4,4,offset+8);
+        plot(data.([s,'AnkleMoment']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+        plot(data.([side,'AnkleMomentOFM']).line(:,2),'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        axis('square')
+        
+         if i==1
+            ylabel({'Coronal','Moment', '(Nmm/kg)'},'FontSize',FontSize,'FontName',FontName)
+         end
+        
+        subplot(4,4,offset+9);
+        plot(data.([side,'MidFootMoment']).line(:,1),'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        axis('square')
+        
+        
+        subplot(4,4,offset+12);
+        plot(data.([s,'AnkleMoment']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+        plot(data.([side,'AnkleMomentOFM']).line(:,3),'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        axis('square')
+        
+         if i==1
+            ylabel({'Transverse','Moment','(Nmm/kg)'},'FontSize',FontSize,'FontName',FontName)
+         end
+        
+        subplot(4,4,offset+13);
+        plot(data.([side,'MidFootMoment']).line(:,3),'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        axis('square')
+    end
+        
+end
+
 
 

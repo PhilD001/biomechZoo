@@ -7,6 +7,9 @@ function bmech_removechannel(fld,ch,action)
 %  ch       ...  Channel(s) to operate on (single string or cell array of strings).
 %  action   ...  Action to take on ch (string): 'keep' or 'remove' channels in ch
 %
+% See also removechannel_data, bmech_removechannel_example
+
+
 % Created 2008
 %
 % Updated by Philippe C. Dixon August 2010

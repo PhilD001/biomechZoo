@@ -26,19 +26,42 @@ function ch = makevalidfield(ch)
 % - added new cases
 % - use of 'strrep' to clean code
 %
+% Updated by Philippe C. Dixon Oct 2016
+% - Removed '_' as invalid field
+% - Added '^,=' as invalid fields
+% - Truncates any field that exceeds MATLAB's maximum name length
 
-
+if length(ch)>63
+    ch = ch(1:63);
+    ch = makevalidfield(ch);
+end
 
 if ~isempty(strfind(ch,' '))
     ch = strrep(ch,' ','_');
     ch = makevalidfield(ch);
     
-elseif ~isempty(strfind(ch(1),'_'))
-    ch = ch(2:end);
-    ch = makevalidfield(ch);
-
+% elseif ~isempty(strfind(ch(1),'_'))
+%     ch = ch(2:end);
+%     ch = makevalidfield(ch);
+    
 elseif ~isempty(strfind(ch,'-'))
     ch = strrep(ch,'-','');
+    ch = makevalidfield(ch);
+    
+elseif ~isempty(strfind(ch,'['))
+    ch = strrep(ch,'[','');
+    ch = makevalidfield(ch);
+    
+elseif ~isempty(strfind(ch,']'))
+    ch = strrep(ch,']','');
+    ch = makevalidfield(ch);
+    
+elseif ~isempty(strfind(ch,'^'))
+    ch = strrep(ch,'^','');
+    ch = makevalidfield(ch);
+
+elseif ~isempty(strfind(ch,'='))
+    ch = strrep(ch,'=','');
     ch = makevalidfield(ch);
 
 elseif ~isempty(strfind(ch,'('))
@@ -61,6 +84,14 @@ elseif ~isempty(strfind(ch,'\'))
     ch = strrep(ch,'\','');
     ch = makevalidfield(ch);
 
+elseif ~isempty(strfind(ch,'?'))
+    ch = strrep(ch,'?','');
+    ch = makevalidfield(ch);
+    
+elseif ~isempty(strfind(ch,','))
+    ch = strrep(ch,',','');
+    ch = makevalidfield(ch);
+    
 elseif ~isempty(strfind(ch,'*'))
     ch = 'star';
     ch = makevalidfield(ch);
@@ -88,12 +119,15 @@ elseif ~isempty(strfind(ch,'/'))
     ch = [ch(1:indx-1),'per',ch(indx+1:end)];
     ch = makevalidfield(ch);
     
-elseif ~isempty(str2num(ch)) && length(ch) ==1  % don't change
+elseif ~isempty(str2num(ch)) && length(ch) ==1  %#ok<ST2NM> % don't change
     ch = ['marker',ch];
     ch = makevalidfield(ch);
 
-elseif ~isempty(str2num(ch(1))) && length(ch) ~=1 % don't change
+elseif ~isempty(str2num(ch(1))) && length(ch) ~=1 %#ok<ST2NM> % don't change
     ch = ch(2:end);
     ch = makevalidfield(ch);
 
+elseif strfind(ch(1),'_');
+    ch = ch(2:end);
+    ch = makevalidfield(ch);
 end

@@ -4,8 +4,7 @@ function r = filter_line(r,filt,fsamp)
 %
 % ARGUMENTS
 %  r        ...  Column vector data (n x 1)
-%  filt     ...  Filter options (struct). Default: 4th order butterworth low-pass filter
-%                with 10Hz cutoff. 
+%  filt     ...  Filter options (struct). 
 %                filt can contain the following fields: 
 %                filt.type   = 'butterworth','chebychev I/II','eliptic','bessel'
 %                filt.cutoff =  integer cutoff frequency.

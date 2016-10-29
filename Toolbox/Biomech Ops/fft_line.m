@@ -1,6 +1,6 @@
 function [mean_freq,max_freq,cut]= fft_line(data,fsamp,thresh,graph)
 
-% [mean_freq,max_freq,cut]= FFT_LINE(data,fsamp,thresh,graph) performs calculation of
+% [mean_freq,max_freq,cut]= FFT_LINE(r,fsamp,thresh,graph) performs calculation of
 % single-sides amplitude spectrum and estimates cutoff frequency for filtering
 %
 % ARGUMENTS
@@ -49,7 +49,7 @@ NFFT = 2^nextpow2(L);                                   % Next power of 2 from l
 Y = fft(data,NFFT)/L;
 f = fsamp/2*linspace(0,1,NFFT/2+1);
 yd = 2*abs(Y(1:NFFT/2+1));                              %  single-sided amplitude spectrum
-
+yd = yd./max(yd);                                       % normalized
 
 % Calculate signal quantities
 %

@@ -1,6 +1,6 @@
 function data = normalize_data(data,ch,datalength,method)
 
-% data = NORMALIZEDATA(data,ch,ndatalength,method) performs time normalization
+% data = NORMALIZE_DATA(data,ch,ndatalength,method) performs time normalization
 %
 % ARGUMENTS
 %  ch         ... Channel(s) to operate on (single string or cell array of strings).

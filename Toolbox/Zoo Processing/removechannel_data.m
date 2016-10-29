@@ -73,6 +73,8 @@ for i = 1:length(ch)
         nchlist = setdiff(chlist,ch{i});
         data.zoosystem.(section).Channels = nchlist;
         
+        
+        
     end
     
 end

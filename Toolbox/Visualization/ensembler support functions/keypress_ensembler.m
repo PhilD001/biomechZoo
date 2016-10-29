@@ -2,11 +2,10 @@ function keypress_ensembler
 
 %  keypress_ensembler is a stand-alone suppot function for ensembler
 
-s = filesep;
+% Updated by Philippe C. Dixon October 2016
+% - improved algorithm
 
 switch get(gcf,'currentkey')
-    
-    
     
     case 'delete'
         
@@ -16,30 +15,24 @@ switch get(gcf,'currentkey')
             'Deletion Options',...
             'Delete File', 'Delete Channel','Clear Single Channel','Clear Single Channel');
         
-        
-        Tag = get(gca,'Tag');
+        tag = get(gca,'Tag');
         hnd = findensobj('prompt',gcf);
         fl = get(hnd,'string');
-        indx = strfind(fl,s);
-        indx = indx(end-2);
-        
-        
+         
         switch button
             
             case 'Delete File'
                 
-                ln = findobj('type','line');
-                
+                % clear lines from figure
+                ln = findobj(gcf,'type','line');
                 for i=1:length(ln)
-                    if strcmp(get(ln(i),'UserData'),fl)==1
-                        delete(ln(i));
+                    if ~isempty(strfind(get(ln(i),'UserData'),fl))
+                        delete(ln(i));    
                     end
                 end
                 
-                delfile(fl);    %deletes entire file
-                
-                evt = findobj('string','\diamondsuit');
-                
+                % clear events from figure
+                evt = findobj(gcf,'string','\diamondsuit');
                 if ~isempty(evt)
                     for i = 1:length(evt)
                         if get(evt(i),'UserData')==gco
@@ -48,34 +41,36 @@ switch get(gcf,'currentkey')
                     end
                 end
                 
+                % delete entire file
+                delfile(fl);    
                 
+             
             case 'Delete Channel'   %delete a single channel
                 
-                ln = findobj(gcf,'type','line');
-                
+                % clear lines from figure
+                ln = findobj(gca,'type','line');                
                 for i=1:length(ln)
-                    if isin(get(get(ln(i),'Parent'),'Tag'),Tag) && strcmp(get(ln(i),'UserData'),fl)==1
+                    if ~isempty(strfind(get(ln(i),'UserData'),fl))
+                        fl = get(ln(i),'UserData');
                         delete(ln(i));
                     end
                 end
                 
-                ch = get(gca,'Tag');
-                disp(['deleting ch: ',ch,'from ',fl(indx+1:end)])
-                
-                data = zload(fl);
-                data.(ch).line = 999*ones(length(data.(ch).line),1);
-                
-                evts = fieldnames(data.(ch).event);
-                
-                for j = 1:length(evts)
-                    data.(ch).event.(evts{j})=[1 999 0];
+                 % clear events from figure
+                evt = findobj(gca,'string','\diamondsuit');
+                if ~isempty(evt)
+                    for i = 1:length(evt)
+                        if get(evt(i),'UserData')==gco
+                            delete(evt(i))
+                        end
+                    end
                 end
                 
-                save(fl,'data');
+                % Make line and events 999 outliers
+                outlier(fl,tag)
                 
-%                 updatedata(fld)
-                
-            case 'Clear All Channels'
+     
+            case 'Clear All Channels'  % obsolete
                 
                 ln = findobj(gcf,'type','line');
                 
@@ -89,11 +84,22 @@ switch get(gcf,'currentkey')
                 
             case 'Clear Single Channel'
                 
-                ln = findobj(gcf,'type','line');
-                
+                % clear lines from figure
+                ln = findobj(gca,'type','line');                
                 for i=1:length(ln)
-                    if isin(get(get(ln(i),'Parent'),'Tag'),Tag) && strcmp(get(ln(i),'UserData'),fl)==1
+                    if ~isempty(strfind(get(ln(i),'UserData'),fl))
+                        fl = get(ln(i),'UserData');
                         delete(ln(i));
+                    end
+                end
+                
+                 % clear events from figure
+                evt = findobj(gca,'string','\diamondsuit');
+                if ~isempty(evt)
+                    for i = 1:length(evt)
+                        if get(evt(i),'UserData')==gco
+                            delete(evt(i))
+                        end
                     end
                 end
                 

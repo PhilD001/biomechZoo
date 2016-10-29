@@ -1,7 +1,6 @@
-function [maxval,temp,mult] = getmaxval(fld,ch,alpha,ax,nboots,check)
+function [maxval,temp,mult] = getMaxVal(fld,ch,alpha,ax,nboots,check)
 
 % getmaxval automatically checks all axes for maxdifference between conditons for later graphing
-%
 %
 % ARGUMENTS
 % fld          ...   directory where data resides

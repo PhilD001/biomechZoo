@@ -1,6 +1,6 @@
 function data = jointcentrePiG_data(data,joint,test)
 
-% data = JOINTCENTREPIG(data,joint) returns knee, or anke joint centre
+% data = JOINTCENTREPIG_DATA(data,joint) returns knee, or anke joint centre
 % computed via the Plug-in gait methods
 %
 % ARGUMENTS
@@ -45,9 +45,9 @@ end
 
 % Extract info from zoo file
 %
-mDiameter = getanthro(data,'MarkerDiameter');
-rjointW   = getanthro(data,['R',joint,'Width']);
-ljointW   = getanthro(data,['L',joint,'Width']);
+mDiameter = getAnthro(data,'MarkerDiameter');
+rjointW   = getAnthro(data,['R',joint,'Width']);
+ljointW   = getAnthro(data,['L',joint,'Width']);
 
 if isempty(mDiameter) || isempty(ljointW) || isempty(rjointW)
     error('missing anthropometric information')

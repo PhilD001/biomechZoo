@@ -8,6 +8,7 @@ if isglobalkey(cky)
     return
 end
 
+
 switch currentperson
     case 'cameraman'
         r = cameraman('keypress');
@@ -15,12 +16,14 @@ switch currentperson
         if r
             return
         end
+                
 end
         
 
 if isempty(tp)
     return
 end
+
 switch tp
     case 'graph'
         switch cky

@@ -150,11 +150,19 @@ conditions = strrep(conditions,'\',filesep);
 % Set up path for eventval spreadsheet
 %
 r = strfind(fld,'Data');
-pth = [fld(1:r-1),'Statistics'];    % stats folder
+
+if isempty(r) && ~isempty(strfind(fld,'example data (processed)'));
+    indx = strfind(fld,filesep);
+    pth = [fld(1:indx(end)),'Statistics'];
+else
+    pth = [fld(1:r-1),'Statistics'];    % stats folder
+end
+
 if ~exist(pth,'dir')
     disp(['Creating folder for stats: ',pth])
     mkdir(pth)
 end
+
 
 
 % Check if file exists
@@ -299,7 +307,7 @@ ecell2 = {'E','G','I','K','M','O','Q','S','U','W','Y','AA','AC','AE','AG','AI','
     'BY','CA','CC','CE','CG','CI','CK','CM','CO','CQ','CS','CU','CW','CY'};
 
 for i = 1:length(fl)
-    disp(['Extracting data to spreadsheet for: ',fl{i}])
+    batchdisp(fl{i},'Extracting data to spreadsheet')
     
     % Load zoo file and extract filename
     %

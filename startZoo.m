@@ -14,15 +14,15 @@ s = filesep;                                                   % platform depend
 zoo_fld = [fileparts(which('startZoo')),s,'Toolbox'];          % get root Zoosystem folder
 pmsg = 'Loading ';                                             % prefix for message
 smsg = ' ... ';                                                % suffix for message
-lfld = 'biomechZoo/Toolbox/Support Functions';                % longest subfolder
-lpad = length(pmsg) + length(lfld)+length(smsg)+5;             % length of longest
-start = strfind(zoo_fld,'the zoosystem');                      % start of short file path
+lfld = 'biomechZoo/Toolbox/Support Functions';                 % longest subfolder
+lpad = length(pmsg) + length(lfld)+length(smsg)+15;            % length of longest
+start = strfind(zoo_fld,'biomechZoo');                         % start of short file path
 frmt = ['%-',num2str(lpad),'s'];                               % format output nicely
 
 % Welcome message
 %
 clc
-fprintf('--------------- Welcome to the biomechZoo Toolbox ---------------\n\n')
+fprintf('------------------ Welcome to the biomechZoo Toolbox -------------------\n\n')
 
 
 % Get Zoosystem folders and subfolders
@@ -51,11 +51,11 @@ mindx = find(~cellfun(@isempty,mindx));
 for i = 1:length(mindx)
     csub = sub{mindx(i)};
     if ~isempty(strfind(computer, 'MACI')) && isempty(strfind(csub,'@'))
-          csub_short = csub(start:end);
-          msg = [pmsg,csub_short,smsg];
-          fprintf(frmt, msg)
-          path(csub,path)
-          fprintf('complete\n')
+        csub_short = csub(start:end);
+        msg = [pmsg,csub_short,smsg];
+        fprintf(frmt, msg)
+        path(csub,path)
+        fprintf('complete\n')
     end
     sub{mindx(i)} = [];
 end
@@ -70,7 +70,7 @@ for i = 1:length(sub)
     
     if isempty(strfind(csub,'obsolete'))
         if length(cindx) == length(indx)
-            csub_short = csub(start:end);                      % shortened current fld            
+            csub_short = csub(start:end);                      % shortened current fld
             msg = [pmsg,csub_short,smsg];
             fprintf(frmt, msg)
             path(sub{i},path)
@@ -80,6 +80,51 @@ for i = 1:length(sub)
         end
     end
 end
+
+% c) load the help files (if available)
+%
+sfld = strrep(zoo_fld,['biomechZoo',filesep,'Toolbox'],['biomechZoo-help',filesep,'sample study']);
+help_fld = strrep(zoo_fld,['biomechZoo',filesep,'Toolbox'],['biomechZoo-help',filesep,'examples']);
+
+
+if exist(help_fld,'dir')
+    fprintf('\nLoading biomechZoo-help scripts:\n\n')
+
+    csub_short = sfld(start:end);                      % shortened current fld
+    msg = [pmsg,csub_short,smsg];
+    fprintf(frmt, msg)
+    path(sfld,path)
+    fprintf('complete\n')
+                
+    
+    path(help_fld,path);
+    
+    sub = subdir(help_fld);
+    
+    for i = 1:length(sub)
+        csub = sub{i};
+        cindx = strfind(csub,filesep);                             % num slash in current fld
+        
+            if length(cindx) == length(indx) 
+                csub_short = csub(start:end);                      % shortened current fld
+                msg = [pmsg,csub_short,smsg];
+                fprintf(frmt, msg)
+                path(sub{i},path)
+                fprintf('complete\n')
+            else
+%                 path(sub{i},path)
+            end
+    end
+    
+else
+    fprintf('Help files not found in current setup, ')
+    fprintf('Download help files <a href="https://github.com/PhilD001/biomechzoo-help">here</a>')
+    
+end
+
+
+
+
 
 
 % Set some good defaults
@@ -99,7 +144,7 @@ fprintf('complete\n')
 fprintf('\nbiomechZoo Quick Guide:\n\n')
 fprintf('Visit the <a href="https://www.biomechzoo.com/">Website</a> | ')
 fprintf('Get <a href="https://github.com/PhilD001/biomechzoo">updates</a> | ')
-fprintf('Download the <a href="https://github.com/PhilD001/biomechzoo-samplestudy">sample data</a> | ')
+fprintf('Download the <a href="https://github.com/PhilD001/biomechzoo-help">sample data</a> | ')
 fprintf('Seek <a href="https://github.com/PhilD001/biomechzoo-help">help</a> \n\n')
 % fprintf('type ''zoosystem'' to browse available functions or click <a href="matlab:zoosystem">here</a> \n')
 fprintf('type ''zooinfo'' for project information or click <a href="matlab:zooinfo">here</a> \n')

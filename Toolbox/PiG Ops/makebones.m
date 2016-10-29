@@ -1,19 +1,23 @@
 function data = makebones(data,type,foot_flat,test)
 
-% DATA = MAKEBONES(data) creates segment 'bones' for use in vicon2groodsuntay or for
-% visualization in director. Bones are virtual markers representing segment axes.
+% DATA = MAKEBONES(data,type,foot_flat,test) creates segment 'bones' for use in kinematic / 
+% kinetic modelling or for visualization in director. Bones are virtual markers representing 
+% segment axes.
 %
 % ARGUMENTS
 %
-% data             ... trial data
-% test             ... test against existing PiG 'bones'
+%  data        ... Zoo data
+%  type        ... Trial type (String) (static or dynamic)
+%  foot_flat   ... Settings flag (Boolean) to represent if foot flat should be assumed
+%  test        ... test against existing PiG 'bones'
 %
 % NOTES
 % - Following anthroopmetric/metainfo data must be available:
 %   'MarkerDiameter, R/LLegLength,R/LKneeWidth,R/LAnkleWidth
-%
 % - Foot length may be inexact during visualization in director. Joint angles are unaffected
 % - Only lower-limb bones are currently created
+%
+% See also getbones, bmech_kinematics, bmech_kinetics
 
 
 % Revision history:
@@ -22,13 +26,7 @@ function data = makebones(data,type,foot_flat,test)
 %
 % Updated by Philippe C. Dixon June 2016
 % - All segment-emedded axes verified (good agreement)
-% - All joint centers verified (good aggreement)
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
-
+% - All joint centers verified (good agreement)
 
 
 % Set defaults ---------------------------------------------------------------------------
@@ -60,6 +58,7 @@ else
 end
 
 LASI = data.LASI.line;
+LTHI = data.LTHI.line;
 LKNE = data.LKNE.line;
 LTIB = data.LTIB.line;
 LANK = data.LANK.line;
@@ -98,6 +97,20 @@ RTOE = data.RTOE.line;
 % - Knee and Ankle joint center computation based on pyCGM.py's
 %   interpretatin of PiG 'chord function'
 %
+
+if ~isfield(data,'RHipJC')
+    data = hipjointcentrePiG_data(data);
+end
+
+if ~isfield(data,'RKneeJC')
+    data = jointcentrePiG_data(data,'Knee');
+end
+
+if ~isfield(data,'RAnkleJC')
+    data = jointcentrePiG_data(data,'Ankle');
+end
+
+
 RHipJC = data.RHipJC.line;
 RKneeJC = data.RKneeJC.line;
 RAnkleJC = data.RAnkleJC.line;
@@ -128,10 +141,9 @@ LAnkleJC = data.LAnkleJC.line;
 
 
 
-
 % Pelvis coordinate system ---------------------------------------------------------------
 %
-% - The formaula proposed by Davis et al. 1991 to compute PELO as RASI+LASI)/2 is NOT used
+% - The formula proposed by Davis et al. 1991 to compute PELO as (RASI+LASI)/2 is NOT used
 % by Vicon. Instead it appears the average HJC position is used. This is not stated
 % in any of the literature, but this approach improves agreement (see comparePiG)
 %
@@ -162,7 +174,8 @@ boneLength = magnitude(LHipJC-LKneeJC);
 
 O = LKneeJC;
 P = LHipJC-O;                            % proximal vector
-Ltemp = LKNE - O;                        % temp lateral vector
+% Ltemp = LKNE - O;                        % temp lateral vector
+Ltemp = LTHI - O;                        % temp lateral vector
 A = cross(Ltemp,P);                      % anterior vector
 L = cross(P,A);                          % lateral vector
 
@@ -328,6 +341,29 @@ if strcmpi(type,'static')
 end
 
 
+% Compute Left Toe 'bone'
+%
+% - This is not needed for PiG kinematics, but appears in Vicon output
+% - Quantity not verified against Vicon
+%
+%footRatio = mean(magnitude(LHEE-LFOO))/mean(magnitude(LHEE-data.LTOO.line))
+
+% footRatio = 0.75;
+% truncFootVector = LTOE-LHEE;
+% footVector = truncFootVector/footRatio;
+% toeVector = footVector-truncFootVector;
+% 
+% LTOO = LFOO + toeVector;
+% LTOA = LFOA + toeVector;
+% LTOL = LFOL + toeVector;
+% LTOP = LFOP + toeVector;
+% 
+% data = addchannel_data(data,'LTOO',LTOO,'video');
+% data = addchannel_data(data,'LTOA',LTOA,'video');
+% data = addchannel_data(data,'LTOL',LTOL,'video');
+% data = addchannel_data(data,'LTOP',LTOP,'video');
+
+
 
 
 
@@ -420,18 +456,29 @@ if strcmpi(type,'static')
         data = addchannel_data(data,'RF3L',L3,'video');
         data = addchannel_data(data,'RF3P',P3,'video');
     end
-    
-    
-    
 end
 
+% Compute Right  Toe 'bone'
+%
+% - This is not needed for PiG kinematics, but appears in Vicon output
+% - Quantity not verified against Vicon
+%
+% footRatio = mean(magnitude(LHEE-LFOO))/mean(magnitude(LHEE-data.LTOO.line))
 
-
-
-
-
-
-
+% footRatio = 0.75;
+% truncFootVector = RTOE-RHEE;
+% footVector = truncFootVector/footRatio;
+% toeVector = footVector-truncFootVector;
+% 
+% RTOO = RFOO + toeVector;
+% RTOA = RFOA + toeVector;
+% RTOL = RFOL + toeVector;
+% RTOP = RFOP + toeVector;
+% 
+% data = addchannel_data(data,'RTOO',RTOO,'video');
+% data = addchannel_data(data,'RTOA',RTOA,'video');
+% data = addchannel_data(data,'RTOL',RTOL,'video');
+% data = addchannel_data(data,'RTOP',RTOP,'video');
 
 function [Arot,Lrot,Prot] = rotateFootAxes(A,L,P,StaticRotOff,StaticPlantFlex)
 
@@ -479,6 +526,7 @@ for i = 1:length(A)
     
     
 end
+
 
 function [At,Lt,Pt] = tibiaTorsion(A,L,P,torsion)
 
@@ -538,8 +586,6 @@ if test ==1
 end
 
 
-
-
 function [O,A,L,P] = getLocalCoord(data,orig,proxJC,latMkr,disMkr,boneLength,segment,test)
 
 % This function computes local coordinate system for all segments except pelvis
@@ -579,7 +625,6 @@ if test ==1
     comparePiG(data,segment,O,A,L,P)
     comparePiGangles(data,segment,O,A,L,P)
 end
-
 
 
 function comparePiGangles(data,segment,mO,mA,mL,mP)

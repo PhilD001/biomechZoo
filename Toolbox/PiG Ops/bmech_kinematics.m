@@ -1,6 +1,6 @@
 function bmech_kinematics(fld,settings)
 
-% BMECH_KINEMATICS(fld,settings) is a batch process function to compute lower-limb 
+% BMECH_KINEMATICS(fld,settings) is a batch process function to compute lower-limb
 % joint kinematics according to the plug-in gait (PiG) model
 %
 % ARGUMENTS
@@ -16,7 +16,7 @@ function bmech_kinematics(fld,settings)
 %   e.g.     root - Subject 1 - cond1
 %                             - Static
 %
-% See also bmech_kinematicsRvdB,bmech_jointcentrePiG
+% See also bmech_kinematicsRvdB,bmech_jointcentrePiG, bmech_kinetics
 
 
 % Revision History
@@ -51,16 +51,19 @@ for i = 1:length(flDyn)
     if ~strcmp(subname_prev,subname)                                      % load static
         flStat = engine('path',fld,'extension','zoo',...                  % associated with
             'search path',[subname,filesep,settings.static]);            % dyn trial
-        if length(flStat) ~=1
-            error(['more than one static trial for ',fname])
+        if isempty(flStat)
+            error(['no static trials for: ',subname])
+        elseif length(flStat)>1
+            error(['more than one static trial for: ',subname])
         end
+        batchdisplay(flStat{1},'processing static trial')                     % compute quants
+        
         sdata = zload(flStat{1});
         subname_prev = subname;
     end
     
     % Compute ankle static offset using static trial
     %
-    batchdisplay(flStat{1},'processing static trial')                     % compute quants    
     sdata = makebones(sdata,'static',settings.flat);
     sdata = kinematics_data(sdata);
     
@@ -68,9 +71,9 @@ for i = 1:length(flDyn)
     % Create joint kinematics for dynamic trial
     %
     batchdisplay(flDyn{i},'computing PiG kinematics')
+    data = ankleoffsetPiG_data(data,sdata);
     data = makebones(data,'dynamic');
-    data = ankleoffsetPiG_data(data,sdata);                  
-    data = kinematics_data(data,settings);  
+    data = kinematics_data(data,settings);
     
     % save to zoo
     zsave(flStat{1},sdata);

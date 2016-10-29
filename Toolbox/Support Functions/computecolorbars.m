@@ -11,7 +11,7 @@ function [mdiffdatastk,maxvalstk,mult,cons,SigDiffIndxStk,frames,compconsstk] = 
 %-get data info and initialize variables
 %
 disp(['computing color bars for: ',ch])
-[frames,indx] = getframesforcontinuous(fl,ch);
+[frames,indx] = getFramesContinuous(fl,ch);
 compconsstk = {};                      % make more than needed than remove extra
 calphastk = [] ;
 maxvalstk = []; % ones(3*length(cons),1);

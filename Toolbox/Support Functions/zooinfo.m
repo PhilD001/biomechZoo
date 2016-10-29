@@ -17,7 +17,6 @@ function zooinfo
 %
 % Repositories
 % https://github.com/PhilD001/biomechZoo
-% https://github.com/PhilD001/biomechZoo-samplestudy
 % https://github.com/PhilD001/biomechZoo-help
 %
 % License

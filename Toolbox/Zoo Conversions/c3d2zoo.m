@@ -4,15 +4,15 @@ function data = c3d2zoo(fld,del)
 %
 % ARGUMENTS
 %  fld   ...  Folder (batch process) or full path to individual file (string).
-%  del   ...  option to delete original c3d file after creating zoo file. Default 'no'
+%  del   ...  option to delete c3d file after creating zoo file.
+%             Default:'no' or false
 %
 % RETURNS
 %  data  ...  zoo data. Return if fld is individual file (mostly used by 'director')
 %
-% See also readc3d
+% See also csv2zoo, readc3d
 %
 % NOTES:
-% - Function can operate
 % - The function attempts to fix invalid fielnames via the makevalidfield.m function
 
 
@@ -36,7 +36,7 @@ function data = c3d2zoo(fld,del)
 %   force plates can now be used
 %
 % Updated by Philippe C. Dixon Oct 2015
-% - bug fix for c3d files with two or more channels with same labels. 
+% - bug fix for c3d files with two or more channels with same labels.
 %   e.g. If a marker set has channels 'RKNE' and 'RKNEjointcenter', the c3d file saves
 %        both channel labels as 'RKNE' (First four characters only). This led to a deletion
 %        of the first channel in the c3d2zoo function. Now c3d2zoo will append the channel number
@@ -52,36 +52,35 @@ function data = c3d2zoo(fld,del)
 % - version 1.3 of the zoosystem
 % - checks that channels are appropriate for storage in a structured array
 %   using 'makevalidfield'
+%
+% Updated by Philippe C. Dixon Oct 2016
+% - cleaned up code to be more consistent with recent biomechZoo updates
 
 
-% SET DEFAULTS ---------------------------------------------------------------------------
+
+% SET DEFAULTS / ERROR CHECK -----------------------------------------------------------------
 %
 tic                                                                          % start timer
 
-ver = '1.3';                                                                 % zoo version
 
 if nargin==0
     fld = uigetfolder;
-    del = 'no';
+    del = false;
 end
 
 if nargin==1
-    del = 'no';
+    del = false;
 end
 
-if isin(fld,'.c3d')      % for a single trial (e.g. loading c3d in director)
-    pth = fileparts(fld);
-    fl= {fld};
-    fld = pth;
-    sf = 0; % do not save output to zoo file
-else
-    fl = engine('path',fld,'extension','c3d');
-    sf = 1;
+if strcmp(del,'yes') || strcmp(del,'on')
+    del = true;
 end
 
+[fld,fl,saveFile] = checkinput(fld,'.c3d');
 cd(fld)
 
-% FIND AND LOAD .C3D FILES-----------------------------------------------------------------
+
+% FIND AND LOAD .C3D FILES
 %
 for i = 1:length(fl)
     
@@ -90,265 +89,125 @@ for i = 1:length(fl)
     batchdisplay(fl{i},'converting to zoo');
     r = readc3d(fl{i});
     zfl = extension(fl{i},'zoo');
-    data = struct;
-    vfld = fieldnames(r.VideoData);
-    afld = fieldnames(r.AnalogData);
     
-    vlbl = cell(size(vfld));
-    albl = cell(size(afld));
+    % Initialize zoo data structure
+    %
+    data = struct;
+    data.zoosystem = setZoosystem(fl{i});
     
     % Add video channels to data struct
     %
+    vfld = fieldnames(r.VideoData);
+    vlbl = cell(size(vfld));
     
     for v = 1:length(vfld)
+        vlbl{v} = makevalidfield(r.VideoData.(vfld{v}).label);                 % fixes invalid fieldnames
         
-        lbl = makevalidfield(r.VideoData.(vfld{v}).label);                 % fixes invalid fieldnames
-        
-        if isfield(data,lbl)
-            disp(['WARNING: Repeated channel name ',lbl, ' to be renamed ',lbl,num2str(v)])
-            lbl = [lbl,num2str(v)];  
+        if isfield(data,vlbl{v})
+            disp(['WARNING: Repeated channel name ',vlbl{v}, ' to be renamed ',vlbl{v},num2str(v)])
         end
         
-        data.(lbl).line = [makecolumn(r.VideoData.(vfld{v}).xdata),...
-            makecolumn(r.VideoData.(vfld{v}).ydata),...
+        temp = [makecolumn(r.VideoData.(vfld{v}).xdata),makecolumn(r.VideoData.(vfld{v}).ydata),...
             makecolumn(r.VideoData.(vfld{v}).zdata)];
-        
-        data.(lbl).event = struct;
-        vlbl{v} = lbl;
-        
+        data = addchannel_data(data,vlbl{v},temp,'video');
     end
     
     % Add analog channels to data struct
     %
-    if ~isempty(afld)                                                   % add analog channels (if present)
+    afld = fieldnames(r.AnalogData);
+    albl = cell(size(afld));
+    
+    for a = 1:length(afld)
+        albl{a} = makevalidfield(r.AnalogData.(afld{a}).label);                                  % fixes all invalid fieldnames
         
-        for a = 1:length(afld)
-            
-            lbl = makevalidfield(r.AnalogData.(afld{a}).label);                                  % fixes all invalid fieldnames
-            
-            if isfield(data,lbl)
-                disp(['WARNING: Repeated channel name ',lbl, ' to be renamed ',lbl,num2str(v)])
-                lbl = [lbl,num2str(v)];
-            end
-            
-            data.(lbl).line = makecolumn(r.AnalogData.(afld{a}).data);
-            data.(lbl).event = struct;
-            albl{a} = lbl;
+        if isfield(data,albl{a})
+            disp(['WARNING: Repeated channel name ',albl{a}, ' to be renamed ',albl{a},num2str(v)])
         end
         
+        temp =  makecolumn(r.AnalogData.(afld{a}).data);
+        data = addchannel_data(data,albl{a},temp,'analog');
     end
     
-    % Add Video/Analog metainformation 
+    
+    % Set frequency information
     %
-    vidFreq =  r.Header.VideoHZ;
+    data.zoosystem.Video.Freq = r.Header.VideoHZ;
     
     if isfield(r.Parameter,'ANALOG')
-        analFreq = r.Parameter.ANALOG.RATE.data;
+        data.zoosystem.Analog.Freq = r.Parameter.ANALOG.RATE.data;
     else
-        analFreq = 0;
+        data.zoosystem.Analog.Freq = 0;
     end
     
-    AVR =   analFreq/vidFreq;
+    data.zoosystem.AVR =   data.zoosystem.Analog.Freq/data.zoosystem.Video.Freq;
     
+    
+    % Set frame information
+    %
     startVid = r.Header.FirstVideoFrame;                                % write zoo system info
     finVid = r.Header.EndVideoFrame;
     
-    startAnal = startVid*AVR;
-    finAnal = finVid*AVR;
+    startAnal = startVid*data.zoosystem.AVR;
+    finAnal = finVid*data.zoosystem.AVR;
     
     data.zoosystem.Video.Indx = makecolumn(linspace(startVid,finVid,(finVid-startVid+1))) ;
-    data.zoosystem.Video.ORIGINAL_START_FRAME = [startVid finVid];
-    data.zoosystem.Video.ORIGINAL_END_FRAME = [finVid 0 0];
-    data.zoosystem.Video.CURRENT_START_FRAME = [1 0 0];
-    data.zoosystem.Video.CURRENT_END_FRAME = [finVid-startVid+1 0 0];
-    data.zoosystem.Video.Freq= vidFreq;
-    data.zoosystem.Video.Channels = vlbl;
+    data.zoosystem.Video.ORIGINAL_START_FRAME = [startVid 0 0];
+    data.zoosystem.Video.ORIGINAL_END_FRAME   = [finVid 0 0];
+    data.zoosystem.Video.CURRENT_START_FRAME  = [1 0 0];
+    data.zoosystem.Video.CURRENT_END_FRAME    = [finVid-startVid+1 0 0];
     
     data.zoosystem.Analog.Indx  =  makecolumn(linspace(startAnal,finAnal,(finAnal-startAnal+1))) ;
     data.zoosystem.Analog.ORIGINAL_START_FRAME = [startAnal 0 0];
-    data.zoosystem.Analog.ORIGINAL_END_FRAME = [finAnal 0 0];
-    data.zoosystem.Analog.CURRENT_START_FRAME = [1 0 0];
-    data.zoosystem.Analog.CURRENT_END_FRAME = [finAnal-startAnal+1 0 0];
-    data.zoosystem.Analog.Freq= analFreq;
-    data.zoosystem.Analog.Channels =  albl;
-    
-    data.zoosystem.AVR = AVR;
-    
-    data.zoosystem.Header.SubName =  makerow(deblank(r.Parameter.SUBJECTS.NAMES.data));
-    data.zoosystem.Header.Date = '';
-    data.zoosystem.Header.Time = '';
-    data.zoosystem.Header.Description = '';  % this remains empty
+    data.zoosystem.Analog.ORIGINAL_END_FRAME   = [finAnal 0 0];
+    data.zoosystem.Analog.CURRENT_START_FRAME  = [1 0 0];
+    data.zoosystem.Analog.CURRENT_END_FRAME    = [finAnal-startAnal+1 0 0];
     
     
-    % Add unit metainformation (if available) to zoosystem branch of data struct
+    % set header information
     %
-    data.zoosystem.Units.Markers =  makerow(r.Parameter.POINT.UNITS.data);
+    data.zoosystem.Header = setHeader(r);
     
-    if isfield(r.Parameter.POINT,'ANGLE_UNITS')
-        data.zoosystem.Units.Angles = makerow(r.Parameter.POINT.ANGLE_UNITS.data);
-    else
-        disp([' missing angle units for: ',fl{i}])
-    end
     
-    if isfield(r.Parameter.POINT,'FORCE_UNITS')
-        data.zoosystem.Units.Forces = makerow(r.Parameter.POINT.FORCE_UNITS.data);
-    else
-        disp([' missing angle units for: ',fl{i}])
-    end
-    
-    if isfield(r.Parameter.POINT,'MOMENT_UNITS')
-        data.zoosystem.Units.Moments =   makerow(r.Parameter.POINT.MOMENT_UNITS.data);
-    else
-        disp([' missing angle units for: ',fl{i}])
-    end
-    
-    data.zoosystem.Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS
-    
-    if isfield(r.Parameter.POINT,'SCALAR_UNITS')
-        data.zoosystem.Units.Scalars =  makerow(r.Parameter.POINT.SCALAR_UNITS.data);
-    else
-        disp([' missing Scalar unit info for:',fl{i}])
-    end
-    
-    % Add force plate metainformation to zoosystem branch of data struct
+    % Set unit information
     %
-    if isfield(r.Parameter,'FORCE_PLATFORM')
-        a =r.Parameter.FORCE_PLATFORM.CORNERS.data;
-        a= reshape(a,3,[]);
-        ln = length(a);
-        
-        b = zeros(3,4,ln/4);
-        
-        for j = 1:ln/4
-           
-            if j ==1
-                b(:,:,1) = a(:,1:4);
-            else
-                b(:,:,j) = a(:,4*(j-1)+1:4*j);
-            end
-        end
-             
-        if ~isempty(b)
-            data.zoosystem.Analog.FPlates.CORNERS = b;
-            data.zoosystem.Analog.FPlates.LOCALORIGIN = r.Parameter.FORCE_PLATFORM.ORIGIN.data;
-            data.zoosystem.Analog.FPlates.NUMUSED = r.Parameter.FORCE_PLATFORM.USED.data;
-            
-            a = r.Parameter.ANALOG.LABELS.data;
-            
-            temp = cell(r.Parameter.FORCE_PLATFORM.USED.data*6,1);
-            for j = 1:(r.Parameter.FORCE_PLATFORM.USED.data)*6
-             temp{j} = makevalidfield(deblank(a(:,j)'));
-            end
-            data.zoosystem.Analog.FPlates.LABELS = temp;
-
-            
-        else
-            data.zoosystem.Analog.FPlates.CORNERS = [];
-            data.zoosystem.Analog.FPlates.LOCALORIGIN = [];
-            data.zoosystem.Analog.FPlates.NUMUSED = 0;
-        end
-    end
+    data.zoosystem.Units = setUnits(r);
     
-    % Add anthro metainformation (if available) to zoosystem branch of data struct
+    
+    % set force plate information
     %
-    data.zoosystem.Anthro = struct;
+    data.zoosystem.Analog.FPlates = setFPinfo(r);
     
-    if isfield(r.Parameter,'PROCESSING')
-        ach = setdiff(fieldnames(r.Parameter.PROCESSING),{'id','islock'});
-        
-        for j = 1:length(ach)
-            rr = r.Parameter.PROCESSING.(ach{j});
-            
-            if isstruct(rr)
-                rr = rr.data;
-            end
-            
-            data.zoosystem.Anthro.(ach{j}) =  rr;
-        end
-        
-    else
-        disp([' missing processing info for: ',fl{i}])
-    end
     
-    % Add source file metainformation to zoosystem branch of data struct
+    % set anthro metainformation (if available) to zoosystem branch of data struct
     %
-    data.zoosystem.SourceFile = fl{i};
+    data.zoosystem.Anthro = setAnthro(r);
     
-    % Add zoosystem version number to zoosystem branch of data struct
+    
+    % set events metainformation (if available) to zoosystem branch of data struct
     %
-    data.zoosystem.Version = ver;
+    data = setEvents_data(data,r);
     
-    % Add events metainformation (if available) to zoosystem branch of data struct
-    %
-    if isfield(r.Parameter,'EVENT')
-        
-        if isfield(r.Parameter.EVENT,'TIMES')
-            
-            if ~isempty(r.Parameter.EVENT.TIMES.data)
-                
-                times = r.Parameter.EVENT.TIMES.data(2,:);
-                sides = r.Parameter.EVENT.CONTEXTS.data;
-                type =  r.Parameter.EVENT.LABELS.data;
-                
-                [~,cols] = size(sides);
-                
-                stk = zeros(1,cols);
-                events = struct;
-                
-                for s = 1:cols
-                    ech = [sides(:,s)','_',type(:,s)'];
-                    ech = strrep(ech,' ','');
-                    events.(ech).lines(s) = times(s);
-                end
-                
-                ech = fieldnames(events);
-                
-                for e = 1:length(ech)
-                    temp = sort(events.(ech{e}).lines);
-                    indx = find(temp==0);
-                    temp(indx) = [];
-                    events.(ech{e}) = temp;   % this output should match  btkGetEvents(H)
-                    
-                    for j = 1:length(events.(ech{e}))
-                        
-                        frame = round(events.(ech{e})(j)*vidFreq) - data.zoosystem.Video.ORIGINAL_START_FRAME(1) +1;
-                        if ~isfield(data,'SACR')
-                            data.(vlbl{1}).event.([ech{e},num2str(j)]) = [frame 0 0];
-                        else
-                            data.SACR.event.([ech{e},num2str(j)]) = [frame 0 0];
-                        end
-                        
-                    end
-                    
-                end
-            end
-        end
-        
-    end
-    
-    
-    % KEEP COPY OF ALL META INFO
+   
+    % set all other meta info
     %
     mch = setdiff(fieldnames(r),{'VideoData','AnalogData'});
     
     for m = 1:length(mch)
-        data.zoosystem.OriginalC3dMetaInfo.(mch{m}) = r.(mch{m});
+        data.zoosystem.OtherMetaInfo.(mch{m}) = r.(mch{m});
     end
     
     
-    % Empty field for computed meta data in matlab
+    % Save all into to file
     %
-    data.zoosystem.CompInfo = struct;
-    
-    
-    % Save all finto to file
-    %
-    if sf==1
-        % save(zfl,'data');  % original save
+    if saveFile
         zsave(zfl,data)
+    else
+        disp(' ')
+        disp('zoo file loaded to workspace')
+        disp(' ')
     end
     
-    if isin(del,'yes') || isin(del,'on')
+    if del
         delete(fl{i})
     end
     
@@ -363,4 +222,150 @@ disp('Finished converting data in: ')
 toc
 disp('**********************************')
 
+
+
+function Header = setHeader(r)
+
+Header = struct;
+
+Header.SubName =  makerow(deblank(r.Parameter.SUBJECTS.NAMES.data));
+Header.Date = '';
+Header.Time = '';
+Header.Description = '';  % this remains empty
+
+
+function Units = setUnits(r)
+
+pch = fieldnames(r.Parameter.POINT);
+
+ %       data.zoosystem.Units.Forces = makerow(r.Parameter.POINT.FORCE_UNITS.data);
+
+
+for j = 1:length(pch)
+    
+    if strfind(pch{j},'UNITS')
+        
+        if strfind(pch{j},'_')
+            type = strrep(pch{j},'_UNITS','');
+            type = lower(type);
+            type(1) = upper(type(1));
+        else
+            type= 'Markers';
+        end
+        
+        Units.(type) = makerow(r.Parameter.POINT.(pch{j}).data);
+    end
+end
+
+if isfield(Units,'Power')
+    Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS
+end
+
+function FPlates = setFPinfo(r)
+
+if isfield(r.Parameter,'FORCE_PLATFORM')
+    a =r.Parameter.FORCE_PLATFORM.CORNERS.data;
+    a= reshape(a,3,[]);
+    ln = length(a);
+    
+    b = zeros(3,4,ln/4);
+    
+    for j = 1:ln/4
+        
+        if j ==1
+            b(:,:,1) = a(:,1:4);
+        else
+            b(:,:,j) = a(:,4*(j-1)+1:4*j);
+        end
+    end
+    
+    if ~isempty(b)
+        FPlates.CORNERS = b;
+        FPlates.LOCALORIGIN = r.Parameter.FORCE_PLATFORM.ORIGIN.data;
+        FPlates.NUMUSED = r.Parameter.FORCE_PLATFORM.USED.data;
+        
+        a = r.Parameter.ANALOG.LABELS.data;
+        
+        temp = cell(r.Parameter.FORCE_PLATFORM.USED.data*6,1);
+        for j = 1:(r.Parameter.FORCE_PLATFORM.USED.data)*6
+            temp{j} = makevalidfield(deblank(a(:,j)'));
+        end
+        FPlates.LABELS = temp;
+        
+    else
+        FPlates.CORNERS = [];
+        FPlates.LOCALORIGIN = [];
+        FPlates.NUMUSED = 0;
+    end
+end
+
+
+function Anthro = setAnthro(r)
+
+if isfield(r.Parameter,'PROCESSING')
+    ach = setdiff(fieldnames(r.Parameter.PROCESSING),{'id','islock'});
+    
+    for j = 1:length(ach)
+        rr = r.Parameter.PROCESSING.(ach{j});
+        
+        if isstruct(rr)
+            rr = rr.data;
+        end
+        
+        Anthro.(ach{j}) =  rr;
+    end
+   
+else
+    Anthro = struct;  
+end
+
+function data = setEvents_data(data,r)
+
+if isfield(r.Parameter,'EVENT')
+
+    vidFreq = data.zoosystem.Video.Freq;
+    vch = data.zoosystem.Video.Channels{1};
+    
+    if isfield(r.Parameter.EVENT,'TIMES')
+        
+        if ~isempty(r.Parameter.EVENT.TIMES.data)
+            
+            times = r.Parameter.EVENT.TIMES.data(2,:);
+            sides = r.Parameter.EVENT.CONTEXTS.data;
+            type =  r.Parameter.EVENT.LABELS.data;
+            
+            [~,cols] = size(sides);
+            
+            events = struct;            
+            for s = 1:cols
+                ech = [sides(:,s)','_',type(:,s)'];
+                ech = strrep(ech,' ','');
+                events.(ech).lines(s) = times(s);
+            end
+            
+            ech = fieldnames(events);
+            
+            for e = 1:length(ech)
+                temp = sort(events.(ech{e}).lines);
+                indx = find(temp==0);
+                temp(indx) = [];
+                events.(ech{e}) = temp;   % this output should match  btkGetEvents(H)
+                
+                for j = 1:length(events.(ech{e}))
+                    
+                    frame = round(events.(ech{e})(j)*vidFreq) - data.zoosystem.Video.ORIGINAL_START_FRAME(1) +1;
+                    if ~isfield(data,'SACR')
+                        data.(vch).event.([ech{e},num2str(j)]) = [frame 0 0];
+                    else
+                        data.SACR.event.([ech{e},num2str(j)]) = [frame 0 0];
+                    end
+                    
+                end
+                
+            end
+        end
+    end
+   
+
+end
 

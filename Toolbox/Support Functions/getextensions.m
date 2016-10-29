@@ -1,4 +1,4 @@
-function ext = getextensions(fl)
+function ext = getExtensions(fl)
 
 % ext = getextensions(fl) returns file types from list of files
 %

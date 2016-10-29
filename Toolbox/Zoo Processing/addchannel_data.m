@@ -62,7 +62,9 @@ data.(ch).event = struct;
 
 % Add channel to appropriate channel list
 %
-data.zoosystem.(section).Channels{end+1} = ch;
+ochs = makecolumn(data.zoosystem.(section).Channels);
+nchs = [ochs; ch];
+data.zoosystem.(section).Channels = nchs;
 
 
 

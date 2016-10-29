@@ -1,6 +1,6 @@
 function zplot(r)
 
-% ZPLOT(r) plots zoo chdata along with event markers
+% ZPLOT(r) plots zoo channel data along with event markers
 %
 % ARGUMENTS
 %  r   ... struct containing line and event branches  e.g. zplot(data.vforce)
@@ -83,9 +83,7 @@ switch action
                 
                 TextBox = uicontrol('style','text','String',['Event: ',tag]);
                 P = get(TextBox,'Position');
-                set(TextBox,'Position',[0 400 P(3) P(4)]);
+                set(TextBox,'Position',[0 400 P(3)*3 P(4)]);
             end
-            
         end
-        
 end
