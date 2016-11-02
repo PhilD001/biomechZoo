@@ -212,7 +212,7 @@ for i = 1:length(fl)
         
         % A) EXTRACT STATIC ANGLE DATA FROM 'Static_angles.mat' FILE
         %
-        [spth,name] = fileparts(fl{i});                              % subject subfolder
+        spth = fileparts(fl{i});                              % subject subfolder
         wdata = load(fl{i},'-mat');                                  % load waveform data
         
         trial_names = wdata.FILE_NAME;                               % all trial names
@@ -302,7 +302,7 @@ for i = 1:length(fl)
                 error('bad file name')
             end
             
-            save([spth,s,tname,'.zoo'],'data');
+            zsave([spth,s,tname,'.zoo'],data);
             
         end
         

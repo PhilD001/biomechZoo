@@ -35,7 +35,7 @@ else
       initial_path = pwd;
    end
    
-   if nargin < 1 | isempty(title)
+   if nargin < 1 || isempty(title)
       title = 'Select a folder';
    end
    

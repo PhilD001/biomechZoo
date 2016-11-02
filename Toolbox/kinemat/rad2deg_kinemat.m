@@ -1,4 +1,4 @@
-function [out]=rad2deg(in)
+function [out]=rad2deg_kinemat(in)
 
 % function [out]=rad2deg(in)
 % Description:	Conversion of radians to degrees applied to the entire matrix

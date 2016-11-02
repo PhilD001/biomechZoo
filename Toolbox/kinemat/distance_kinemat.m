@@ -1,4 +1,4 @@
-function [dist]=distance(XYZmarker1,XYZmarker2)
+function [dist]=distance_kinemat(XYZmarker1,XYZmarker2)
 % function [dist]=distance(XYZmarker1,XYZmarker2)
 % Description:	Calculates the distance between two markers.
 % Input:	XYZmarker1: [X,Y,Z] coordinates of marker 1

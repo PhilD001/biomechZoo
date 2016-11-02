@@ -1,4 +1,4 @@
-function [angles,helicang]=cardan(s1neut,s2neut,s1mov,s2mov,sequence)
+function helicang=cardan(s1neut,s2neut,s1mov,s2mov,sequence)
 % function[angles,helicang]=cardan(s1neut,s2neut,s1mov,s2mov,sequence)
 % Description:	This program calculates the intersegmental motion expressed
 %               in terms of Cardan angles (joint coordinate system) and helical

@@ -45,9 +45,9 @@ end
 
 % Extract info from zoo file
 %
-mDiameter = getAnthro(data,'MarkerDiameter');
-rjointW   = getAnthro(data,['R',joint,'Width']);
-ljointW   = getAnthro(data,['L',joint,'Width']);
+mDiameter = getanthro(data,'MarkerDiameter');
+rjointW   = getanthro(data,['R',joint,'Width']);
+ljointW   = getanthro(data,['L',joint,'Width']);
 
 if isempty(mDiameter) || isempty(ljointW) || isempty(rjointW)
     error('missing anthropometric information')

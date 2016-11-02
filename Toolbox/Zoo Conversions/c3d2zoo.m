@@ -347,7 +347,7 @@ if isfield(r.Parameter,'EVENT')
             
             for e = 1:length(ech)
                 temp = sort(events.(ech{e}).lines);
-                indx = find(temp==0);
+                indx = temp==0;
                 temp(indx) = [];
                 events.(ech{e}) = temp;   % this output should match  btkGetEvents(H)
                 

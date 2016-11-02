@@ -133,7 +133,7 @@ end
 % - Set value of g (gravitation constant)
 
 body = struct;                                                  % build new struct
-body.bodymass = getAnthro(data,'Bodymass');                     % extract mass info
+body.bodymass = getanthro(data,'Bodymass');                     % extract mass info
 body.fsamp = data.zoosystem.Video.Freq;
 
 localOr = getFPLocalOrigin(data);                               % true local FP origin
@@ -308,7 +308,7 @@ cUnit = data.zoosystem.Units.CentreOfPressure;     % expected mm
 mUnit = data.zoosystem.Units.Moment;               % expected Nmm
 
 if strcmp(fUnit,'N/kg')
-    mass = getAnthro(data,'mass');
+    mass = getanthro(data,'mass');
 elseif strcmp(fUnit,'N')
     mass = 1;
 else

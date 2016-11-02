@@ -9,15 +9,15 @@ Audience:
 biomechZoo can help those new to programming / biomechanics to quickly process their data by providing a framework from which to create a streamlined processing workflow. Advanced users are encouraged to contribute to the biomechZoo project by providing additional functions. 
 
 Web: 
-Find more information and download the code at http://biomechZoo.com
+Find more information at http://biomechZoo.com
 
 Getting started: 
-1- Start Matlab
-2- Load biomechZoo into Matlab by running the startZoo.m file located in the root biomechZoo folder.
+- Download this repository (click on green button 'Clone or download' on the right of the repository page)
+- Start Matlab
+- Load biomechZoo into Matlab by running the startZoo.m file located in the root biomechZoo folder.
 
 Help: 
-Help for biomechZoo can be accessed via the biomechZoo-help repository. This repository provides exercises, sample data, and 
-other resources to help the user get started with biomechZoo. Additional help may be obtained via seminars (see website for announcements) or
+Help for biomechZoo can be accessed via the biomechZoo-help repository (https://github.com/PhilD001/biomechZoo-help). This repository provides exercises, sample data, and other resources to help the user get started with biomechZoo. Additional help may be obtained via seminars (see website for announcements) or
 by contacting the main author. 
 
 Additional Software / Platform information: 

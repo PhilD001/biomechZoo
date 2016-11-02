@@ -101,11 +101,8 @@ if nargin==3 && isstruct(type)
 end
 
 if isstruct(data1)
-    s1 = data1.subjects;
     data1 = data1.line;
     data2 = data2.line;
-else
-    s1 = [];
 end
 
 

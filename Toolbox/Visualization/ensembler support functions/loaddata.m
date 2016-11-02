@@ -6,6 +6,14 @@ function loaddata(fld,figs)
 % Updated by Philippe C. Dixon Sept 2016
 % - edited for faster reading
 
+
+settings.string = '\diamondsuit';
+settings.verticalalignment = 'middle';
+settings.horizontalalignment = 'center';
+settings.FontSize = 14;
+settings.color = [1 0 0];
+
+
 fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
@@ -17,9 +25,7 @@ for i = 1:length(fl)
 %     pmt = findobj(fig,'tag','prompt');     % get the figure prompt
 %     set(pmt,'string',fl_cat)               % write to figure prompt
     
-    createlines(fig,data,fl{i});             % draw line
-    
-%     pause(1e-10)
+    createlines(fig,data,fl{i},settings);             % draw line
 end
 
 

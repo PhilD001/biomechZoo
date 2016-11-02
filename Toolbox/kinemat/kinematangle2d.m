@@ -1,4 +1,4 @@
-function [alpha]=angle2d(data)
+function [alpha]=kinematangle2d(data)
 % function [alpha]=angle2d(data)
 % Description:  Calculates the angle between 2 vectors (given by pairs of points)
 %               in 2 dimensions.

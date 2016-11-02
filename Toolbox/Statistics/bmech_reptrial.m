@@ -69,7 +69,7 @@ cd(fld)
 %
 sub = subdir(fld);
 tsubs = makecolumn(cell(size(sub)));
-rsubs = makecolumn(cell(size(sub)));
+% rsubs = makecolumn(cell(size(sub)));
 
 slash_num = zeros(length(sub),1);
 
@@ -111,7 +111,7 @@ for i = 1:length(tsubs)
         end
         
         [data,file_indx] = reptrial(gdata,chrp);
-        save(fl{file_indx},'data');
+        zsave(fl{file_indx},data);
         
         
     else

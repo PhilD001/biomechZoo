@@ -148,7 +148,7 @@ for i = 1:length(side)
     
     % compute hip angles
     if ~isempty(char(Pelvis)) &&   ~isempty(char(Thigh))
-        [hipAngles]   = cardan(pelvisStatMean,thighStatMean,pelvisDyn,thighDyn,sequence);
+        hipAngles   = cardan(pelvisStatMean,thighStatMean,pelvisDyn,thighDyn,sequence);
             
         if side{i} == 'R'
             hipAngles(:,3)   = -hipAngles(:,3);

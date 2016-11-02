@@ -1,4 +1,4 @@
-function [pgbone,jnt,data,oxbone] = getBones(data)
+function [pgbone,jnt,data,oxbone] = getbones(data)
 
 % [bone,jnt,data] = GETBONES(data) retrieves bone information from data struct and creates
 % joints. This is used for grood and suntay calculations 

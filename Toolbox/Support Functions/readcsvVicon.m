@@ -21,24 +21,21 @@ function r = readcsvVicon(fl)
 
 % Read csv file and clean up
 %
-txt= readtext(fl);                      % very slow 
+txt= readtext(fl);                      % very slow
 txt(cellfun(@isempty,txt)) = {NaN};     % clean
 
 % Setup export variablres
 %
 r = struct;
-% Video  = struct;
-% Analog = struct;
-% Header = [];
-% Events = [];
 
-% Find indices of each data types in csv file 
+
+% Find indices of each data types in csv file
 %
 INDXANALYSIS =[];
-INDXEVENTS = [];
-INDXTRAJ = [];
-INDXANALOG = [];
-INDXFP = [];
+INDXEVENTS = [];                        % some events define in Vicon
+INDXTRAJ = [];                          % the markers and model outputs
+INDXANALOG = [];                        % analog data e.g. EMG
+INDXFP = [];                            % force plate data
 
 for j = 1:length(txt(:,1))
     
@@ -58,7 +55,7 @@ end
 INDXALL = [INDXANALYSIS; INDXEVENTS; INDXTRAJ; INDXANALOG; INDXFP];
 
 
-% Extract sampling rates 
+% Extract sampling rates
 %
 vidfreq = txt(INDXTRAJ+1);
 vidfreq = vidfreq{1};
@@ -71,14 +68,14 @@ if ~isempty(INDXANALOG)
     analfreq = txt(INDXANALOG+1);
 elseif ~isempty(INDXFP)
     analfreq = txt(INDXFP+1);
-else 
+else
     analfreq = {[]};
 end
-    analfreq = analfreq{1};
+analfreq = analfreq{1};
 
 
 
-% Extract header information --------------------------------------------------
+% Extract header information
 %
 % - Header is all information before first data section in capitals
 
@@ -90,7 +87,7 @@ for i = 1:length(header)
     r.Header.(field) = header{i,2};
 end
 
-% Extract event information --------------------------------------------------
+% Extract event information
 %
 if ~isempty(INDXEVENTS)
     INDXNEXT = find(INDXALL>INDXEVENTS,1,'first');
@@ -153,13 +150,13 @@ if ~isempty(INDXEVENTS)
     
 end
 
-%-----EXTRACT TRAJECTORY DATA------------
+% Extract trajectory data
 %
 vch = txt(INDXTRAJ+2,:);
 
 INDXNEXT = find(INDXALL>INDXTRAJ,1,'first');
 INDXNEXT = INDXALL(INDXNEXT);
-    
+
 r.Video.data = cell2mat(txt(INDXTRAJ+4:INDXNEXT-2,:)); % all marker data
 
 istk = ones(length(vch),1);
@@ -178,7 +175,7 @@ r.Video.Channels = chstk; % overwrite vch with final video channels
 r.Video.Freq = vidfreq;
 
 
-%---EXTRACT ANALOG CHANNELS (EMG) ---
+% Extract Analog channels
 %
 if ~isempty(INDXANALOG)
     
@@ -186,11 +183,11 @@ if ~isempty(INDXANALOG)
     INDXNEXT = INDXALL(INDXNEXT);
     
     r.Analog.data = cell2mat(txt(INDXANALOG+4:INDXNEXT-2,:)); % all marker data
-
+    
     ach = txt(INDXANALOG+2,2:end);  % removes the first column (sample num
- 
+    
     chstk = cell(length(ach),1);
-    for i = 1:length(ach)      
+    for i = 1:length(ach)
         if ~isnan(ach{i})
             chstk{i} = ach{i};
         end
@@ -200,14 +197,14 @@ if ~isempty(INDXANALOG)
     
     r.Analog.Channels = ['frames';chstk];
     r.Analog.Freq = analfreq;
- end
+end
 
 
 
-%------EXTRACT FORCE PLATE INFO-------------
+% Extract force plate information
 %
 if ~isempty(INDXFP)
-       
+    
     subtxt = (txt(INDXFP:end,1));
     
     rr = zeros(length(subtxt),1,'single');
@@ -230,12 +227,13 @@ if ~isempty(INDXFP)
     
     chstk(cellfun(@isempty,chstk)) = [];
     fpch = chstk(1:end);
-   
+    
+    r.Forces.Freq = analfreq;
     r.Forces.Channels = fpch;
     r.Forces.data = r.Forces.data(:,1:length(fpch)+1);   % all fpch columns + the index column
 end
-       
-end
+
+
 
 
 

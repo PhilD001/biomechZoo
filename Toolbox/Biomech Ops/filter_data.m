@@ -71,8 +71,8 @@ for j = 1:length(ch)
         end
         
         if ismember(ch{j},data.zoosystem.Analog.FPlates.LABELS)
-            indx = find(data.(ch{j}).line == 0);                                             % find all zeros
-            data.(ch{j}).line(indx) = NaN;                                                   %#ok<FNDSB>
+            indx = find(data.(ch{j}).line == 0);                               % find all zeros
+            data.(ch{j}).line(indx) = NaN;                                                 
             data.(ch{j}).line = filter_line(data.(ch{j}).line,filt,fsamp);
             data.(ch{j}).line(indx) = 0;
         else

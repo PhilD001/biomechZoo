@@ -8,6 +8,9 @@ function outlier(fl,ch,events)
 %  ch     ...  Channel to turn into outlier
 %  events ...  List of events to ignore, i.e., keep unchanged
 
+if nargin==2
+    events = {};
+end
 
 if isempty(strfind(fl,filesep))
     fl = engine('fld',pwd,'search file',fl);

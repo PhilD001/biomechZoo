@@ -6,9 +6,6 @@ function data= csv2zooVicon(fld,del)
 %
 % fld        ... Optional argument. Enter full path leading to folder
 % del        ... Optional argument. Delete original files. Default 'no'
-% resample   ... choice to downsample or upsample data. Default 'no'
-% check      ... Optional argument. Check if channels listed exist. Default {}
-% nans       ... keep nans at start of data. Default no.
 %
 % RETURNS
 % data       ... Optional return
@@ -16,6 +13,8 @@ function data= csv2zooVicon(fld,del)
 % NOTES
 % - Files should have been exported using the "export data to ascii file" NOT "exportcsv"
 % - Where possible c3d export is quicker and provides more meta information to the user
+% - Event information not tested
+% - Force plate meta information (e.g. location of corners) not implemented
 
 
 % Revision history
@@ -68,21 +67,17 @@ cd(fld)
 
 %-------LOAD EXCEL DATA--------
 %
-
 for i = 1:length(fl)
     batchdisplay(fl{i},'creating zoo file')
     zfl = extension(fl{i},'zoo');
         
     r  = readcsvVicon(fl{i});
-    
-         
+        
     % Initialize zoo data structure
     %
     data = struct;
     data.zoosystem = setZoosystem(fl);
     
-    data.zoosystem.Analog.Freq = r.Analog.Freq;
-
     % Add video channels to data struct
     %
     ch = r.Video.Channels;   
@@ -130,38 +125,27 @@ for i = 1:length(fl)
         end
         
         data.zoosystem.Analog.Channels = ch;
-        data.zoosystem.Analog.Freq = r.Video.Freq;
+        data.zoosystem.Analog.Freq = r.Forces.Freq;
         data.zoosystem.Analog.Indx = makecolumn(1:1:length(indx));
         data.zoosystem.Analog.ORIGINAL_START_FRAME = [indx(1) 0 0];
         data.zoosystem.Analog.ORIGINAL_END_FRAME = [indx(end) 0 0];
         data.zoosystem.Analog.CURRENT_START_FRAME = [1 0 0];
-        data.zoosystem.Analog.CURRENT_END_FRAME = [length(indx) 0 0];
-        
+        data.zoosystem.Analog.CURRENT_END_FRAME = [length(indx) 0 0];   
     end
     
     % Add analog (e.g. EMG)
     %
-    if ~isfield(r,'Analog')
-        
-           ch = r.Forces.Channels;
-        indx = r.Forces.data(:,1); % remove (and save) frame info column
-        r.Forces.data = r.Forces.data(:,2:end);
-        count = 1;
+    if isfield(r,'Analog')
+        ch = r.Analog.Channels;
+        indx = r.Analog.data(:,1); % remove (and save) frame info column
+        ch = ch(2:end);
+        r.Analog.data = r.Analog.data(:,2:end);
         
         for j = 1:length(ch)
-            post = num2str(count);
-            ch{j} = [ch{j},post];
             ch{j} = makevalidfield(ch{j});                 % fixes invalid fieldnames
-            
-            if isfield(data,ch{j})
-                count = count+1;
-                ch{j} = strrep(ch{j},post,num2str(count));
-            end
-            
-            temp = r.Forces.data(:,j);
+            temp = r.Analog.data(:,j);
             data = addchannel_data(data,ch{j},temp,'Analog');
         end
-        
         
         if ~isfield(data.zoosystem.Analog,'Channels')     
             data.zoosystem.Analog.Channels = ch;
@@ -172,15 +156,15 @@ for i = 1:length(fl)
             data.zoosystem.Analog.CURRENT_START_FRAME = [1 0 0];
             data.zoosystem.Analog.CURRENT_END_FRAME = [length(indx) 0 0];
         else
+            if ~isequal(r.Forces.Freq,r.Analog.Freq)
+                error('Force and Analog sampling frequencies should be equal')
+            end
+            
             temp = data.zoosystem.Analog.Channels;
             data.zoosystem.Analog.Channels = [ch;temp]; % add on the other analog
         end
     end
 
-
-    
-    
-     
     % Save all into to file
     %
     if saveFile
@@ -198,8 +182,6 @@ for i = 1:length(fl)
 end
 
 
-
-
 %---SHOW END OF PROGRAM-------
 %
 disp(' ')
@@ -207,10 +189,3 @@ disp('****************************')
 disp('Finished converting data in: ')
 toc
 disp('****************************')
-
-
-
-
-
-
-

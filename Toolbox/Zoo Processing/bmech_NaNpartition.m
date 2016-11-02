@@ -56,18 +56,16 @@ function data = NaNpartition(data)
 
 ch = setdiff(fieldnames(data),{'zoosystem'});
 
-str_stk = [];
-end_stk = [];
+str_stk = zeros(length(ch),1);
+end_stk = zeros(length(ch),1);
 
 
 for i = 1:length(ch)
     r = data.(ch{i}).line;
     r = r(:,1);
     indx = isnan(r);
-    str_plate = find(indx==0,1,'first');
-    end_plate = find(indx==0,1,'last');
-    str_stk = [str_stk;str_plate];
-    end_stk = [end_stk;end_plate];
+    str_stk(i) = find(indx==0,1,'first');
+    end_stk(i) = find(indx==0,1,'last');
 end
 
 frm_str = max(str_stk);

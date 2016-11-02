@@ -1,4 +1,4 @@
-function [r,data] = getAnthro(data,field)
+function [r,data] = getanthro(data,field)
 
 % ANTHRO = GETANTHRO(DATA) extracts anthropometric data from zoo file. If
 % data are not available an attempt to compute information is made. This 
@@ -49,7 +49,7 @@ if isempty(r)
             [~,~,~,~,r] = jointWidthPiG(data,markerDiam);
           
         case 'mass'
-            r = getAnthro(data,'bodymass');
+            r = getanthro(data,'bodymass');
         
        
            

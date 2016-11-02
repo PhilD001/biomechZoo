@@ -18,9 +18,12 @@ function delfile(fl)
 % Updated by Philippe C. Dixon May 2015
 % - ability to delete hidden files implemented for PC platform
 %
-% Updated by Philippe C. Dixon Jult 2015
+% Updated by Philippe C. Dixon July 2015
 % - bug fix with user display
 % - added search directory below current working directory for MAC
+%
+% Updated by Philippe C. Dixon Nov 2016
+% - delete now works on mac platform, no unique platform search
 
 
 if ~iscell(fl)
@@ -30,14 +33,17 @@ end
 for i = 1:length(fl)
     
     if exist(fl{i},'file')==2
-        batchdisplay(fl{i},'deleting file')
+        batchdisp(fl{i},'deleting file')
         
-        if ispc
-            % dos(['erase "',fl{i},'"']);
-            delete(fl{i})
-        else
-            unix(['rm -f -R ' '"' fl{i} '"']);
-        end
+        
+        delete(fl{i})
+        
+%         if ispc
+%             % dos(['erase "',fl{i},'"']);
+%             delete(fl{i})
+%         else
+%             unix(['rm -f -R ' '"' fl{i} '"']);
+%         end
         
     else
         disp('attempting to locate file in current working directory....')

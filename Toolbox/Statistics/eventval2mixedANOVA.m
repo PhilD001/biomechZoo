@@ -206,9 +206,9 @@ for j = 1:length(ch)
         
         for n = 1:length(txt)
             
-            if ~isempty(strmatch(txt(n,1),subjects(k,:)))
+            if ~isempty(strmatch(txt(n,1),subjects(k,:))) %#ok<MATCH2>
                 plate = xlsdata(n,:);
-                sub_stk = [sub_stk;plate];     % stack of data for each subject
+                sub_stk = [sub_stk;plate];     %#ok<*AGROW> % stack of data for each subject
                 grp = txt(n,2);
                 grp = grp{1};
                 indxx = strfind(grp,filesep);
@@ -218,14 +218,13 @@ for j = 1:length(ch)
         
         for l = 1:length(cons)
             sub_con_stk = [];
-            plate = [];
             
             for n = 1:length(txt)
                 r = txt(n,2);
                 
                 if  isin(r{1},cons{l})
                     plate = xlsdata(n,:);
-                    sub_con_stk = [sub_con_stk;plate];            % all data for subject k, condition l
+                    sub_con_stk = [sub_con_stk;plate];             % all data for subject k, condition l
                 end
             end
             

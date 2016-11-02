@@ -1,4 +1,4 @@
-function eventval(varargin)
+function eventval_old(varargin)
 %
 % eventval(varargin) will transfer the values of all channels at given events to
 % an excel sheet for inspection. Careful setup must be followed

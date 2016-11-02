@@ -58,7 +58,6 @@ else
 end
 
 LASI = data.LASI.line;
-LTHI = data.LTHI.line;
 LKNE = data.LKNE.line;
 LTIB = data.LTIB.line;
 LANK = data.LANK.line;
@@ -174,8 +173,8 @@ boneLength = magnitude(LHipJC-LKneeJC);
 
 O = LKneeJC;
 P = LHipJC-O;                            % proximal vector
-% Ltemp = LKNE - O;                        % temp lateral vector
-Ltemp = LTHI - O;                        % temp lateral vector
+Ltemp = LKNE - O;                        % temp lateral vector
+% Ltemp = LTHI - O;                        % temp lateral vector
 A = cross(Ltemp,P);                      % anterior vector
 L = cross(P,A);                          % lateral vector
 
@@ -528,32 +527,32 @@ for i = 1:length(A)
 end
 
 
-function [At,Lt,Pt] = tibiaTorsion(A,L,P,torsion)
-
-torsion = deg2rad(torsion);
-
-At = zeros(size(A));
-Lt = zeros(size(L));
-Pt = zeros(size(P));
-
-for i = 1:length(At)
-    
-    axis = [A(i,:); L(i,:); P(i,:)];
-    
-    axisRot = [cos(torsion)*axis(1,1)-sin(torsion)*axis(2,1),...
-        cos(torsion)*axis(1,2)-sin(torsion)*axis(2,2),...
-        cos(torsion)*axis(1,3)-sin(torsion)*axis(2,3);...
-        sin(torsion)*axis(1,1)+cos(torsion)*axis(2,1),...
-        sin(torsion)*axis(1,2)+cos(torsion)*axis(2,2),...
-        sin(torsion)*axis(1,3)+cos(torsion)*axis(2,3);
-        axis(3,1),axis(3,2),axis(3,3)];
-    
-    At(i,:) = axisRot(1,:);
-    Lt(i,:) = axisRot(2,:);
-    Pt(i,:) = axisRot(3,:);
-    
-    
-end
+% function [At,Lt,Pt] = tibiaTorsion(A,L,P,torsion)
+% 
+% torsion = deg2rad(torsion);
+% 
+% At = zeros(size(A));
+% Lt = zeros(size(L));
+% Pt = zeros(size(P));
+% 
+% for i = 1:length(At)
+%     
+%     axis = [A(i,:); L(i,:); P(i,:)];
+%     
+%     axisRot = [cos(torsion)*axis(1,1)-sin(torsion)*axis(2,1),...
+%         cos(torsion)*axis(1,2)-sin(torsion)*axis(2,2),...
+%         cos(torsion)*axis(1,3)-sin(torsion)*axis(2,3);...
+%         sin(torsion)*axis(1,1)+cos(torsion)*axis(2,1),...
+%         sin(torsion)*axis(1,2)+cos(torsion)*axis(2,2),...
+%         sin(torsion)*axis(1,3)+cos(torsion)*axis(2,3);
+%         axis(3,1),axis(3,2),axis(3,3)];
+%     
+%     At(i,:) = axisRot(1,:);
+%     Lt(i,:) = axisRot(2,:);
+%     Pt(i,:) = axisRot(3,:);
+%     
+%     
+% end
 
 
 function [O,A,L,P] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test)
@@ -586,45 +585,45 @@ if test ==1
 end
 
 
-function [O,A,L,P] = getLocalCoord(data,orig,proxJC,latMkr,disMkr,boneLength,segment,test)
-
-% This function computes local coordinate system for all segments except pelvis
-
-
-% Create coordinate system
-%
-O = orig;
-P = proxJC-O;                             % unit proximal vector
-Ltemp = latMkr-disMkr;                    % temp lateral vector
-A = cross(Ltemp,P);                       % unit anterior vector
-L = cross(P,A);                           % unit lateral vector
-
-% make unit vectors
-%
-P = makeunit(P);
-A = makeunit(A);
-L = makeunit(L);
-
-
-% Scale to length of bone
-%
-for i = 1:3
-    A(:,i) = A(:,i).*boneLength;
-    L(:,i) = L(:,i).*boneLength;
-    P(:,i) = P(:,i).*boneLength;
-end
-
-% Move to global coordinate system
-%
-A = A + O;
-L = L + O;
-P = P + O;
-
-% Check results
-if test ==1
-    comparePiG(data,segment,O,A,L,P)
-    comparePiGangles(data,segment,O,A,L,P)
-end
+% function [O,A,L,P] = getLocalCoord(data,orig,proxJC,latMkr,disMkr,boneLength,segment,test)
+% 
+% % This function computes local coordinate system for all segments except pelvis
+% 
+% 
+% % Create coordinate system
+% %
+% O = orig;
+% P = proxJC-O;                             % unit proximal vector
+% Ltemp = latMkr-disMkr;                    % temp lateral vector
+% A = cross(Ltemp,P);                       % unit anterior vector
+% L = cross(P,A);                           % unit lateral vector
+% 
+% % make unit vectors
+% %
+% P = makeunit(P);
+% A = makeunit(A);
+% L = makeunit(L);
+% 
+% 
+% % Scale to length of bone
+% %
+% for i = 1:3
+%     A(:,i) = A(:,i).*boneLength;
+%     L(:,i) = L(:,i).*boneLength;
+%     P(:,i) = P(:,i).*boneLength;
+% end
+% 
+% % Move to global coordinate system
+% %
+% A = A + O;
+% L = L + O;
+% P = P + O;
+% 
+% % Check results
+% if test ==1
+%     comparePiG(data,segment,O,A,L,P)
+%     comparePiGangles(data,segment,O,A,L,P)
+% end
 
 
 function comparePiGangles(data,segment,mO,mA,mL,mP)

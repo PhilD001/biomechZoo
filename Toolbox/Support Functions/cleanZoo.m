@@ -12,14 +12,17 @@ fld = fileparts(which('samplestudy_process.m'));           % sample study root
 
 % Remove user generated folders and files from the sample study folder
 %
-sfld = fullfile(fld,'Data','zoo files (auto process)');    % sample study user gen folder
-fl = fullfile(fld,'Statistics','eventval.xls');
+sfld = fullfile(fld,'Data','zoo files (auto process)');    % sample study user gen data folder
 
 if exist(sfld,'dir')
-    batchdisplay(sfld,'deleting')
-    rmdir(sfld);
+    if strcmp(pwd,sfld)
+        cd(fld)
+    end
+    batchdisplay(sfld,'deleting')  
+    rmdir(sfld,'s');
 end
 
+fl = fullfile(fld,'Statistics','eventval.xls');            % sample study user gen stats file
 if exist(fl,'file')
     batchdisplay(fl,'deleting')
     delete(fl)
@@ -38,13 +41,23 @@ for i = 1:length(sub)
         fl = engine('fld',sub{i});
         if ~isempty(fl)
             delfile(fl)
+            rmdir(sub{i})
         end
-        rmdir(sub{i})
     end
 end
 
+% remove the prop file created by sampleprop_example
+%
 pfl = engine('fld',efld,'extension','.prop');
-delfile(pfl)
+if ~isempty(pfl)
+    delfile(pfl)
+end
+
+% remove the stats file created by eventval_example
+efl = engine('fld',efld,'extension','.xls');
+if ~isempty(efl)
+    delfile(efl)
+end
 
 % remove some mac junk
 %fl

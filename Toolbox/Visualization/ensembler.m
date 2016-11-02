@@ -331,9 +331,7 @@ switch action
             set(get(ax(i),'YLabel'),'String','')
             
         end
-        
-        
-        
+                
     case 'clear colorbars'
         clearcolorbars
         
@@ -390,8 +388,7 @@ switch action
         if isin(custom_function,'bmech_')
             update_ensembler_lines(p,f,fld)
         end
-        
-        
+          
     case 'datacursormode off'
         datacursormode off
         
@@ -696,8 +693,7 @@ switch action
 %     object_h — Handles of the line, patch, and text graphics objects used in the legend
 %     plot_h — Handles of the lines and other objects used in the plot
 %     text_strings — Cell array of the text strings used in the legend
-
-        
+   
     case 'line style'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
@@ -796,8 +792,7 @@ switch action
         bmech_normalize(fld,ch,datalength)
         
         update_ensembler_lines(p,f,fld)
-        
-        
+            
     case 'partition'
         prompt={'Enter name of start event: ', 'Enter name of end event'};
         evt = inputdlg(prompt,'axis title',1);
@@ -1096,7 +1091,7 @@ switch action
         a = load(defaultvalfile,'-mat');
         a= a.a;
         
-        a{1} = sstr;
+        a{1} = sstr; %#ok<NASGU>
         
         
         save(defaultvalfile,'a')

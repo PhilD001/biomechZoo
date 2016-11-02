@@ -23,7 +23,6 @@ function data= csv2zoo(fld,del)
 %
 tic                                                                          % start timer
 
-ver = '1.3';                                                                 % zoo version
 
 if strcmp(del,'yes') || strcmp(del,'on')
     del = true;
@@ -38,22 +37,12 @@ if nargin==1
     del = false;
 end
 
-if isin(fld,'.csv')      % for a single trial (e.g. loading c3d in director)
-    pth = fileparts(fld);
-    fl= {fld};
-    fld = pth;
-    sf = false;          % do not save output to zoo file
-else
-    fl = engine('path',fld,'extension','csv');
-    sf = true;
-end
+[fld,fl,saveFile] = checkinput(fld,'.csv');
 
 cd(fld)
 
 %-------LOAD EXCEL DATA--------
 %
-fl = engine('path',fld,'extension','.csv');
-cd(fld)
 
 for i = 1:length(fl)
     batchdisplay(fl{i},'creating zoo file')
@@ -81,7 +70,7 @@ for i = 1:length(fl)
 
     % Save all into to file
     %
-    if sf
+    if saveFile
         zsave(zfl,data)
     end
     

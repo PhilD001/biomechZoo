@@ -1421,8 +1421,8 @@ fpch(cellfun(@isempty,fpch)) = [];
 
 if ~isempty(fpch)
     
-    P = GetFPLocalOriginDirector(zdata);    
-    Or = GetFPGlobalOriginDirector(zdata);
+    P = getFPLocalOriginDirector(zdata);    
+    Or = getFPGlobalOriginDirector(zdata);
     
     zdata = computecopDirector(zdata,P,Or,fpch);
     

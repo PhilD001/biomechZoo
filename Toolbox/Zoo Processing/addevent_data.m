@@ -88,7 +88,7 @@ for i = 1:length(ch)
             end
             units = data.zoosystem.Units.Forces;
             if strcmp(units,'N/kg')
-                m = getAnthro(data,'Bodymass');
+                m = getanthro(data,'Bodymass');
             else
                 m = 1;
             end
@@ -118,10 +118,10 @@ for i = 1:length(ch)
             
             if isnan(exd)
                 eyd = NaN;
-                ename = [ename,'1'];
+                ename = [ename,'1']; 
             elseif length(exd)==1
                 eyd = yd(exd);
-                ename = [ename,'1'];
+                ename = [ename,'1']; %#ok<*AGROW>
             end
             
         otherwise

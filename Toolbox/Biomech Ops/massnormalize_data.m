@@ -36,7 +36,7 @@ end
 
 % Normalize quantities by mass and update zoosystem
 %
-mass = getAnthro(data,'Bodymass');
+mass = getanthro(data,'Bodymass');
 
 if isempty(mass)
     error('no mass information found')

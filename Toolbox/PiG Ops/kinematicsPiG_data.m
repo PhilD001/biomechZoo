@@ -118,7 +118,7 @@ for i = 1:length(bone(:,1))
     else
         
         for j = 1:4
-            d{j} = data.([bone{i,1},dim{j}]).line;
+            d{j} = data.([bone{i,1},dim{j}]).line; %#ok<AGROW>
         end
     end
     
@@ -324,29 +324,29 @@ lat_dist = makeunit(lat_dist);
 long_prox = makeunit(long_prox);
 long_dist = makeunit(long_dist);
 
-
-function [floatax,ant_prox,ant_dist,lat_prox,lat_dist,long_prox] = makeaxox(pax,dax)
-
-ant_prox = zeros(length(pax),3);
-lat_prox = zeros(length(pax),3);
-long_prox = zeros(length(pax),3);
-
-ant_dist = zeros(length(pax),3);
-lat_dist = zeros(length(pax),3);
-
-floatax = zeros(length(pax),3);
-
-
-for i = 1:length(pax)
-    ant_prox(i,:) = pax{i}(1,:);
-    lat_prox(i,:) = pax{i}(2,:);
-    long_prox(i,:) = pax{i}(3,:);
-    
-    lat_dist(i,:) = dax{i}(2,:);
-    ant_dist(i,:) = dax{i}(1,:);
-    
-    floatax(i,:) = cross(lat_prox(i,:), ant_dist(i,:));
-end
+% 
+% function [floatax,ant_prox,ant_dist,lat_prox,lat_dist,long_prox] = makeaxox(pax,dax)
+% 
+% ant_prox = zeros(length(pax),3);
+% lat_prox = zeros(length(pax),3);
+% long_prox = zeros(length(pax),3);
+% 
+% ant_dist = zeros(length(pax),3);
+% lat_dist = zeros(length(pax),3);
+% 
+% floatax = zeros(length(pax),3);
+% 
+% 
+% for i = 1:length(pax)
+%     ant_prox(i,:) = pax{i}(1,:);
+%     lat_prox(i,:) = pax{i}(2,:);
+%     long_prox(i,:) = pax{i}(3,:);
+%     
+%     lat_dist(i,:) = dax{i}(2,:);
+%     ant_dist(i,:) = dax{i}(1,:);
+%     
+%     floatax(i,:) = cross(lat_prox(i,:), ant_dist(i,:));
+% end
 
 
 function flx = checkflippg(flx,float,long_prox)
@@ -528,42 +528,35 @@ end
 
 function ERR= pgcheck(KIN,data,display)
 
-Pstk  = [];
-LHstk = [];
-LKstk = [];
-LAstk = [];
-RHstk = [];
-RKstk = [];
-RAstk = [];
+Pstk  = zeros(3,1);
+LHstk = zeros(3,1);
+LKstk = zeros(3,1);
+LAstk = zeros(3,1);
+RHstk = zeros(3,1);
+RKstk = zeros(3,1);
+RAstk = zeros(3,1);
 
 subch = {'FlxExt','AbdAdd','IntExt'};
 
 for k = 1:3
-    LHPlate=sqrt(sum(nansum((data.LHipAngles.line(:,k)-KIN.LeftHip.(subch{k})).^2))/numel(~isnan(data.LHipAngles.line(:,k))));
-    LKPlate=sqrt(sum(nansum((data.LKneeAngles.line(:,k)-KIN.LeftKnee.(subch{k})).^2))/numel(~isnan(data.LKneeAngles.line(:,k))));
-    RHPlate=sqrt(sum(nansum((data.RHipAngles.line(:,k)-KIN.RightHip.(subch{k})).^2))/numel(~isnan(data.RHipAngles.line(:,k))));
-    RKPlate=sqrt(sum(nansum((data.RKneeAngles.line(:,k)-KIN.RightKnee.(subch{k})).^2))/numel(~isnan(data.RKneeAngles.line(:,k))));
-    LHstk = [LHstk LHPlate];
-    LKstk = [LKstk LKPlate];
-    RHstk = [RHstk RHPlate];
-    RKstk = [RKstk RKPlate];
+    LHstk(k)=sqrt(sum(nansum((data.LHipAngles.line(:,k)-KIN.LeftHip.(subch{k})).^2))/numel(~isnan(data.LHipAngles.line(:,k))));
+    LKstk(k)=sqrt(sum(nansum((data.LKneeAngles.line(:,k)-KIN.LeftKnee.(subch{k})).^2))/numel(~isnan(data.LKneeAngles.line(:,k))));
+    RHstk(k)=sqrt(sum(nansum((data.RHipAngles.line(:,k)-KIN.RightHip.(subch{k})).^2))/numel(~isnan(data.RHipAngles.line(:,k))));
+    RKstk(k)=sqrt(sum(nansum((data.RKneeAngles.line(:,k)-KIN.RightKnee.(subch{k})).^2))/numel(~isnan(data.RKneeAngles.line(:,k))));
 end
 
 subchp = {'Tilt','Obliquity','IntExt',};
 
 for k = 1:3
-    PPlate=sqrt(sum(nansum((data.RPelvisAngles.line(:,k)-KIN.Pelvis.(subchp{k})).^2))/numel(~isnan(data.RPelvisAngles.line(:,k))));
-    Pstk = [Pstk PPlate];
+    Pstk(k) =sqrt(sum(nansum((data.RPelvisAngles.line(:,k)-KIN.Pelvis.(subchp{k})).^2))/numel(~isnan(data.RPelvisAngles.line(:,k))));
 end
 
 
 subcha = {'PlaDor','InvEve','IntExt',};
 
 for k = 1:3
-    LAPlate=sqrt(sum(nansum((data.LAnkleAngles.line(:,k)-KIN.LeftAnkle.(subcha{k})).^2))/numel(~isnan(data.LAnkleAngles.line(:,k))));
-    RAPlate=sqrt(sum(nansum((data.RAnkleAngles.line(:,k)-KIN.RightAnkle.(subcha{k})).^2))/numel(~isnan(data.RAnkleAngles.line(:,k))));
-    LAstk = [LAstk LAPlate];
-    RAstk = [RAstk RAPlate];
+    LAstk(k)=sqrt(sum(nansum((data.LAnkleAngles.line(:,k)-KIN.LeftAnkle.(subcha{k})).^2))/numel(~isnan(data.LAnkleAngles.line(:,k))));
+    RAstk(k)=sqrt(sum(nansum((data.RAnkleAngles.line(:,k)-KIN.RightAnkle.(subcha{k})).^2))/numel(~isnan(data.RAnkleAngles.line(:,k))));
 end
 
 ERR.Pelvis.Tilt.RMS=Pstk(1);

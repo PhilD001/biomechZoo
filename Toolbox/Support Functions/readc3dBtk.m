@@ -20,11 +20,10 @@ function r = readc3dBtk(fl)
 % 
 % Updated by Philippe C. Dixon June 23rd 2016
 % - rewritten to match output of readc3d
+%
+% Updated by Philippe C. Dixon Nov 2016
+% - more clean up to match output of readc3cd
 
-
-if nargin==1
-    soft = 'no';
-end
 
 H =  btkReadAcquisition(fl);
 
@@ -74,6 +73,16 @@ end
 %
 r.AnalogData = btkGetAnalogs(H);
 
+ch = fieldnames(r.AnalogData);
+
+for i = 1:length(ch)
+    if ~isempty(strfind(ch{i},'Force_')) || ~isempty(strfind(ch{i},'Moment_'))
+       temp = r.AnalogData.(ch{i});
+       nch = strrep(ch{i},'_','');
+       r.AnalogData = rmfield(r.AnalogData,ch{i});
+       r.AnalogData.(nch) = temp;
+    end
+end
 
 
 %--GET HEADER-----------------------------
@@ -106,7 +115,7 @@ for i = 1:length(ch)
 end
 
 r.Parameter.ANALOG.RATE.data = btkGetAnalogFrequency(H);
-r.Parameter.SUBJECTS.NAMES.data = r.Parameter.SUBJECTS.NAMES.info.values;
+r.Parameter.SUBJECTS.NAMES.data = r.Parameter.SUBJECTS.NAMES.info.values{1};
 
 pch = {'POINT','FORCE_PLATFORM','PROCESSING','EVENT'};
 for i = 1:length(pch)

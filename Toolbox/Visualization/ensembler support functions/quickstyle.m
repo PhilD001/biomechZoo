@@ -12,6 +12,8 @@ function quickstyle
 % - the '1st' condition will see different line colors, while the '2nd'
 %   condition will have the line style changed
 
+disp('users can set this code to generate a favorite quick style for figures')
+
 % Settings
 %
 LineWidth = 1.5;
@@ -42,7 +44,7 @@ set(lnstk,'linewidth',LineWidth);            % set linewidth
 % Modify colors and styles
 %
 tg = get(findobj(gcf,'type','line'),'tag');
-tg = unique(tg);
+tg = setdiff(unique(tg),{'hline','vline'});
 
 
 if isin(tg{1},'+')
@@ -86,28 +88,21 @@ if isin(tg{1},'+')
         
     end
     
-    
-    
-    
-    
+     
 else
     
-    con = {};
     
-    for i = 1:length(tg)
-        con = tg{i};
-    end
+    con = unique(tg);
     
-    con = unique(con);
-    
-    for j = 1:length(lnstk)
-        
-        if isin(get(lnstk(j),'tag'),con{i})
-            set(lnstk(j),'Color',Colors{i})
+    for i = 1:length(con)
+        for j = 1:length(lnstk)
             
+            if isin(get(lnstk(j),'tag'),con{i})
+                set(lnstk(j),'Color',Colors{i})
+                
+            end
         end
     end
-    
 end
 
 

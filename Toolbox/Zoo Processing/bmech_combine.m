@@ -1,6 +1,6 @@
 function bmech_combine(fld1,fld2,method,fl1exclude,fl2exclude)
 
-% BMECH_COMBINE(fld1,fld2,method) will combine data from 2 separate zoo files.
+% BMECH_COMBINE(fld1,fld2,method,fl1exclude,fl2exclude) will combine data from 2 separate zoo files.
 %
 % ARGUMENTS
 %  fld1      ...  folder for first data set. Files saved to fld1
@@ -8,6 +8,8 @@ function bmech_combine(fld1,fld2,method,fl1exclude,fl2exclude)
 %  method   ...   determines if you want to upsample the signal with the lower frequency ('up'),
 %                 if you want to downsample the signal with the  highest frequency ('down'), or
 %                 leave them the same 'none'. Default is down if frequencies are different.
+%  fl1exclude ... Files names to ignore from fld1. Default none, {}
+%  fl2exclude ... File names to ignore from fld2. Default none, {}
 %
 % Example
 %  You may have collected data using 2 separate systems. As each signal was colected by a different system,

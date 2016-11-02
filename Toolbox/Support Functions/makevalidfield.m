@@ -30,6 +30,12 @@ function ch = makevalidfield(ch)
 % - Removed '_' as invalid field
 % - Added '^,=' as invalid fields
 % - Truncates any field that exceeds MATLAB's maximum name length
+% - Converts numeric channel names x to nx
+
+if isnumeric(ch)
+    ch = ['n',num2str(ch)];
+    ch = makevalidfield(ch);
+end
 
 if length(ch)>63
     ch = ch(1:63);

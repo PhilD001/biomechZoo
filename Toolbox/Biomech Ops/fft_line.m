@@ -1,4 +1,4 @@
-function [mean_freq,max_freq,cut]= fft_line(data,fsamp,thresh,graph)
+function [mean_freq,max_freq,cut]= fft_line(r,fsamp,thresh,graph)
 
 % [mean_freq,max_freq,cut]= FFT_LINE(r,fsamp,thresh,graph) performs calculation of
 % single-sides amplitude spectrum and estimates cutoff frequency for filtering
@@ -44,9 +44,9 @@ end
 
 % Perform FFT algorithm
 %
-L = length(data);
+L = length(r);
 NFFT = 2^nextpow2(L);                                   % Next power of 2 from length of y
-Y = fft(data,NFFT)/L;
+Y = fft(r,NFFT)/L;
 f = fsamp/2*linspace(0,1,NFFT/2+1);
 yd = 2*abs(Y(1:NFFT/2+1));                              %  single-sided amplitude spectrum
 yd = yd./max(yd);                                       % normalized
@@ -74,7 +74,7 @@ max_freq = f(maxindx+1);
 if graph==true
     figure    
     subplot(2,1,1)
-    plot(data)
+    plot(r)
     xlabel (' frames')
     ylabel ('Magnitude')
     title ('Original data (time domain)')
