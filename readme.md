@@ -1,4 +1,4 @@
-26.10.2016 README for biomechZoo repository
+01.11.2016 README for biomechZoo repository
 
 biomechZoo  s a user-customizable toolbox for the processing, analysis, and visualization of biomechanical movement data. 
 
@@ -13,8 +13,8 @@ Find more information at http://biomechZoo.com
 
 Getting started: 
 - Download this repository (click on green button 'Clone or download' on the right of the repository page)
-- Start Matlab
-- Load biomechZoo into Matlab by running the startZoo.m file located in the root biomechZoo folder.
+- Start Matlab 
+- Open and run 'startZoo.m' located in the root biomechZoo folder to set your Matlab path
 
 Help: 
 Help for biomechZoo can be accessed via the biomechZoo-help repository (https://github.com/PhilD001/biomechZoo-help). This repository provides exercises, sample data, and other resources to help the user get started with biomechZoo. Additional help may be obtained via seminars (see website for announcements) or
