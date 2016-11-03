@@ -190,7 +190,7 @@ switch method
                 ch2Anal{i} = [temp,'_b'];
             end
             
-            data = addchannel_data(data,ch2Anal{i},r,'Video');
+            data = addchannel_data(data,ch2Anal{i},r,'Analog');
             data.(ch2Anal{i}).event = e;                 % in case there are events
         end
         
