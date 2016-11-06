@@ -5,8 +5,11 @@ function varargout = props(action,varargin)
 % Updated by JJ Loh and Philippe C. Dixon June 2015
 % - new case added to load the skate props
 %
-% Updated by Philippe C. Dixon October 2015
-% - improved handling of force plate data via 'computecopDirector'
+% Updated by Philippe C. Dixon November 2015
+% - props relies on exisitng functions to prepare COP data 
+% - all available bones will plot
+% - force plate props will be resized based on corners data
+%   (data.zoosystem.Analog.FPlates.CORNERS), if available
 
 switch action
     
@@ -309,7 +312,7 @@ switch action
         else
             varargout{1} = createprop(ud,varargin{2});
         end
-        
+         
     case 'load with markers'
         
         [f,p] = uigetfile('*.prop');
@@ -676,6 +679,7 @@ fvad = ones(length(fc(:,1)),1);
 set(hnd,'vertices',vr,'faces',fc,'cdata',cdata,'facevertexalphadata',fvad,'userdata',ud);
 
 function buttondownfxn
+
 [tp,hnd] = currentobject;
 vindx = findbomb(hnd,'vindex');
 findx = findbomb(hnd,'findex');
@@ -754,6 +758,7 @@ switch getbdownfxn
 end
 
 function r = getbdownfxn
+
 hnd = findobj(findobj(finddobj('figure'),'tag','bdownfxns'),'value',1);
 
 if isempty(hnd)
@@ -763,7 +768,9 @@ else
 end
 
 function origin(action,varargin)
+
 ohnd = findobj(finddobj('axes'),'tag','origin');
+
 switch action
     case 'refresh'
         oud = get(ohnd,'userdata');
@@ -823,6 +830,7 @@ else
 end
 
 function transformhnd(hnd,unt,unt2,dis)
+
 vr = get(hnd,'vertices');
 vr = displace(vr,dis);
 vr = ctransform(unt,unt2,vr);
@@ -900,6 +908,7 @@ for i = 1:length(phnd)
 end
 
 function r = getmarkers(mrk,frm)
+
 r = [];
 if nargin == 1;
     pud = get(mrk,'userdata');
@@ -929,6 +938,7 @@ else
     end
 end
 
+
 function r = smartfind(hnd,tg)
 
 r = findobj(hnd,'tag',tg);
@@ -936,7 +946,8 @@ if isempty(r)
     r = findobj(hnd,'tag',['z',tg]);
 end
 
-function drawmarker(mvr,nm,pt,visible)
+
+function drawmarker(mvr,nm,pt)
 [x,y,z] = sphere(15);
 x = x*.7;
 y = y*.7;
@@ -957,6 +968,7 @@ for i = 1:length(nm);
         end
     end
 end
+
 
 function [xyz,ort] = pucktrajectory(mrk,smp,varargin)
 
@@ -1025,14 +1037,6 @@ for i = 2:indx+lxyz-1
     end
 end
 
-function [xyz,ort] = trimtrajectory(xyz,ort)
-
-rindx = min(find(~isnan(xyz(:,1))));
-delta = displace(xyz,-xyz(rindx,:));
-mdelta = sqrt(diag(delta*delta'));
-indx = min(find(mdelta>2));
-xyz = xyz(indx:end,:);
-ort = ort(indx:end);
 
 function ort = getort(pt1,pt2,pt3)
 
@@ -1055,17 +1059,6 @@ else
     ort = makeunit([i;j;k]);
 end
 
-function r = angle(m1,m2)
-
-dotp = diag(m1*m2');
-
-mag1 = sqrt(diag(m1*m1'));
-mag2 = sqrt(diag(m2*m2'));
-
-r = acos(dotp./(mag1.*mag2));
-
-r = r*180;
-r = r/pi;
 
 function refreshprop
 prp = finddobj('props');
@@ -1086,6 +1079,7 @@ for i = 1:length(prp)
     end
 end
 
+
 function displaceprop(hnd,vec)
 
 if strcmp(getbdownfxn,'vertex')
@@ -1103,6 +1097,7 @@ else
     vr = displace(vr,vec);
     set(hnd,'vertices',vr);
 end
+
 
 function clr = file2clr(flnm)
 flnm = lower(flnm);
@@ -1130,6 +1125,7 @@ else
     clr = [1 1 0];
 end
 
+
 function caliper(hnd)
 
 if length(hnd) == 2
@@ -1152,18 +1148,22 @@ else
 end
 set(gcf,'name',nm)
 
+
 function vr = zero2real(vr,predis,postdis,ort)
 
 vr = displace(vr,predis);
 vr = ctransform(ort,[1 0 0;0 1 0;0 0 1],vr);
 vr = displace(vr,postdis);
 
+
 function vr = real2zero(vr,predis,postdis,ort)
 vr = displace(vr,-postdis);
 vr = ctransform([1 0 0;0 1 0;0 0 1],ort,vr);
 vr = displace(vr,-predis);
 
+
 function addjoint(hnd,vindx)
+
 jhnd = finddobj('props','joint');
 if isempty(jhnd)
     tg = inputdlg('enter the name for the joint');
@@ -1201,7 +1201,9 @@ if ~found
 end
 set(jhnd,'userdata',ud);
 
+
 function [vr,fc,cdata,nvr] = getjointdata(ud)
+
 vstk = [];
 bstk = [];
 nstk = [];
@@ -1240,6 +1242,7 @@ cdata(1,1:length(fc(:,1)),1) = ud.color(1);
 cdata(1,:,2) = ud.color(2);
 cdata(1,:,3) = ud.color(3);
 
+
 function r = newvnormal(vr,nvr,vindx)
 r = nvr;
 if length(vindx) == 1
@@ -1251,6 +1254,7 @@ mvr = mean(vr(vindx,:));
 ort = makeunit(displace(vr(vindx,:),-mvr));
 r(vindx,:) = ort;
 
+
 function rezerovertices(hnd)
 
 hud = get(hnd,'userdata');
@@ -1261,6 +1265,7 @@ delta = min(vr)+dis(indx,3);
 vr = vr-delta;
 hud.vertices(:,3) = vr;
 set(hnd,'userdata',hud);
+
 
 function plugingait(c3d)
 
@@ -1300,58 +1305,45 @@ for i = 1:length(amat(:,1))
     set(hnd,'userdata',hud);
 end
 
-function zooplugingait(z)
 
-button = questdlg('Display full body bones or lower-limbs only?','version question','full-body','lower-limbs','full-body');
-
-switch button
-    
-    case 'full-body'
-        
-        amat = {'PEL','Pelvis';...
-            'LFE','LeftFemur';...
-            'LTI','LeftTibia';...
-            'LFO','LeftFoot';...
-            'RFE','RightFemur';...
-            'RTI','RightTibia';...
-            'RFO','RightFoot';...
-            'TRX','Thorax';...
-            'HED','Head';...
-            'LCL','LeftClavicle';...
-            'LHU','LeftHumerus';...
-            'LRA','LeftRadius';...
-            'LHN','LeftHand';...
-            'RCL','RightClavicle';...
-            'RHU','RightHumerus';...
-            'RRA','RightRadius';...
-            'RHN','RightHand'};
-        
-    case 'lower-limbs'
-        
-        amat = {'PEL','Pelvis';...
-            'LFE','LeftFemur';...
-            'LTI','LeftTibia';...
-            'LFO','LeftFoot';...
-            'RFE','RightFemur';...
-            'RTI','RightTibia';...
-            'RFO','RightFoot'};
-        
-end
+function zooplugingait(data)
+     
+amat = {'PEL','Pelvis';...
+    'LFE','LeftFemur';...
+    'LTI','LeftTibia';...
+    'LFO','LeftFoot';...
+    'RFE','RightFemur';...
+    'RTI','RightTibia';...
+    'RFO','RightFoot';...
+    'TRX','Thorax';...
+    'HED','Head';...
+    'LCL','LeftClavicle';...
+    'LHU','LeftHumerus';...
+    'LRA','LeftRadius';...
+    'LHN','LeftHand';...
+    'RCL','RightClavicle';...
+    'RHU','RightHumerus';...
+    'RRA','RightRadius';...
+    'RHN','RightHand'};
 
 prp = finddobj('props');
 dim = {'O','A','L','P'};
 for i = 1:length(amat(:,1))
     d = [];
-    for j = 1:4
-        d{j} = z.([amat{i,1},dim{j}]).line;
+    
+    if isfield(data,[amat{i,1},dim{1}])  % if you have dim1 you have them all
+        
+        for j = 1:4
+            d{j} = data.([amat{i,1},dim{j}]).line;
+        end
+        bn = amat{i,2};
+        [dis,ort] = getdata(d);
+        hnd = findobj(prp,'tag',bn);
+        hud = get(hnd,'userdata');
+        hud.dis =dis;
+        hud.ort = ort;
+        set(hnd,'userdata',hud);
     end
-    bn = amat{i,2};
-    [dis,ort] = getdata(d);
-    hnd = findobj(prp,'tag',bn);
-    hud = get(hnd,'userdata');
-    hud.dis =dis;
-    hud.ort = ort;
-    set(hnd,'userdata',hud);
 end
 
 function [dis,ort] = getdata(data)
@@ -1362,26 +1354,14 @@ a = (data{2}-data{1})/10;
 l = (data{3}-data{1})/10;
 p = (data{4}-data{1})/10;
 
-[rw,cl] = size(a);
+[rw,~] = size(a);
 ort = [];
 for i = 1:rw
     ort = [ort;{[a(i,:);l(i,:);p(i,:)]}];
 end
 
-% function loadanalog(c3d)
-% prp = finddobj('props');
-% [v,a] = listchannelc3d(c3d);
-% if isempty(a)
-%     return
-% end
-% 
-% a = lower(a);
-% for i = 1:length(prp)
-%     insertdata(prp(i),a,c3d);
-% end
-% forceplate('refresh COP');
 
-function zooloadanalog(zdata)
+function zooloadanalog(data)
 
 s = filesep;    % determine slash direction based on computer type
 
@@ -1389,8 +1369,8 @@ s = filesep;    % determine slash direction based on computer type
 d = which('director'); % returns path to ensemlber
 path = pathname(d) ;  % local folder where director resides
 
-ach =  zdata.zoosystem.Analog.Channels;
-nplates = zdata.zoosystem.Analog.FPlates.NUMUSED;
+ach =  data.zoosystem.Analog.Channels;
+nplates = data.zoosystem.Analog.FPlates.NUMUSED;
 
 
 % attempt to catch 'standard' force plate channel names
@@ -1410,98 +1390,72 @@ end
 fpch(cellfun(@isempty,fpch)) = [];     
 
 
-% find any other force plate channels and rename to standard form
-%
-% if isempty(fpch)
-%     indx = listdlg('liststring',ach,'PromptString','Choose force plates (if any)','name','Choose force plates');
-%     fpch = ach(indx);
-% end
-
 % compute cop in global coordinates
-
 if ~isempty(fpch)
+    localOr = getFPLocalOrigin(data);
     
-    P = getFPLocalOriginDirector(zdata);    
-    Or = getFPGlobalOriginDirector(zdata);
+    [globalOr,orientFP] = getFPGlobalOrigin(data);
     
-    zdata = computecopDirector(zdata,P,Or,fpch);
+     if ~isfield(data,'COP1') 
+        data = centreofpressure_data(data,localOr,globalOr,orientFP);
+     end
     
-    for i = 1:nplates
-        f = ['forceplate',num2str(i),'.prop'];
-        props('load',[path,'Cinema objects',s,'forceplates',s,f]);
-    end
+     for i = 1:nplates
+         f = ['forceplate',num2str(i),'.prop'];
+         prp = props('load',[path,'Cinema objects',s,'forceplates',s,f]);     
+         zooinsertdata(prp,fpch,data);
+         setfporientation(prp,data,globalOr)    % set global orientation of FP
+         getfpcop(prp,data)
+     end
     
-    %     if ismember('Fx1',fpch)
-    %         f = 'forceplate1.prop';
-    %         props('load',[path,'Cinema objects',slash,'forceplates',slash,f]);
-    %     end
-    %
-    %     if ismember('Fx2',fpch)
-    %         f = 'forceplate2.prop';
-    %         props('load',[path,'Cinema objects',slash,'forceplates',slash,f]);
-    %     end
-    %
-    %     if ismember('Fx3',fpch)
-    %         f = 'forceplate3.prop';
-    %         props('load',[path,'Cinema objects',slash,'forceplates',slash,f]);
-    %     end
-    
-    
-    
-    prp = finddobj('props');
-    
-    for i = 1:length(prp)
-        if isin(get(prp(i),'Tag'),'forceplate')
-            zooinsertdata(prp(i),fpch,zdata);
-            setfporientation(prp(i),zdata)    % set global orientation of FP
-            getfpcop(prp(i),zdata)
-        end
-    end
-    
-    
+
 end
 % forceplate('refresh COP');  % old code no longer works
 
-function getfpcop(phnd,zdata)
+function getfpcop(phnd,data)
 
-fpnum =  get(phnd,'Tag');
-fpnum = fpnum(end); % just the number
+fpnum =  get(phnd,'Tag');                     % get fp number
+fpnum = fpnum(end); 
 pud = get(phnd,'userdata');
 
-% [p1,p2,p3]    = GetFPLocalOrigin(zdata);
-% [Or1,Or2,Or3] = GetFPGlobalOrigin(zdata);
-% 
-% P = struct;
-% P.p1 = p1;
-% P.p2 = p2;
-% P.p3 = p3;
-% 
-% Or = struct;
-% Or.Or1 = Or1;
-% Or.Or2 = Or2;
-% Or.Or3 = Or3;
+x = data.(['COP',fpnum]).line(:,1);           % extract COP 
+y = data.(['COP',fpnum]).line(:,2);         
+z = data.(['COP',fpnum]).line(:,3);
 
-% zdata = computecopDirector(zdata,P,Or,fp);
+x(isnan(x)) = 0 ;  
+y(isnan(y)) = 0 ;  
+z(isnan(z)) = 0 ;  
 
-x = zdata.(['COP',fpnum,'_X']).line(:,1);
-y = zdata.(['COP',fpnum,'_Y']).line(:,1);
 
-x = DecimateAnalog(x,zdata.zoosystem.AVR);
-y = DecimateAnalog(y,zdata.zoosystem.AVR);
+x = DecimateAnalog(x,data.zoosystem.AVR);     % downsample
+y = DecimateAnalog(y,data.zoosystem.AVR);     % if required
+z = DecimateAnalog(z,data.zoosystem.AVR);
 
-pud.cop = clean([makecolumn(x),makecolumn(y), makecolumn(y)]); % +20 makes in near
-pud.cop(:,3) = 0;
-
+pud.cop = clean([x y z]);
 set(phnd,'userdata',pud);
 
-function setfporientation(phnd,zdata)
+
+function setfporientation(phnd,data,globalOr)
 
 fpnum =  get(phnd,'Tag');
 fpnum = fpnum(end);
 pud = get(phnd,'userdata');
 
-globalOr = getFPGlobalOrigin(zdata);
+% resize force plate
+if isfield(data.zoosystem.Analog,'FPlates')
+    corners = data.zoosystem.Analog.FPlates.CORNERS(:,:,str2double(fpnum));
+    Length = (max(corners(1,:)) - min(corners(1,:)))/10;  % in cm
+    Width = (max(corners(2,:)) - min(corners(2,:)))/10;   % in cm
+    
+    Lratio = Length/50;
+    Wratio = Width/50;
+    
+    pud.vertices(:,1) = pud.vertices(:,1)*Lratio;
+    pud.vertices(:,2) = pud.vertices(:,2)*Wratio;
 
+end
+
+% move force plate
 pud.vertices = displace(pud.vertices,globalOr.(['FP',fpnum])*100);         %displace FP checked good
 
 
@@ -1512,63 +1466,54 @@ function zooinsertdata(phnd,ch,zdata)
 
 pud = get(phnd,'userdata');
 
-if isfield(pud,'fx')
-    
-    %     fxindx = (str2double(pud.id)+1) *6 +1;
-    %     fyindx = (str2double(pud.id)+1) *6 +2;
-    %     fzindx = (str2double(pud.id)+1) *6 +3;
-    %
-    %     mxindx = (str2double(pud.id)+1) *6 +4;
-    %     myindx = (str2double(pud.id)+1) *6 +5;
-    %     mzindx = (str2double(pud.id)+1) *6 +6;
-    %
-    %     pud.fx = -DecimateAnalog(zdata.(ch{fxindx}).line,zdata.zoosystem.AVR);
-    %     pud.fy = DecimateAnalog(zdata.(ch{fyindx}).line,zdata.zoosystem.AVR);
-    %     pud.fz = -DecimateAnalog(zdata.(ch{fzindx}).line,zdata.zoosystem.AVR);
-    %
-    %     pud.mx = DecimateAnalog(zdata.(ch{mxindx}).line,zdata.zoosystem.AVR);
-    %     pud.my = DecimateAnalog(zdata.(ch{myindx}).line,zdata.zoosystem.AVR);
-    %     pud.mz = DecimateAnalog(zdata.(ch{mzindx}).line,zdata.zoosystem.AVR);
-    %
-    %     set(phnd,'userdata',pud);
-    
-    
-    
-    indx = myfindstr(lower(ch),'fx',pud.id);
-    if isempty(indx)
-        error('force field empty')
-    end
-    pud.fx = -DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
-    
-    indx = myfindstr(lower(ch),'fy',pud.id);
-    if isempty(indx)
-        error('force field empty')
-    end
-    pud.fy = DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+if isfield(pud,'fz')
     
     indx = myfindstr(lower(ch),'fz',pud.id);
     if isempty(indx)
         error('force field empty')
     end
-    pud.fz = -DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+    if max(zdata.(ch{indx}).line) < 10;   % these are forces of body on ground
+        conv = -1;
+    else                                  % these are forces of ground on body
+        conv = 1;
+    end 
+    pud.fz = conv*DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
     
-    indx = myfindstr(lower(ch),'mx',pud.id);
+    indx = myfindstr(lower(ch),'fx',pud.id);
     if isempty(indx)
-        error('moment field empty')
+        error('force field empty')
     end
-    pud.mx = DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+    pud.fx = conv*DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
     
-    indx = myfindstr(lower(ch),'my',pud.id);
+    indx = myfindstr(lower(ch),'fy',pud.id);
     if isempty(indx)
-        error('moment field empty')
+        error('force field empty')
     end
-    pud.my = DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+    pud.fy = -conv*DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
     
-    indx = myfindstr(lower(ch),'mz',pud.id);
-    if isempty(indx)
-        error('moment field empty')
+    % shrink GRF vector for adults
+    if max(pud.fz) > 900  % adult
+        pud.coeff = 0.05;
     end
-    pud.mz = DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+   
+%     indx = myfindstr(lower(ch),'mx',pud.id);
+%     if isempty(indx)
+%         error('moment field empty')
+%     end
+%      pud.mx = DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+%     
+%     indx = myfindstr(lower(ch),'my',pud.id);
+%     if isempty(indx)
+%         error('moment field empty')
+%     end
+%     pud.my = DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+%     
+%     indx = myfindstr(lower(ch),'mz',pud.id);
+%     if isempty(indx)
+%         error('moment field empty')
+%     end
+%     pud.mz = DecimateAnalog(zdata.(ch{indx}).line,zdata.zoosystem.AVR);
+
     set(phnd,'userdata',pud);
     
     

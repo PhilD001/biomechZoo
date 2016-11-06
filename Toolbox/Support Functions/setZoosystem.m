@@ -39,5 +39,11 @@ end
 zoosystem.Version = ver;
 zoosystem.SourceFile = char(fl);
  
+zoosystem.Units.Markers = 'mm';
+zoosystem.Units.Angles = 'deg';
+zoosystem.Units.Forces = 'N';
+zoosystem.Units.Moments = 'Nmm';
+zoosystem.Units.Power = 'W/kg';
+zoosystem.Units.Scalars = 'mm';
 
 % 

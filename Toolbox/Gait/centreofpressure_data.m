@@ -54,6 +54,8 @@ end
 
 plates =fieldnames(localOr);
 
+% [~,dir] = getDir(data);
+
 for i = 1:length(plates)
     
     ag = globalOr.(plates{i})(1)*1000;                       % global coordinates x
@@ -71,10 +73,10 @@ for i = 1:length(plates)
     My = data.([momentSuf,'y',num2str(i)]).line;             % Nmm
     Mz = data.([momentSuf,'z',num2str(i)]).line;             % Nmm
     
-    COP = COP_oneplate([Fx Fy Fz],[Mx My Mz],a,b,c,thresh);    
+    COP = COP_oneplate([Fx Fy Fz],[Mx My Mz],a,b,c,thresh); 
     COP = ctransform_line(COP,gunit,orientFP.(['FP',num2str(i)]));       
-
-    COP(:,1) = COP(:,1) + ag;
+   
+    COP(:,1) = COP(:,1) + ag;  
     COP(:,2) = COP(:,2) + bg;
     COP(:,3) = COP(:,3) + cg;
     

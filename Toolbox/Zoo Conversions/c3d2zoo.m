@@ -53,9 +53,9 @@ function data = c3d2zoo(fld,del)
 % - checks that channels are appropriate for storage in a structured array
 %   using 'makevalidfield'
 %
-% Updated by Philippe C. Dixon Oct 2016
+% Updated by Philippe C. Dixon Nov 2016
 % - cleaned up code to be more consistent with recent biomechZoo updates
-
+% - added units for EMG (voltage)
 
 
 % SET DEFAULTS / ERROR CHECK -----------------------------------------------------------------
@@ -170,7 +170,7 @@ for i = 1:length(fl)
     
     % Set unit information
     %
-    data.zoosystem.Units = setUnits(r);
+    data.zoosystem.Units = setUnits(r,data);
     
     
     % set force plate information
@@ -234,7 +234,7 @@ Header.Time = '';
 Header.Description = '';  % this remains empty
 
 
-function Units = setUnits(r)
+function Units = setUnits(r,data)
 
 pch = fieldnames(r.Parameter.POINT);
 
@@ -260,6 +260,19 @@ end
 if isfield(Units,'Power')
     Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS
 end
+
+ach = data.zoosystem.Analog.Channels;
+check = true;
+count = 1;
+while check && count < length(ach)
+    if strfind(ach{count},'Voltage')
+        Units.EMG = 'Voltage';
+        check = false;
+    else
+        count = count+1;
+    end
+end
+
 
 function FPlates = setFPinfo(r)
 

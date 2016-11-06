@@ -81,15 +81,15 @@ for i = 1:length(fl)
     % Add video channels to data struct
     %
     ch = r.Video.Channels;   
-    indx = r.Video.data(:,1); % remove (and save) frame info column
-    r.Video.data = r.Video.data(:,2:end);
+    indx = r.Video.Data(:,1); % remove (and save) frame info column
+    r.Video.Data = r.Video.Data(:,2:end);
         
     for j = 1:length(ch)
         ch{j} = makevalidfield(ch{j});                 % fixes invalid fieldnames
         if isfield(data,ch{j})
             disp(['WARNING: Repeated channel name ',ch{j}, ' to be renamed ',ch{j},num2str(j)])
         end
-        temp = r.Video.data(:,3*j-2:3*j);
+        temp = r.Video.Data(:,3*j-2:3*j);
         data = addchannel_data(data,ch{j},temp,'Video');
     end
     
@@ -102,12 +102,21 @@ for i = 1:length(fl)
     data.zoosystem.Video.CURRENT_END_FRAME = [length(indx) 0 0];
     
     
+    
+    % Add event data
+    %
+    if isfield(data,'SACR')
+        data.SACR.event = r.Events;
+    else
+        data.(ch{1}).event = r.Events;
+    end
+    
     % Add force plate channels to data struct
     %
     if isfield(r,'Forces')   % these are force plate channels
         ch = r.Forces.Channels;
-        indx = r.Forces.data(:,1); % remove (and save) frame info column
-        r.Forces.data = r.Forces.data(:,2:end);
+        indx = r.Forces.Data(:,1); % remove (and save) frame info column
+        r.Forces.Data = r.Forces.Data(:,2:end);
         count = 1;
         
         for j = 1:length(ch)
@@ -120,7 +129,7 @@ for i = 1:length(fl)
                 ch{j} = strrep(ch{j},post,num2str(count));
             end
             
-            temp = r.Forces.data(:,j);
+            temp = r.Forces.Data(:,j);
             data = addchannel_data(data,ch{j},temp,'Analog');
         end
         
@@ -137,13 +146,13 @@ for i = 1:length(fl)
     %
     if isfield(r,'Analog')
         ch = r.Analog.Channels;
-        indx = r.Analog.data(:,1); % remove (and save) frame info column
+        indx = r.Analog.Data(:,1); % remove (and save) frame info column
         ch = ch(2:end);
-        r.Analog.data = r.Analog.data(:,2:end);
+        r.Analog.Data = r.Analog.Data(:,2:end);
         
         for j = 1:length(ch)
             ch{j} = makevalidfield(ch{j});                 % fixes invalid fieldnames
-            temp = r.Analog.data(:,j);
+            temp = r.Analog.Data(:,j);
             data = addchannel_data(data,ch{j},temp,'Analog');
         end
         

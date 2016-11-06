@@ -66,14 +66,18 @@ elseif ismember(ch,{'Video'})                                % extract all video
     q = data.zoosystem.(curSec).Freq;
     
 elseif ismember(ch,{'Analog'})                               % extract all analog channels
-    ch = data.zoosystem.Video.Channels;
+    ch = data.zoosystem.Analog.Channels;
     curSec = 'Analog';
     othSec = 'Video';
     p = data.zoosystem.(othSec).Freq;
     q = data.zoosystem.(curSec).Freq;
     
+elseif ~isfield(data,ch{1})
+    disp('channel doesn''t exist')
+    return
+    
 else
-    error('unknown section ofr channels')
+    error('unknown section of channels')
 end
 
 factor = p/q;

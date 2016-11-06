@@ -10,8 +10,8 @@ switch action
         fplateindx = min(frm,length(pud.ort));
         frm = min(frm,length(pud.fx));
         
-        m = [makecolumn(pud.fx),makecolumn(pud.fy),makecolumn(pud.fz)];
-        mvec = sqrt(diag(m*m'))*pud.coeff;
+        m = [pud.fx pud.fy pud.fz];
+        mvec = magnitude(m)*pud.coeff;
         vec = m(frm,:)*pud.coeff;
         mg = mvec(frm);
         vr = pud.arrowvr;
@@ -48,9 +48,9 @@ switch action
         yvr(:,2) = yvr(:,2)*vec(2);
         zvr(:,3) = zvr(:,3)*vec(3);
         
-        xvr = displace(xvr,[-25.5 -25.5 0]);
-        yvr = displace(yvr,[-25.5 -25.5 0]);
-        zvr = displace(zvr,[-25.5 -25.5 0]);
+%         xvr = displace(xvr,[-25.5 -25.5 0]);
+%         yvr = displace(yvr,[-25.5 -25.5 0]);
+%         zvr = displace(zvr,[-25.5 -25.5 0]);
         clr = abs(mg)/max(abs(mvec));
         [vr,fc,cdata] = mergepatches(vr,afc,[clr .6 0],xvr,fc,[1 0 0],yvr,fc,[0 1 0],zvr,fc,[0 0 1]);
         
@@ -70,7 +70,7 @@ switch action
         
 
         
-        % move COP marker
+%         move COP marker
 %         hnd = findobj('Tag','COP');
 % 
 %         if ~isempty(hnd)

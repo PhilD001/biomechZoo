@@ -18,6 +18,3 @@ for i = 1:nplates
 end
 
 
-% add unit information
-%
-data.zoosystem.Units.LocalOriginFP = 'mm';

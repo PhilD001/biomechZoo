@@ -1,6 +1,5 @@
 function varargout = marker(action,varargin)
 
-
 % varargout = marker(action,varargin) performs various actions for director
 %
 % Updated by JJ Loh and Philippe C. Dixon June 2015

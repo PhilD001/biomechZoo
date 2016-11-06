@@ -654,7 +654,7 @@ if ~isempty(as)
     graph_mark(frm,varargin)
 end
 
-pause(.01);
+pause(1e-10);
 
 function graph_mark(frm,varargin)
 
@@ -895,7 +895,6 @@ for i = 1:length(fl)
     mxfrm = length(pud.dis(:,1));
     for j = 1:mxfrm
         mark('goto',j);
-        pause(.0001);
     end
 end
 

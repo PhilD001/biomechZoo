@@ -1,8 +1,7 @@
 function nlist = explodelist(list)
 
-% explodes a list of channel names. This is useful to avoid a long list in
-% your data files
-
+% nlist = EXPLODELIST(list) explodes a list of channel names. This is useful to avoid a 
+% long list in your data files
 
 
 dims = {'_x','_y','_z'};

@@ -1,11 +1,13 @@
 function COP = COP_oneplate(F,M,a,b,c,cutoff)
 
-% COP_ONEPLATE calculats COP of 2 force plates placed a distance dis apart
+% COP = COP_ONEPLATE(F,M,a,b,c,cutoff) calculats COP of force plates 
+%
 %
 % ARGUMENTS
 %  F      ...  n x 3 matrix w/ columns Fx, Fy, Fz. Directly from FP data
 %  M      ...  n x 3 matrix w/ columns Mx, My, Mz, moments of force plate
 %  a,b,c  ...  true coordinates from manufacturer (metres) centre of plate
+%  cutoff ...  Threshold from which to start computing COP. Default 20N
 %
 % RETURNS
 %  COP  ...  struct containing COP info for both plates 

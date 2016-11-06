@@ -14,10 +14,10 @@ function r = angle(m1,m2,ref)
 %  r    ...       angle 
 %
 %
-% Created by JJ Loh
+% Created by JJ Loh 2006
+% 
 % updated by Phil Dixon Oct 2008
-%
-%
+
 
 
 if nargin ==2

@@ -1,27 +1,23 @@
 function Tz = free_torque_global(F,M,COPg,Or)
 
-% FREE_TORQUE_GLOBAL calculates the free torque about the z-axis with  
-%
-% Tz = FREE_TORQUE(F,M)
+% Tz = FREE_TORQUE_GLOBAL(F,M,COPg,Or) calculates the free ground reaction torque 
+% about the z-axis  
 %
 % ARGUMENTS
-%    F   ...  forces (fx,fy,fz)
-%    M   ...  moments (mx,my,mzz)
-%    COP ...  cop coordinates in GLOBAL (columns x,y,z) in m
+%    F   ...  n x 3 forces (fx,fy,fz)
+%    M   ...  n x 3 moments (mx,my,mz)
+%    COP ...  n x 3 cop coordinates in GLOBAL (columns x,y,z) in m
 %    Or  ...  origin of force plate (GLOBAL)
 %
 % RETURNS
 %    Tz  ... Free torque as column vector
 %
-% Created 2006 by Philippe C. Dixon
+% Created by Philippe C. Dixon 2006 
 %
-% Updated Nov 18th 2008
+% Updated by Philippe C. Dixon Nov 18th 2008
+% -Using the formula based on kwon3d: http://www.kwon3d.com/theory/grf/cop.html
 %
-% -Finally using the right formula based on kwon3d
-% http://www.kwon3d.com/theory/grf/cop.html
-%
-% Updated Dec 28th 2012
-%
+% Updated by Philippe C. Dixon Dec 28th 2012
 % - there is no need to transform quantities to local unless COP are in local. This might be the case if data
 %   are collected directly from a force plate (no vicon system)
 % - simplified code gives same results as original Nov 18th code

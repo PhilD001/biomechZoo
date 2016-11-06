@@ -46,7 +46,7 @@ for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'NaNpartition');
     data = NaNpartition(data);
-    data = partitiondata(data,'data_start','data_end');
+    data = partition_data(data,'data_start','data_end');
     zsave(fl{i},data);
 end
 

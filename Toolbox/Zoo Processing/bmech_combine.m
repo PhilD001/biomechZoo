@@ -39,7 +39,7 @@ function bmech_combine(fld1,fld2,method,fl1exclude,fl2exclude)
 % - no resampling when sampling rates are the same
 
 
-s = filesep; 
+s = filesep;
 
 if nargin==0
     fld1 = uigetfolder('Select Folder 1');
@@ -59,7 +59,10 @@ if nargin==3
     fl1exclude = {};
     fl2exclude = {};
 end
-    
+
+if nargin==4
+    fl2exclude = {};
+end
 
 cd(fld1)
 

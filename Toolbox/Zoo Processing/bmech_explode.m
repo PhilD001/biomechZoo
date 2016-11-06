@@ -9,7 +9,7 @@ function bmech_explode(fld,ch)
 %  ch       ...  Channels to explode (single string or cell array of strings). 
 %                Default: explode all channels 'all'
 %
-% See also explode_data, bmech_merch 
+% See also explode_data, bmech_merge 
 
 % Revision History
 %
