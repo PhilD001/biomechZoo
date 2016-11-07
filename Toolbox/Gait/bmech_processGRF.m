@@ -24,7 +24,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'processing GRF data')
+    batchdisp(fl{i},'processing GRF data')
     
     data = processGRF_data(data,filt);
 

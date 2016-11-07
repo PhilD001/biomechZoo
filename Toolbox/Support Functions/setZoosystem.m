@@ -36,6 +36,11 @@ for i = 1:length(section)
     zoosystem.(section{i}).CURRENT_END_FRAME    = []; 
 end
 
+zoosystem.Analog.FPlates.CORNERS = [];
+zoosystem.Analog.FPlates.NUMUSED = 0;
+zoosystem.Analog.FPlates.LOCALORIGIN = [];                            % not available
+zoosystem.Analog.FPlates.LABELS = [];
+
 zoosystem.Version = ver;
 zoosystem.SourceFile = char(fl);
  

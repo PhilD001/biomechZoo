@@ -3,19 +3,17 @@ function data= csv2zooVicon(fld,del)
 % data= CSV2ZOOVICON(fld,del)converts csv file output from vicon to zoo format.
 %
 % ARGUMENTS
-%
-% fld        ... Optional argument. Enter full path leading to folder
-% del        ... Optional argument. Delete original files. Default 'no'
+%  fld        ... Optional argument. Enter full path leading to folder
+%  del        ... Optional argument. Delete original files. Default 'no'
 %
 % RETURNS
-% data       ... Optional return
+%  data       ... Optional return
 %
 % NOTES
 % - Files should have been exported using the "export data to ascii file" NOT "exportcsv"
 % - Where possible c3d export is quicker and provides more meta information to the user
-% - Event information not tested
-% - Force plate meta information (e.g. location of corners) not implemented
-
+% - Force plate channel names are changed to reflect expected names from
+%   c3d files (e.g. 'ForcesFx1','MomentMx1')
 
 % Revision history
 %
@@ -38,7 +36,7 @@ function data= csv2zooVicon(fld,del)
 % Updated by Philippe C. Dixon Jan 4th 2013
 % - removal of embedded function
 %
-% Updated by Philippe C. Dixon Oct 2016
+% Updated by Philippe C. Dixon Nov 2016
 % - revised to work with biomechZoo v1.3
 
 
@@ -104,10 +102,12 @@ for i = 1:length(fl)
    
     % Add event data
     %
-    if isfield(data,'SACR')
-        data.SACR.event = r.Events;
-    else
-        data.(ch{1}).event = r.Events;
+    if isfield(r,'Events')
+        if isfield(data,'SACR')
+            data.SACR.event = r.Events;
+        else
+            data.(ch{1}).event = r.Events;
+        end
     end
     
     
@@ -121,10 +121,16 @@ for i = 1:length(fl)
         indx = r.Forces.Data(:,1); % remove (and save) frame info column
         r.Forces.Data = r.Forces.Data(:,2:end);
         count = 1;
-        
+        lbl = cell(size(ch));
         for j = 1:length(ch)
             post = num2str(count);
+            
+            if strfind(ch{j},'COP')
+                ch{j} = strrep(ch{j},'_',[post,'_']);
+            else
             ch{j} = [ch{j},post];
+            end
+            
             ch{j} = makevalidfield(ch{j});                 % fixes invalid fieldnames
             
             if isfield(data,ch{j})
@@ -132,9 +138,19 @@ for i = 1:length(fl)
                 ch{j} = strrep(ch{j},post,num2str(count));
             end
             
+            if ~isempty(strfind(ch{j},'Force')) || ~isempty(strfind(ch{j},'Moment'))
+                lbl{j} = ch{j};
+            end
+            
             temp = r.Forces.Data(:,j);
             data = addchannel_data(data,ch{j},temp,'Analog');
         end
+        
+     
+        
+        lbl(cellfun(@isempty,lbl)) = [];
+        data.zoosystem.Analog.FPlates.LABELS = lbl;
+
         
         data.zoosystem.Analog.Channels = ch;
         data.zoosystem.Analog.Freq = r.Forces.Freq;
@@ -146,10 +162,15 @@ for i = 1:length(fl)
     
        
         data.zoosystem.Analog.FPlates.CORNERS = r.Forces.FPlates.CORNERS;
-        data.zoosystem.Analog.Fplates.NUMUSED = r.Forces.FPlates.NUMUSED;
-        data.zoosystem.Analog.FPlates.LOCALORIGIN = [];                            % not available
-        data.zoosystem.Analog.Fplates.LABELS = ch;
+        data.zoosystem.Analog.FPlates.NUMUSED = r.Forces.FPlates.NUMUSED;
        
+        % fix COP names
+        numPlates = data.zoosystem.Analog.FPlates.NUMUSED;
+        for j = 1:numPlates
+            cch = {['COP',num2str(j),'_x'],['COP',num2str(j),'_y'],['COP',num2str(j),'_z']};
+            data = mergechannel_data(data,cch);                       % use existing for csv
+        end
+        
     end
     
     % Add analog (e.g. EMG)
@@ -196,6 +217,8 @@ for i = 1:length(fl)
             end    
         end 
     end
+    
+    data.zoosystem.AVR = data.zoosystem.Analog.Freq / data.zoosystem.Video.Freq;
     
     % Save all into to file
     %

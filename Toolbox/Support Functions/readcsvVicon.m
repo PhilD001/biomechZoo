@@ -233,6 +233,11 @@ if ~isempty(INDXFP)
                 temp = fpch{i};
                 temp = temp(end);
                 fpch{i} = strrep(fpch{i},temp,lower(temp));
+            elseif ~isempty(strfind(fpch{i},'COP'))
+                temp = fpch{i};
+                temp(end) = lower(temp(end));
+                temp = [temp(1:end-1),'_',temp(end)];
+                fpch{i} = temp;
             end
             
             chstk{i} =fpch{i};
@@ -257,7 +262,7 @@ if ~isempty(INDXFP)
         stk(:,:,i) = [plate(1:3)' plate(4:6)' plate(7:9)' plate(10:12)'];
     end
     r.Forces.FPlates.CORNERS = stk;
-    r.Forces.FPlates.NUMUSED = cols;
+    r.Forces.FPlates.NUMUSED = rows;
     
     
 end
