@@ -101,8 +101,7 @@ for i = 1:length(fl)
     data.zoosystem.Video.CURRENT_START_FRAME = [1 0 0];
     data.zoosystem.Video.CURRENT_END_FRAME = [length(indx) 0 0];
     
-    
-    
+   
     % Add event data
     %
     if isfield(data,'SACR')
@@ -111,8 +110,12 @@ for i = 1:length(fl)
         data.(ch{1}).event = r.Events;
     end
     
+    
     % Add force plate channels to data struct
     %
+    % - force plate channel names are changed to agree with c3d style
+    % outputs
+    
     if isfield(r,'Forces')   % these are force plate channels
         ch = r.Forces.Channels;
         indx = r.Forces.Data(:,1); % remove (and save) frame info column
@@ -140,6 +143,13 @@ for i = 1:length(fl)
         data.zoosystem.Analog.ORIGINAL_END_FRAME = [indx(end) 0 0];
         data.zoosystem.Analog.CURRENT_START_FRAME = [1 0 0];
         data.zoosystem.Analog.CURRENT_END_FRAME = [length(indx) 0 0];   
+    
+       
+        data.zoosystem.Analog.FPlates.CORNERS = r.Forces.FPlates.CORNERS;
+        data.zoosystem.Analog.Fplates.NUMUSED = r.Forces.FPlates.NUMUSED;
+        data.zoosystem.Analog.FPlates.LOCALORIGIN = [];                            % not available
+        data.zoosystem.Analog.Fplates.LABELS = ch;
+       
     end
     
     % Add analog (e.g. EMG)
@@ -174,6 +184,19 @@ for i = 1:length(fl)
         end
     end
 
+    % add header information
+    %
+    if isfield(r,'Header')
+        ch = fieldnames(r.Header);
+        for j = 1:length(ch)
+            if i==1
+            data.zoosystem.Header.SubName = r.Header.(ch{j});
+            else
+            data.zoosystem.Header.(ch{j}) = r.Header.(ch{j}); 
+            end    
+        end 
+    end
+    
     % Save all into to file
     %
     if saveFile

@@ -60,27 +60,10 @@ end
 INDXALL = [INDXANALYSIS; INDXEVENTS; INDXTRAJ; INDXANALOG; INDXFP];
 
 
-% Extract sampling rates
-%
-vidfreq = txt(INDXTRAJ+1);
-vidfreq = vidfreq{1};
-
-if ischar(vidfreq)
-    vidfreq = str2double(vidfreq);
-end
-
-if ~isempty(INDXANALOG)
-    analfreq = txt(INDXANALOG+1);
-elseif ~isempty(INDXFP)
-    analfreq = txt(INDXFP+1);
-else
-    analfreq = {[]};
-end
-analfreq = analfreq{1};
 
 
 
-% Extract header information
+% Extract header information ------------------------------------------------------------------
 %
 % - Header is all information before first data section in capitals
 
@@ -91,6 +74,36 @@ for i = 1:length(header)
     field = makevalidfield(field);
     r.Header.(field) = header{i,2};
 end
+
+
+% Extract trajectory data ---------------------------------------------------------------------
+%
+vidfreq = txt(INDXTRAJ+1);
+vidfreq = vidfreq{1};
+
+vch = txt(INDXTRAJ+2,:);
+
+INDXNEXT = find(INDXALL>INDXTRAJ,1,'first');
+INDXNEXT = INDXALL(INDXNEXT);
+
+r.Video.Data = cell2mat(txt(INDXTRAJ+4:INDXNEXT-2,:)); % all marker data
+
+istk = ones(length(vch),1);
+chstk = cell(length(vch),1);
+for i = 1:length(vch)
+    ch = vch{i};
+    
+    if ~isnan(ch)
+        istk(i) = i;
+        chstk{i} = ch;
+    end
+end
+
+chstk(cellfun(@isempty,chstk)) = [];
+r.Video.Channels = chstk; % overwrite vch with final video channels
+r.Video.Freq = vidfreq;
+
+
 
 % Extract event information
 %
@@ -155,34 +168,14 @@ if ~isempty(INDXEVENTS)
     
 end
 
-% Extract trajectory data
-%
-vch = txt(INDXTRAJ+2,:);
-
-INDXNEXT = find(INDXALL>INDXTRAJ,1,'first');
-INDXNEXT = INDXALL(INDXNEXT);
-
-r.Video.Data = cell2mat(txt(INDXTRAJ+4:INDXNEXT-2,:)); % all marker data
-
-istk = ones(length(vch),1);
-chstk = cell(length(vch),1);
-for i = 1:length(vch)
-    ch = vch{i};
-    
-    if ~isnan(ch)
-        istk(i) = i;
-        chstk{i} = ch;
-    end
-end
-
-chstk(cellfun(@isempty,chstk)) = [];
-r.Video.Channels = chstk; % overwrite vch with final video channels
-r.Video.Freq = vidfreq;
 
 
-% Extract Analog channels
+% Extract Analog chanels ----------------------------------------------------------------------
 %
 if ~isempty(INDXANALOG)
+    
+    analfreq = txt(INDXANALOG+1);
+    analfreq = analfreq{1};
     
     INDXNEXT = find(INDXALL>INDXANALOG,1,'first');
     INDXNEXT = INDXALL(INDXNEXT);
@@ -210,6 +203,9 @@ end
 %
 if ~isempty(INDXFP)
     
+    fpfreq = txt(INDXFP+1);
+    fpfreq = fpfreq{1};
+   
     subtxt = (txt(INDXFP:end,1));
     
     rr = zeros(length(subtxt),1,'single');
@@ -218,7 +214,6 @@ if ~isempty(INDXFP)
     end
     INDXFPch = find(rr==1,1,'first');
     INDXFPch = INDXFP+INDXFPch-1;
-    
     
     fpch = txt(INDXFPch,2:end); % remove column 1
     r.Forces.Data = cell2mat(txt(INDXFPch+2:end,:)); % all marker Data
@@ -247,9 +242,24 @@ if ~isempty(INDXFP)
     chstk(cellfun(@isempty,chstk)) = [];
     fpch = chstk(1:end);
     
-    r.Forces.Freq = analfreq;
+    r.Forces.Freq = fpfreq;
     r.Forces.Channels = fpch;
     r.Forces.Data = r.Forces.Data(:,1:length(fpch)+1);   % all fpch columns + the index column
+
+
+    % extract corner information
+    %
+    c = txt(INDXFP+4:INDXFPch-3,2:13); % remove column 1
+    [rows,cols] = size(c);
+    stk = zeros(3,4,rows);
+    for i = 1:rows
+        plate = cell2mat(c(i,:));
+        stk(:,:,i) = [plate(1:3)' plate(4:6)' plate(7:9)' plate(10:12)'];
+    end
+    r.Forces.FPlates.CORNERS = stk;
+    r.Forces.FPlates.NUMUSED = cols;
+    
+    
 end
 
 
