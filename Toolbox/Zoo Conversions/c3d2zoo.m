@@ -104,7 +104,7 @@ for i = 1:length(fl)
         vlbl{v} = makevalidfield(r.VideoData.(vfld{v}).label);                 % fixes invalid fieldnames
         
         if isfield(data,vlbl{v})
-            disp(['WARNING: Repeated channel name ',vlbl{v}, ' to be renamed ',vlbl{v},num2str(v)])
+            vlbl{v} = [vlbl{v},num2str(v)];
         end
         
         temp = [makecolumn(r.VideoData.(vfld{v}).xdata),makecolumn(r.VideoData.(vfld{v}).ydata),...
@@ -121,7 +121,7 @@ for i = 1:length(fl)
         albl{a} = makevalidfield(r.AnalogData.(afld{a}).label);                                  % fixes all invalid fieldnames
         
         if isfield(data,albl{a})
-            disp(['WARNING: Repeated channel name ',albl{a}, ' to be renamed ',albl{a},num2str(v)])
+            albl{v} = [albl{v},num2str(a)];
         end
         
         temp =  makecolumn(r.AnalogData.(afld{a}).data);
