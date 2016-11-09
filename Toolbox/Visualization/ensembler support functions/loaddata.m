@@ -5,7 +5,9 @@ function loaddata(fld,figs)
 
 % Updated by Philippe C. Dixon Sept 2016
 % - edited for faster reading
-
+%
+% Updated by Philippe C. Dixon Nov 2016
+% - outliers are automatically cleared
 
 settings.string = '\diamondsuit';
 settings.verticalalignment = 'middle';
@@ -28,6 +30,7 @@ for i = 1:length(fl)
     createlines(fig,data,fl{i},settings);             % draw line
 end
 
+ensembler('clear outliers')
 
 % pmt = findobj('tag','prompt');             % clear prompt
 % for i = 1:length(pmt)
