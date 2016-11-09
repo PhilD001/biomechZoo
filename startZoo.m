@@ -6,7 +6,11 @@ function startZoo
 % - Open startZoo in the Matlab editor
 % - Run file (press Run button or F5 shortcut key on most systems)
 % - Select 'Change Folder' or 'Add to Path'
-
+%
+% Notes: 
+% -biomechZoo toolbox and help files should be installed side-by-side e.g.:
+%  ~\biomechZoo\biomechZoo-master
+%  ~\biomechZoo\biomechZoo-help-master
 
 % Set defaults and paths
 %
@@ -14,15 +18,15 @@ s = filesep;                                                   % platform depend
 zoo_fld = [fileparts(which('startZoo')),s,'Toolbox'];          % get root Zoosystem folder
 pmsg = 'Loading ';                                             % prefix for message
 smsg = ' ... ';                                                % suffix for message
-lfld = 'biomechZoo/Toolbox/Support Functions';                 % longest subfolder
-lpad = length(pmsg) + length(lfld)+length(smsg)+15;            % length of longest
+pad = 50;
+lpad = length(pmsg) + pad + length(smsg);          % length of longest
 start = strfind(zoo_fld,'biomechZoo');                         % start of short file path
 frmt = ['%-',num2str(lpad),'s'];                               % format output nicely
 
 % Welcome message
 %
 clc
-fprintf('------------------ Welcome to the biomechZoo Toolbox -------------------\n\n')
+fprintf('-------------- Welcome to the biomechZoo Toolbox v1.3 ------------------\n\n')
 
 
 % Get Zoosystem folders and subfolders
@@ -83,11 +87,15 @@ end
 
 % c) load the help files (if available)
 %
-sfld = strrep(zoo_fld,['biomechZoo',filesep,'Toolbox'],['biomechZoo-help',filesep,'sample study']);
-help_fld = strrep(zoo_fld,['biomechZoo',filesep,'Toolbox'],['biomechZoo-help',filesep,'examples']);
+root_fld = zoo_fld(1:indx(end-2));
+fl = engine('fld',root_fld,'search file','samplestudy_process','extension','.m');
 
+if ~isempty(fl)
+    
+sfld = fileparts(fl{1});
+help_fld = strrep(sfld,'sample study','examples');
 
-if exist(help_fld,'dir')
+    
     fprintf('\nLoading biomechZoo-help scripts:\n\n')
 
     csub_short = sfld(start:end);                      % shortened current fld
@@ -96,9 +104,7 @@ if exist(help_fld,'dir')
     path(sfld,path)
     fprintf('complete\n')
                 
-    
     path(help_fld,path);
-    
     sub = subdir(help_fld);
     
     for i = 1:length(sub)
@@ -117,8 +123,8 @@ if exist(help_fld,'dir')
     end
     
 else
-    fprintf('Help files not found in current setup, ')
-    fprintf('Download help files <a href="https://github.com/PhilD001/biomechzoo-help">here</a>')
+    fprintf('\nHelp files not found in current setup\n')
+    fprintf('Download help files <a href="https://github.com/PhilD001/biomechzoo-help">here</a>\n')
     
 end
 
