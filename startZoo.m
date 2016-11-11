@@ -18,15 +18,17 @@ s = filesep;                                                   % platform depend
 zoo_fld = [fileparts(which('startZoo')),s,'Toolbox'];          % get root Zoosystem folder
 pmsg = 'Loading ';                                             % prefix for message
 smsg = ' ... ';                                                % suffix for message
-pad = 50;
-lpad = length(pmsg) + pad + length(smsg);          % length of longest
 start = strfind(zoo_fld,'biomechZoo');                         % start of short file path
+
+pad = length(zoo_fld(start(1):end))+30;
+lpad = length(pmsg) + pad + length(smsg);                      % length of longest
 frmt = ['%-',num2str(lpad),'s'];                               % format output nicely
+
 
 % Welcome message
 %
 clc
-fprintf('-------------- Welcome to the biomechZoo Toolbox v1.3 ------------------\n\n')
+fprintf('---------------- Welcome to the biomechZoo Toolbox v1.3 ----------------------\n\n')
 
 
 % Get Zoosystem folders and subfolders
