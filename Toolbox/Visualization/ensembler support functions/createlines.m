@@ -10,6 +10,10 @@ function createlines(fig,data,fl,settings)
 % Updated by Philippe C. Dixon Nov 2016
 % - code is more efficient (faster)
 
+% Updated by Philippe C. Dixon Dec 2016
+% - improved handling of empty axes
+
+
 % Set Defaults for ensembler events
 %
 if nargin==3
@@ -20,15 +24,16 @@ if nargin==3
     settings.color = [1 0 0];
 end
 
-
 axs = findobj(fig,'type','axes');
 
 for j = 1:length(axs)
     ch = get(axs(j),'tag');
     
-    if ~isempty(ch)
-        
-        if ~isfield(data,ch)
+   
+    
+    if ~isempty(ch) && isempty(strfind(ch,' '))
+            
+        if ~isfield(data,ch) 
             error(['ch ',ch,' does not exist in file'])
         end
         

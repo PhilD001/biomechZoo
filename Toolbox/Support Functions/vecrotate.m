@@ -8,7 +8,7 @@ function vout = vecrotate(vin,ang,ax)
 %  ax      ...    Axes to rotate about (string): 'x','y','z' or 'i','j','k'
 %
 % RETURN
-%  vout    ,,,    Rotated n x 3 matrix
+%  vout    ...    Rotated n x 3 matrix
 %
 % See also ctransform
 

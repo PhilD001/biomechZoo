@@ -34,7 +34,9 @@ function data = filter_data(data,ch,filt)
 % - for force plates, replaces leading and trailing 'pure' zeros by NaNs
 %   before filtering to remove filter dip effects. Zeros are replaced after
 %   filtering
-
+%
+% Updated by philippe C. Dixon Dec 2016
+% - fixed bug to allow missing channels to be bypassed
 
 % Set defaults/check arguments
 %
@@ -58,10 +60,10 @@ end
 % filter each channel
 %
 for j = 1:length(ch)
-    oline = data.(ch{j}).line;
     
     if isfield(data,ch{j})
-        
+        oline = data.(ch{j}).line;
+
         if ismember(ch{j},data.zoosystem.Analog.Channels)
             fsamp = data.zoosystem.Analog.Freq;
         elseif ismember(ch{j},data.zoosystem.Video.Channels)
@@ -86,7 +88,7 @@ for j = 1:length(ch)
 %             eyd = edata(2);
             
             if exd > 1 && exd <= length(oline)            
-                disp(['WARNING: event ',evt{e},' not be updated in ',ch{j}])
+                disp(['WARNING: event ',evt{e},' may not be updated in ',ch{j}])
 %                 if eyd == oline(exd);
 %                     neyd = data.(ch{j}).line(exd);
 %                     data(ch{j}).event.(evt{e}) = [exd neyd 0];

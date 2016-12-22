@@ -3,8 +3,11 @@ function data= removechannel_data(data,ch)
 % data= REMOVECHANNEL_DATA(data,ch) removes channels from zoo files
 %
 % ARGUMENTS
-%  fld      ...  Folder to batch process (string)
+%  data     ...  Zoo data (struct)
 %  ch       ...  Channels to remove (string or cell array of strings)
+%
+% RETURNS
+%  data     ...  Zoo data with ch removed from struct
 %
 % See also bmech_removechannel, bmech_removeevent, bmech_addevent, bmech_removeevent
 
@@ -19,7 +22,9 @@ function data= removechannel_data(data,ch)
 %
 % Updated by Philippe C. Dixon July 2016
 % - Removed argument 'section'. Program will search automatically
-
+%
+% Updated by Philippe C. Dixon Dec 2016
+% - Improved help section
 
 
 % error checking
@@ -72,9 +77,6 @@ for i = 1:length(ch)
         chlist = data.zoosystem.(section).Channels;
         nchlist = setdiff(chlist,ch{i});
         data.zoosystem.(section).Channels = nchlist;
-        
-        
-        
+         
     end
-    
 end

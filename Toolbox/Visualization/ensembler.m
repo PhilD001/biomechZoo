@@ -105,11 +105,11 @@ function ensembler(action)
 %
 % Updated by Philippe C. Dixon June 2016
 % - Small bug fix to ylabel code for support of color bars in ensembler
+%
+% Updated by Philippe C. Dixon Dec 2016
+% - improved handling of colors (see colorlist)
+% - fixed bug for bar graph when empty axes are present
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
 
 % ================= BEGIN SETUP ======================================
@@ -763,6 +763,7 @@ switch action
         cd(p)
         
     case 'bar graph'
+        clearallaxes      
         makebar
         
     case 'normative PiG Kinematics'
@@ -853,8 +854,8 @@ switch action
     case 'stdcolor'
         tg = get(findobj(gcf,'type','patch'),'tag');
         tg = setdiff(tg,{''});
-        
-        a = associatedlg(tg,{'b','r','g','c','m','k'});
+        col = colorlist;
+        a = associatedlg(tg,col(:,1)');
         for i = 1:length(a(:,1))
             pch = findobj('type','patch','tag',a{i,1});
             set(pch,'FaceColor',a{i,2});
@@ -863,7 +864,8 @@ switch action
     case 'stdcolor within'
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
-        a = associatedlg(tg,{'b','r','g','c','m','k'});
+        col = colorlist;
+        a = associatedlg(tg,col(:,1)');     
         for i = 1:length(a(:,1));
             ax = findobj('type','axes','tag',a{i,1});
             pch = findobj(ax,'type','patch');

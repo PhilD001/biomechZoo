@@ -8,8 +8,12 @@ function data = makebones(data,type,foot_flat,test)
 %
 %  data        ... Zoo data
 %  type        ... Trial type (String) (static or dynamic)
-%  foot_flat   ... Settings flag (Boolean) to represent if foot flat should be assumed
-%  test        ... test against existing PiG 'bones'
+%  foot_flat   ... Foot flat (Boolean) to represent if foot flat should be assumed
+%                  Default 'false'
+%  test        ... Test against existing PiG 'bones' (Boolean). Default 'false'
+%
+% RETURNS
+%  data        ... Zoo data with new 'bones' appended
 %
 % NOTES
 % - Following anthroopmetric/metainfo data must be available:
@@ -28,22 +32,25 @@ function data = makebones(data,type,foot_flat,test)
 % - All segment-emedded axes verified (good agreement)
 % - All joint centers verified (good agreement)
 
+% Updated by Philippe C. Dixon De 2016
+% - Improved help
+
 
 % Set defaults ---------------------------------------------------------------------------
 %
 if nargin==1
     type = 'dynamic';
-    test = 0;
+    test = false;
     foot_flat = false;
 end
 
 if nargin==2
-    test = 0;
+    test = false;
     foot_flat = false;
 end
 
 if nargin==3
-    test = 0;
+    test = false;
 end
 
 % Extract PiG markers --------------------------------------------------------------------
@@ -174,7 +181,7 @@ boneLength = magnitude(LHipJC-LKneeJC);
 O = LKneeJC;
 P = LHipJC-O;                            % proximal vector
 Ltemp = LKNE - O;                        % temp lateral vector
-% Ltemp = LTHI - O;                        % temp lateral vector
+% Ltemp = LTHI - O;                      % temp lateral vector
 A = cross(Ltemp,P);                      % anterior vector
 L = cross(P,A);                          % lateral vector
 
@@ -193,7 +200,7 @@ boneLength = magnitude(RHipJC-RKneeJC);
 
 O = RKneeJC;
 P = RHipJC-O;                            % proximal vector
-Ltemp = -(RKNE - O);                        % temp lateral vector
+Ltemp = -(RKNE - O);                     % temp lateral vector
 A = cross(Ltemp,P);                      % anterior vector
 L = cross(P,A);                          % lateral vector
 
@@ -233,7 +240,7 @@ boneLength = magnitude(RKneeJC-RAnkleJC);
 
 O = RAnkleJC;
 P = RKneeJC-O;                             %  proximal vector
-Ltemp = -(RTIB-RANK);                         % temp lateral vector
+Ltemp = -(RTIB-RANK);                      % temp lateral vector
 A = cross(Ltemp,P);                        % anterior vector
 L = cross(P,A);                            % lateral vector
 
@@ -254,7 +261,7 @@ data = addchannel_data(data,'RTIP',RTIP,'video');
 % LfootLength = magnitude(data.LFOP.line-data.LFOO.line)
 
 segment ='Left Foot';
-boneLength =magnitude(LHEE-LTOE);                       % length of bone*
+boneLength =magnitude(LHEE-LTOE);           % length of bone*
 
 O = LTOE;
 P = LAnkleJC-O;                             % proximal vector (pyCGM: L_axis_z)
