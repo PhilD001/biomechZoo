@@ -65,6 +65,3 @@ data.(ch).event = struct;
 ochs = makecolumn(data.zoosystem.(section).Channels);
 nchs = [ochs; ch];
 data.zoosystem.(section).Channels = nchs;
-
-
-

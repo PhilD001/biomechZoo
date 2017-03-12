@@ -54,7 +54,7 @@ switch action
     
     case 'start'
         
-        line('ydata',r.line,'xdata',(0:length(r.line)-1));
+        line('ydata',r.line,'xdata',(1:length(r.line)));
         evt = fieldnames(r.event);
         
         for e = 1:length(evt)

@@ -30,10 +30,15 @@ xwid = dval{6};
 ywid = dval{7};
 hspac = dval{8};
 vspac = dval{9};
+font = dval{10};
+fontsize = dval{11};
+units = dval{12};
 
 options.Resize = 'on';
-a = inputdlg({'name','figure width (inches)','figure height (inches)','rows','columns','width (inches)','height (inches)','horizontal spacing (inches)','vertical spacing (inches)'},'axes',1,...
-    {fstring,fwid,fheig,nrows,ncols,xwid,ywid,hspac,vspac},options);
+a = inputdlg({'Names','Figure width','Figure height','Rows','Columns',...
+    'Axis width','Axis height','Horizontal spacing','Vertical spacing',...
+    'Font Name','Font size','Units'},...
+    'axes',1,{fstring,fwid,fheig,nrows,ncols,xwid,ywid,hspac,vspac,font,fontsize,units},options);
 
 if isempty(a)
     disp('exiting ensembler')
@@ -48,6 +53,22 @@ nrows = str2double(a{4});
 ncols = str2double(a{5});
 xwid = str2double(a{6});
 ywid = str2double(a{7});
+fontName = a{10};
+fontSize = str2double(a{11});
+units = a{12};
+
+% error check on units
+%
+if strcmp(units,'cm')
+    units = 'centimeters';
+    a{12} = 'centimeters';
+    save(defaultvalfile,'a')
+end
+
+if ~ismember(units,{'inches','centimeters','normalized'})
+    error('please choose ''inches'', ''centimeters'' or ''normalized'' as ensembler units')
+end
+
 
 if strcmp(a{8},'even')
     xspace = a{8};
@@ -66,6 +87,7 @@ nm = partitionname(a{1});
 nfigs = length(nm);
 
 for i = 1:length(nm)
-    startup_ensembler(nm{i},nrows,ncols,xwid,ywid,xspace,yspace,fwid,fheig,i,nfigs)
+    startup_ensembler(nm{i},nrows,ncols,xwid,ywid,xspace,yspace,fwid,fheig,i,...
+                      nfigs,fontName,fontSize,units)
 end
 

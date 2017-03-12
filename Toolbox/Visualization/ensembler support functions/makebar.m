@@ -7,6 +7,9 @@ function makebar
 %
 % Updated by Philippe C. Dixon March 2016
 % - compatible with r2014b +
+%
+% Updated by Philippe C. Dixon Jan 2017
+% - updated to work with the new resize_ensembler
 
 ax = findobj(gcf,'type','axes');
 
@@ -79,7 +82,7 @@ for i = 1:length(ax)
     lg= mybar(barvaluestk,errorstk,groupnames,groupcolors,ax(i),lg);
     
     hnd = xlabel('bar graph');
-    resize_ensembler % make a first attempt at resizing
+    resize_ensembler(ax(i)) % make a first attempt at resizing
     delete(hnd)
     
 end

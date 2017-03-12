@@ -1,11 +1,10 @@
 function eventval2mixedANOVA(varargin)
 
-
 % eventval2mixedANOVA (varargin) will output data to a spreadsheet for mixed ANOVA analysis
 % in third party software
 %
 % ARGUMENTS
-% eventvalFile   ...  File path to spreadsheet created by eventval.m
+% 'eventvalFile'   ...  File path to spreadsheet created by eventval.m
 % 'excelserver'  ...  Choice to use excel server. Default is 'off'
 %
 % NOTES
@@ -36,28 +35,13 @@ function eventval2mixedANOVA(varargin)
 %
 % Updated by Philippe C. Dixon Jan 2016
 % - use 'raw' output from xlsread to avoid bug with certain sheets being read with NaNs
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
+% Updated by Philippe C. Dixon Jan 2017
+% - fixed help regarding use of 'eventvalFile' argument
+% - fixed bug when using  'eventvalFile' argument
 %
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
-
-
+% Updated by Philippe C. Dixon March 2017
+% - bug fix for mac platform
 
 % == SETTINGS ==============================================================================
 %
@@ -68,7 +52,7 @@ for i = 1:2:nargin
     
     switch varargin{i}
         
-        case 'file'
+        case 'eventvalFile'
             eventvalFile = varargin{i+1};
             
         case 'excelserver'
@@ -87,6 +71,12 @@ if isempty(eventvalFile)
     eventvalFile = [p,f];
 else
     [p,f] = fileparts(eventvalFile);
+    ext = extension(eventvalFile);
+    f = [f,ext];
+    if isempty(strfind(p(end),filesep));
+        p = [p,filesep];
+    end 
+    
 end
 cd(p)
 
@@ -171,11 +161,9 @@ end
 for j = 1:length(ch)
     count = 1;
     
-    if strcmp(computer,'MACI')
-        [num,txt,xlsdata] = xlsread([p,f],ch{j},'basic'); % basic is default on mac
-    else
-        [num,txt,xlsdata] = xlsread([p,f],ch{j}); % basic is default on mac
-    end
+    
+    [num,txt,xlsdata] = xlsread([p,f],ch{j}); 
+    
     
     [~,dcols] = size(num);                             % dcols = number of data columns
     

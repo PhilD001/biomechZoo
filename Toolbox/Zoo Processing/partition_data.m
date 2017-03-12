@@ -118,6 +118,3 @@ for i = 1:length(ch)
     end
     
 end
-
-
-

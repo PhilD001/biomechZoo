@@ -24,8 +24,15 @@ function delfile(fl)
 %
 % Updated by Philippe C. Dixon Nov 2016
 % - delete now works on mac platform, no unique platform search
+%
+% Updated by Philippe C. Dixon Feb 2017
+% - deletion occurs usig java function to improve speed performace
+%   Test: 835 excel files
+%         deleted in 001.293 sec using java
+%         deleted in 177.187 sec using 'delfile'
 
 
+tic                         % start timer
 if ~iscell(fl)
     fl = {fl};
 end
@@ -35,16 +42,9 @@ for i = 1:length(fl)
     if exist(fl{i},'file')==2
         batchdisp(fl{i},'deleting file')
         
-        
-        delete(fl{i})
-        
-%         if ispc
-%             % dos(['erase "',fl{i},'"']);
-%             delete(fl{i})
-%         else
-%             unix(['rm -f -R ' '"' fl{i} '"']);
-%         end
-        
+        %delete(fl{i})
+        java.io.File(fl{i}).delete();
+       
     else
         disp('attempting to locate file in current working directory....')
         file = engine('fld',pwd,'search file',fl{i});
@@ -52,9 +52,16 @@ for i = 1:length(fl)
         if isempty(file)
             disp('file not found')
         else
-            delfile(file{i})
+            %delfile(file{i})
+            java.io.File(fl{i}).delete();
         end
     end
     
 end
 
+if i >1   % only show timer if deleting multiple files
+    disp(' ')
+    fprintf('Finished deleting data, ')
+    toc
+end
+    

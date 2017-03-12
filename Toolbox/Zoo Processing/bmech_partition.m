@@ -71,20 +71,3 @@ nfl(cellfun(@isempty,nfl)) = [];
 for i = 1:length(nfl)
     batchdisplay(nfl{i},'not partitioning');
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

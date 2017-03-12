@@ -106,9 +106,9 @@ function ensembler(action)
 % Updated by Philippe C. Dixon June 2016
 % - Small bug fix to ylabel code for support of color bars in ensembler
 %
-% Updated by Philippe C. Dixon Dec 2016
-% - improved handling of colors (see colorlist)
-% - fixed bug for bar graph when empty axes are present
+% Updated by Philippe C. Dixon Feb 2017 
+% - possibility to set font type and size from original ensembler prompt
+%   (saved in 'default_ensembler_values.mat')
 
 
 
@@ -233,8 +233,9 @@ switch action
         
         tg = setdiff(tg,'ebar');
         
-        a = associatedlg(tg,{'b','r','g','c','m','k','y','dg','pu','db','lb'});
-        
+        col = colorlist;
+        a = associatedlg(tg,col(:,1)');
+                
         for i = 1:length(a(:,1))
             
             if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
@@ -247,29 +248,17 @@ switch action
             if length(a{i,2})==1
                 set(br,'FaceColor',a{i,2});
             else
-                if isin(a{i,2},'dg')
-                    set(br,'FaceColor', [0.1059  0.3098  0.2078]);          % dark green
-                    
-                elseif isin(a{i,2},'pu')
-                    set(br,'FaceColor', [0.4235  0.2510  0.3922]);          % purple
-                    
-                elseif isin(a{i,2},'br')
-                    set(br,'FaceColor', [0.4510  0.2627  0.2627]);          % brown
-                    
-                elseif isin(a{i,2},'db')
-                    set(br,'FaceColor', [0       0       0.7000]);          % dark blue
-                    
-                elseif isin(a{i,2},'lb')
-                    set(br,'FaceColor', [ 0.2000    0.6000    1.0000]);     % ligh blue
-                    
-                    
-                    
-                else
-                    
-                end
-                
+                indx = ismember(col(:,1),a{i,2})==1;
+                ccol = col(indx,2);
+                ccol = ccol{1};
+                set(br,'FaceColor',ccol)
             end
+            
+            
         end
+                
+            
+     
         
     case 'buttondown'
         buttondown
@@ -763,7 +752,6 @@ switch action
         cd(p)
         
     case 'bar graph'
-        clearallaxes      
         makebar
         
     case 'normative PiG Kinematics'
@@ -854,8 +842,8 @@ switch action
     case 'stdcolor'
         tg = get(findobj(gcf,'type','patch'),'tag');
         tg = setdiff(tg,{''});
-        col = colorlist;
-        a = associatedlg(tg,col(:,1)');
+        
+        a = associatedlg(tg,{'b','r','g','c','m','k'});
         for i = 1:length(a(:,1))
             pch = findobj('type','patch','tag',a{i,1});
             set(pch,'FaceColor',a{i,2});
@@ -864,8 +852,7 @@ switch action
     case 'stdcolor within'
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
-        col = colorlist;
-        a = associatedlg(tg,col(:,1)');     
+        a = associatedlg(tg,{'b','r','g','c','m','k'});
         for i = 1:length(a(:,1));
             ax = findobj('type','axes','tag',a{i,1});
             pch = findobj(ax,'type','patch');

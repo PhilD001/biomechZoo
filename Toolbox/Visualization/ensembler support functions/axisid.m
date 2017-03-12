@@ -1,11 +1,32 @@
-
-
 function axisid(id)
 
+% AXISID(id) adds sub label ids (e.g. a,b,c,...) to ensembler plots
+%
+% ARGUMENTS
+%  id    ...   id style. Default a,b,c,..
 
+% Revision history
+%
+% Updated by Philippe C. Dixon Jan 2017
+% - improved 'style' of axis ids by matching style to existing axis
+%   properties
+
+
+% Set Defaults
+%
 if nargin==0 || isempty(id)
     id = {'(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)','(i)','(j)','(k)','(l)','(m)','(n)','(o)','(p)','(q)','(r)','(s)','(t)','(u)'};
 end
+
+% Match current figure style
+%
+ax = findobj('type','axes');
+ax = ax(1);
+FontSize = get(ax,'FontSize');
+FontWeight = get(ax,'FontWeight');
+FontName = get(ax,'FontName');
+
+
 
 sfigs = findall(gcf,'type','axes');
 
@@ -58,7 +79,8 @@ for j = 1:nrows
                     xr = round(range(xlim)*0.005);
                     yr = round(range(ylim)*0.08);
                     
-                    text(xlim(1)+xr,ylim(2)+yr,id{count},'fontWeight','bold');
+                    text(xlim(1)+xr,ylim(2)+yr,id{count},'fontWeight',FontWeight,...
+                        'FontSize',FontSize,'FontName',FontName);
                     
                 end
                 

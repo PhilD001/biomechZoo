@@ -1,22 +1,40 @@
 function ensembledata(vartype)
 
-prmt = findobj('Tag','prompt');
+% ENSEMBLEDATA (vartype) summarizes line and event data from ensembler
+% figres by axis and figure
 
+
+% Revision History
+%
+% Created by JJ Loh 2006?
+%
+% Updated by Philippe C. Dixon Jan 2017
+% - Bug fix to search for 'average_line' field instead of exact line width
+%   (see ensembledata)
+
+
+% Set defaults
+%
+avLWidth = 1.5;                                         % width of new average lines
+
+
+% find figure objects
+%
+prmt = findobj('Tag','prompt');
 if ~isempty(prmt)
     set(prmt,'string','')
 end
 
-
 ax = findensobj('axes');
 
-ln = findobj('type','line'); % return all lines to common state
+ln = findobj('type','line');                            % return all lines to common state
 set(ln,'linewidth',0.5)
 
 
 for i = 1:length(ax)
     lstk = [];
     ln = findobj(ax(i),'type','line','linewidth',.5);
-    pt = get(ax(i),'parent');       %parent of axis is figure
+    pt = get(ax(i),'parent');                           % parent of axis is figure
     nm = get(pt,'name');
     ch = get(gca,'Tag');
     
@@ -43,7 +61,7 @@ for i = 1:length(ax)
         mn = nanmean(lstk);
         [r,~] = size(lstk);
         
-        if isin(nm,'+') % fix for grouping conditions to get correct CI
+        if isin(nm,'+')                                 % for grouping cons to correct CI
             r = r/2;
         end
         
@@ -77,7 +95,7 @@ for i = 1:length(ax)
             delete(findobj(ax(i),'type','patch'))
         end
         
-        mnhnd = line('parent',ax(i),'xdata',xdata,'ydata',mn,'color',[0 0 0],'linewidth',1,...
+        mnhnd = line('parent',ax(i),'xdata',xdata,'ydata',mn,'color',[0 0 0],'linewidth',avLWidth,...
                      'buttondownfcn',bd,'tag',nm,'userdata',['average_line ',get(ax(i),'tag')]);
         
         if isin(computer,'MAC')

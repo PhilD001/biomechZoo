@@ -6,8 +6,8 @@ function r = deriv_line(r,fsamp,filt)
 %  r        ...  Matrix data (n x 1 or n x3)
 %  fsamp    ...  Sampling rate of signal
 %  filt     ...  Filter options (boolean)
-%                filt = 0: do not filter (default)
-%                filt = 1: filter data using 4th order butterworth low-pass with 10 Hz cutoff
+%                filt = 0 or false: do not filter (default)
+%                filt = 1 or true: filter data using 4th ord butt low-pass with 10 Hz cutoff
 %                filt = struct: filter according to struc fields (see bmech_filter)
 %
 % RETURNS
@@ -28,6 +28,9 @@ function r = deriv_line(r,fsamp,filt)
 % Revision History
 %
 % Created by Philippe C. Dixon July 2016
+%
+% Updated by Philippe C. Dixon March 2017
+% - Bug fix for default options
 
 
 % Set defaults/check arguments
@@ -41,9 +44,9 @@ if nargin == 2
     run_filt = false;
 end
 
-if isnumeric(filt) || islogical(filt)
+if isnumeric(filt)
     if filt ==0
-       run_filt = false;
+        run_filt = false;
     elseif filt==1
         filt = struct;
         filt.type   = 'butterworth';
@@ -52,10 +55,21 @@ if isnumeric(filt) || islogical(filt)
         filt.cutoff = 10;
         run_filt = true;
     end
+    
+elseif islogical(filt)
+    if filt
+        filt = struct;
+        filt.type   = 'butterworth';
+        filt.order  = 4;
+        filt.pass   = 'lowpass';
+        filt.cutoff = 10;
+        run_filt = true;
+    else
+        run_filt = false;
+    end
 else
     run_filt = true;
 end
-
 
 
 % differentiate
@@ -63,8 +77,8 @@ end
 [~,cl] = size(r);
 for i = 1:cl
     r(:,i)  = gradient(r(:,i)).*fsamp;
-    if run_filt == true
-        r(:,i) = filter_line(r(:,i),fsamp,filt);
+    if run_filt 
+        r(:,i) = filter_line(r(:,i),filt,fsamp);
     end
 end
 

@@ -1,6 +1,6 @@
 function evalFile = eventval(varargin)
 %
-% eventval(varargin) will transfer the values of all channels at given events to
+% evalFile = eventval(varargin) will transfer the values of all channels at given events to
 % a spreadsheet for further analysis
 %
 % ARGUMENTS
@@ -81,6 +81,8 @@ function evalFile = eventval(varargin)
 % - Bug fix: Anthro data was appearing in eventval.xls as cell {yd}. This caused a problem
 %   with eventval2mixedANOVA reading 999 (empty)
 % - Clean up for input arguments
+% - Additional information on 'info' sheet
+% - Bug fix: skips files with missing conditions
 
 
 
@@ -92,7 +94,7 @@ fld = '';                                      % if not included in arguments wi
 ch = '';
 localevts = '';                                % manual selection window appears
 globalevts = '';                               % manual selection window appears
-anthroevts = {'none'};                         % no manual selection window appears           
+anthroevts = {'none'};                         % no manual selection window appears
 ext = '.xls';                                  % default extension for eventval spreadsheet
 s = filesep;                                   % slash direction based on platform
 excelserver = 'off';                           % users with excel can speed up process
@@ -117,7 +119,7 @@ for i = 1:2:nargin
         case 'ext'
             ext = varargin{i+1};
         case 'excelserver'
-            excelserver = varargin{i+1};         
+            excelserver = varargin{i+1};
     end
 end
 
@@ -170,14 +172,14 @@ end
 evalFile=[pth,s,'eventval',ext];    % name of eventval file
 
 if exist(evalFile,'file')
-   [~,evalFileShort] = fileparts(evalFile);
-   answer=questdlg(['Stats file: ',evalFile,' already exists'], 'overwrite?','Yes','No','No');
-
-   if strcmp(answer,'No')
-      evalFile=inputdlg('new stats file name','Enter new name',1,{[evalFileShort,'_new',extension(evalFile)]});
-      evalFile = [pth,s,evalFile{1}];
-   end
-
+    [~,evalFileShort] = fileparts(evalFile);
+    answer=questdlg(['Stats file: ',evalFile,' already exists'], 'overwrite?','Yes','No','No');
+    
+    if strcmp(answer,'No')
+        evalFile=inputdlg('new stats file name','Enter new name',1,{[evalFileShort,'_new',extension(evalFile)]});
+        evalFile = [pth,s,evalFile{1}];
+    end
+    
 end
 
 
@@ -281,7 +283,7 @@ end
 %
 if ismember('none',anthroevts)
     anthroevtnames = {};
-elseif isempty(anthroevts) 
+elseif isempty(anthroevts)
     aev = fieldnames(data.zoosystem.Anthro);
     anthroevtnames = listdlg('liststring',aev,'name','anthro events','ListSize',[300 300]);
     anthroevtnames = aev(anthroevtnames);
@@ -309,6 +311,8 @@ ecell2 = {'E','G','I','K','M','O','Q','S','U','W','Y','AA','AC','AE','AG','AI','
 for i = 1:length(fl)
     batchdisp(fl{i},'Extracting data to spreadsheet')
     
+    fileNum = i;            
+    
     % Load zoo file and extract filename
     %
     data = zload(fl{i});
@@ -316,21 +320,40 @@ for i = 1:length(fl)
     
     % find subject code
     %
-    for j = 1:length(subjects)
-        if isin(fl{i},subjects{j})
-            subject = subjects{j};
+    check = true;
+    count = 1;
+    while check
+        if isin(fl{i},subjects{count})
+            subject = subjects{count};
+            check = false;
+        else
+            count=count+1;
         end
     end
     
     % find subject condition
     %
     fl_temp = strrep(fl{i},[subject,s],'');
-    for j = 1:length(conditions)
-        if isin(fl_temp,conditions{j})
-            con = conditions{j};
+    check = true;
+    count = 1;
+    while check
+        if isin(fl_temp,conditions{count})
+            con = conditions{count};
+            check = false;
+        else
+            count = count+1;
         end
         
+        if count > length(conditions)
+            disp('no match for conditions, skipping file')
+            check = false;
+        end
     end
+    
+    if count > length(conditions)
+        continue
+    end
+    
     
     % write additional meta-info
     %
@@ -343,16 +366,18 @@ for i = 1:length(fl)
             xlswrite1(evalFile,{fld},'info','A4');
             xlswrite1(evalFile,{'date processed: '},'info','A6');
             xlswrite1(evalFile,{date},'info','A7');
-            xlswrite1(evalFile,{'Processing steps'},'info','A9');
-            xlswrite1(evalFile,process,'info','A10');
+            xlswrite1(evalFile,{'missing events tagged as 999'},'info','A9');
+            xlswrite1(evalFile,{'Processing steps'},'info','A11');
+            xlswrite1(evalFile,process,'info','A12');
         else
             xlwrite(evalFile,{'Summary info related to data'},'info','A1');
             xlwrite(evalFile,{'folder processed: '},'info','A3');
             xlwrite(evalFile,{fld},'info','A4');
             xlwrite(evalFile,{'date processed: '},'info','A6');
             xlwrite(evalFile,{date},'info','A7');
-            xlwrite(evalFile,{'Processing steps'},'info','A9');
-            xlwrite(evalFile,process,'info','A10');
+            xlwrite(evalFile,{'missing events tagged as 999'},'info','A9');
+            xlwrite(evalFile,{'Processing steps'},'info','A11');
+            xlwrite(evalFile,process,'info','A12');
         end
     end
     
@@ -380,17 +405,19 @@ for i = 1:length(fl)
             xlswrite1(evalFile,{'CONDITION'},chname,'B1');
             xlswrite1(evalFile,{'TRIAL'},chname,'C1');
             xlswrite1(evalFile,{'EVENT'},chname,'F1');
-            xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
-            xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
-            xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
+            
+            xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
+            xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
+            xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
         else
             xlwrite(evalFile,{'SUBJECT'},chname,'A1');
             xlwrite(evalFile,{'CONDITION'},chname,'B1');
             xlwrite(evalFile,{'TRIAL'},chname,'C1');
             xlwrite(evalFile,{'EVENT'},chname,'F1');
-            xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
-            xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
-            xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
+            
+            xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
+            xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
+            xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
         end                               % create headers
         
         % write global events
@@ -417,14 +444,14 @@ for i = 1:length(fl)
                 xlswrite1(evalFile,{globalevtnames(k)},chname,[ecell1{k},'2']);
                 xlswrite1(evalFile,{'xdata'},chname,[ecell1{k},'3']);
                 xlswrite1(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
-                xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+i)]);
+                xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
+                xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]);
             else
                 xlwrite(evalFile,{globalevtnames(k)},chname,[ecell1{k},'2']);
                 xlwrite(evalFile,{'xdata'},chname,[ecell1{k},'3']);
                 xlwrite(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
-                xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+i)]);
+                xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
+                xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]);
             end
             
             
@@ -449,14 +476,14 @@ for i = 1:length(fl)
                     xlswrite1(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
                     xlswrite1(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
                     xlswrite1(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
-                    xlswrite1(evalFile,xd,chname,[ecell1{n+offset},num2str(3+i)]);
-                    xlswrite1(evalFile,yd,chname,[ecell2{n+offset},num2str(3+i)]);
+                    xlswrite1(evalFile,xd,chname,[ecell1{n+offset},num2str(3+fileNum)]);
+                    xlswrite1(evalFile,yd,chname,[ecell2{n+offset},num2str(3+fileNum)]);
                 else
                     xlwrite(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
                     xlwrite(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
                     xlwrite(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
-                    xlwrite(evalFile,xd,chname,[ecell1{n+offset},num2str(3+i)]);
-                    xlwrite(evalFile,yd,chname,[ecell2{n+offset},num2str(3+i)]);
+                    xlwrite(evalFile,xd,chname,[ecell1{n+offset},num2str(3+fileNum)]);
+                    xlwrite(evalFile,yd,chname,[ecell2{n+offset},num2str(3+fileNum)]);
                     
                 end
                 
@@ -483,17 +510,17 @@ for i = 1:length(fl)
             xlswrite1(evalFile,{'CONDITION'},chname,'B1');
             xlswrite1(evalFile,{'TRIAL'},chname,'C1');
             xlswrite1(evalFile,{'EVENT'},chname,'F1');
-            xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
-            xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
-            xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
+            xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
+            xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
+            xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
         else
             xlwrite(evalFile,{'SUBJECT'},chname,'A1');
             xlwrite(evalFile,{'CONDITION'},chname,'B1');
             xlwrite(evalFile,{'TRIAL'},chname,'C1');
             xlwrite(evalFile,{'EVENT'},chname,'F1');
-            xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+i)]);
-            xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+i)]);
-            xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+i)]);
+            xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
+            xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
+            xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
         end
         
         for k = 1:length(anthroevtnames)
@@ -508,44 +535,28 @@ for i = 1:length(fl)
             yd = evt;
             
             if ~isnumeric(yd)
-                
-%                 if strcmp(anthroevtnames(k),'Gender')
-% %                     anthroevtnames(k) = {'Gender F=0,M=1'};
-%                     if strcmp(yd,'F')
-%                         yd = 0;
-%                     elseif strcmp(yd,'M')
-%                         yd = 1;
-%                     end
-%                     
-%                 elseif strcmp(anthroevtnames(k),'Handness')
-% %                     anthroevtnames(k) = {'Handness R=0,L=1'};
-%                     if strcmp(yd,'R')
-%                         yd = 0;
-%                     elseif strcmp(yd,'L')
-%                         yd = 1;
-%                     end
-%                     
-%                 else
-%                     yd = 999;
-%                 end
-%                 
                 yd = 999;
                 
             end
-        
+            
+            if iscell(anthroevtnames)
+                canthroevtnames = anthroevtnames{k};
+            else
+                canthroevtnames = anthroevtnames(k);
+            end
             
             if strcmp(excelserver,'on')
-                xlswrite1(evalFile,{anthroevtnames(k)},chname,[ecell1{k},'2']);
+                xlswrite1(evalFile,{canthroevtnames},chname,[ecell1{k},'2']);
                 xlswrite1(evalFile,{'xdata'},chname,[ecell1{k},'3']);
                 xlswrite1(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
-                xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+i)]); % edit {yd}
+                xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
+                xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]); % edit {yd}
             else
-                xlwrite(evalFile,{anthroevtnames(k)},chname,[ecell1{k},'2']);
+                xlwrite(evalFile,{canthroevtnames},chname,[ecell1{k},'2']);
                 xlwrite(evalFile,{'xdata'},chname,[ecell1{k},'3']);
                 xlwrite(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+i)]);
-                xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+i)]); % edit {yd}
+                xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
+                xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]); % edit {yd}
             end
             
         end

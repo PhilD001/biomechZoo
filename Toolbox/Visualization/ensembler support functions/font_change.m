@@ -1,6 +1,9 @@
 function font_change(mode)
 
-% updates current font size of ensembler figure
+% FONT_CHANGE(mode) increases or decreases current font size of ensembler figure
+%
+% ARGUMENTS
+%  mode       ....   flag to 'increase' or 'decrease' font size
 
 
 inc = 2; % increment for next font size

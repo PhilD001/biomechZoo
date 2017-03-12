@@ -18,6 +18,7 @@ function zooinfo
 % Ressources (Repositories):
 % Code: https://github.com/PhilD001/biomechZoo
 % Help: https://github.com/PhilD001/biomechZoo-help
+% manuscript: http://www.biomechzoo.com/s/biomechZoo_Dixon2017.pdf
 %
 % License
 % biomechZoo is released under the Apache license version 2.0:

@@ -29,11 +29,14 @@ function zsave(fl,data,message)
 % - Date stamp appended to message
 % - renamed branch from 'processing' to 'Processing' for consistency with
 %   other data.zoosystem fields 
-
+%
+% Updated by Philippe C. Dixon Feb 2017
+% - Speed tests conducted showed that v6 are faster than v7
 
 % version type for file save
 %
-version = '-v7';                                 % v7 files are smaller than v7.3
+% version = '-v7';                               % v7 files are smaller than v7.3
+version = '-v6';                                 % v6 permit faster writing than v7
 
 % determine which function called zsave
 %
@@ -60,7 +63,36 @@ else
     r{end+1,1} = process;
     data.zoosystem.Processing = r;
 end    
-    
+
+% check write status of file
+%
+
+if exist(fl,'file')==2
+    [~,values] = fileattrib(fl);
+    if values.UserWrite ==0
+        check = false;
+    end
+end
+
+
+% if exist(fl,'file')==2 
+%    check = true;
+%    maxCount = 100;
+%    count = 1;
+%    while check
+%      [~,values] = fileattrib(fl);
+%      
+%      if values.UserWrite && count < maxCount
+%          check = false;
+%      else
+%          count = count+1;
+%          disp('file locked for writing, trying again...')
+%      end
+%    
+%    end
+% end
+
+
 
 % traditional save
 %

@@ -1,6 +1,16 @@
 function m=magnitude(r)
 
+% m = MAGNITUDE(r) takes the magnitude of a signal
+%
+% ARGUMENTS
+%  r       ....     n x 3 signal
+%  
+% RETURNS
+%  m       ....    magnitude of the signal
 
+
+% Revision History
+%
 % Created by JJ Loh 
 %
 % updated by Phil Dixon june 2010

@@ -1,17 +1,26 @@
-function startup_ensembler(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh,i,nfigs)
+function startup_ensembler(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh,...
+                           i,nfigs,FontName,FontSize,units)
 
 % STARTUP_ENSEMBLER initializes the GUI labels
+
+
+% Revision History 
+%
+% Updated Feb 2017 by Philippe C. Dixon
+% - possibility to set font type and size from original ensembler prompt
+% - axes resize automatically if user changes size of figure
 
 if nargin < 10
     i = 1;
     nfigs = 1;
+    FontName = 'Arial'; % default axis font
+    FontSize = 14;      % default axis font size 
+    units = 'inches';   % default units for ensembler
 end
 
+mult = 1; % label font size multiplier
 
-FontName = 'Arial'; % default axis font
-FontSize = 14;      % default axis font size
-
-fig = figure('name',nm,'units','inches','position',[0 0 fw fh],'menubar','none',...
+fig = figure('name',nm,'units',units,'position',[0 0 fw fh],'menubar','none',...
              'numbertitle','off','keypressfcn','ensembler(''keypress'')');
 % ,  th = uitoolbar(fig)
 
@@ -127,7 +136,7 @@ if i == nfigs % only the master gets uimenu
 end
 
 fpos = get(fig,'position');
-uicontrol('units','inches','style','text','position',[0 fpos(4)-.5 fpos(3) .25],'tag',...
+uicontrol('units',units,'style','text','position',[0 fpos(4)-.5 fpos(3) .25],'tag',...
           'prompt','backgroundcolor',get(gcf,'color'),'FontSize',FontSize);
 fpos(4) = fpos(4)-.25;
 
@@ -149,12 +158,15 @@ for i = 1:length(xvec)
             cnum = length(xvec);
         end
         
-        ax = axes('units','inches','position',[xpos,ypos,xwid,ywid],'tag',num2str([lyvec-rnum+1 cnum]),'box','on','userdata',...
-            [rnum,cnum],'buttondownfcn','ensembler(''buttondown'')',...
-            'FontName',FontName,'FontSize',FontSize);
+        ax = axes('units',units,'position',[xpos,ypos,xwid,ywid],'tag',...
+                  num2str([lyvec-rnum+1 cnum]),'box','on','userdata',...
+                  [rnum,cnum],'buttondownfcn','ensembler(''buttondown'')',...
+                  'FontName',FontName,'FontSize',FontSize,'LabelFontSizeMultiplier',mult,...
+                  'TitleFontSizeMultiplier',mult,'TitleFontWeight','bold');
         
         hnd = title(ax,get(ax,'tag'));
-        set(hnd,'units','normalized','position',[.5 1 0],'horizontalalignment','center','verticalalignment','bottom');
+        set(hnd,'units','normalized','position',[.5 1 0],'horizontalalignment','center',...
+           'verticalalignment','bottom');
         
     end
 end

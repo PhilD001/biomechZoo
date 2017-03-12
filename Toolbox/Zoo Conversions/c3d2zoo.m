@@ -56,6 +56,9 @@ function data = c3d2zoo(fld,del)
 % Updated by Philippe C. Dixon Nov 2016
 % - cleaned up code to be more consistent with recent biomechZoo updates
 % - added units for EMG (voltage)
+%
+% Updated by Philippe C. Dixon March 9th 2017
+% - Fixed bug for c3d files without any analog fields 
 
 
 % SET DEFAULTS / ERROR CHECK -----------------------------------------------------------------
@@ -133,7 +136,7 @@ for i = 1:length(fl)
     %
     data.zoosystem.Video.Freq = r.Header.VideoHZ;
     
-    if isfield(r.Parameter,'ANALOG')
+    if r.Parameter.ANALOG.USED.data   % updated by PD March 2017
         data.zoosystem.Analog.Freq = r.Parameter.ANALOG.RATE.data;
     else
         data.zoosystem.Analog.Freq = 0;
@@ -167,16 +170,13 @@ for i = 1:length(fl)
     %
     data.zoosystem.Header = setHeader(r);
     
-    
     % Set unit information
     %
     data.zoosystem.Units = setUnits(r,data);
     
-    
     % set force plate information
     %
     data.zoosystem.Analog.FPlates = setFPinfo(r);
-    
     
     % set anthro metainformation (if available) to zoosystem branch of data struct
     %
@@ -187,7 +187,6 @@ for i = 1:length(fl)
     %
     data = setEvents_data(data,r);
     
-   
     % set all other meta info
     %
     mch = setdiff(fieldnames(r),{'VideoData','AnalogData'});
@@ -195,7 +194,6 @@ for i = 1:length(fl)
     for m = 1:length(mch)
         data.zoosystem.OtherMetaInfo.(mch{m}) = r.(mch{m});
     end
-    
     
     % Save all into to file
     %
@@ -209,9 +207,7 @@ for i = 1:length(fl)
     
     if del
         delete(fl{i})
-    end
-    
-    
+    end  
 end
 
 %---SHOW END OF PROGRAM-------------------------------------------------------------------------
@@ -337,7 +333,15 @@ function data = setEvents_data(data,r)
 if isfield(r.Parameter,'EVENT')
 
     vidFreq = data.zoosystem.Video.Freq;
-    vch = data.zoosystem.Video.Channels{1};
+    
+    vch = data.zoosystem.Video.Channels;
+    
+    if isempty(vch)
+        disp('missing video channels')
+        return
+    else 
+        vch = data.zoosystem.Video.Channels{1};
+    end
     
     if isfield(r.Parameter.EVENT,'TIMES')
         

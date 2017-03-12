@@ -3,10 +3,10 @@ function data =readc3d(fname)
 % DATA = READC3D(FNAME) will read a .c3d file and output the data in a structured array
 %
 % ARGUMENTS
-% fname     ... the c3d file and path (as a string) eg: 'c:\documents\myfile.c3d'
+%  fname     ... the c3d file and path (as a string) eg: 'c:\documents\myfile.c3d'
 % 
 % RETURNS
-% data      ...  structured array
+%  data      ...  structured array
 %
 % Notes
 % - Machinetype variable may not be correct for intel or MIPS C3D files.
@@ -45,7 +45,9 @@ function data =readc3d(fname)
 % 
 % Updated by Philippe C. Dixon Aug 24th 2015
 % - Fixed bug in the 'GEN_SCALE' field experienced by some users 
-
+%
+% Updated by Philippe C. Dixon March 9th 2017
+% - Fixed bug for c3d files without any analog fields 
 
 
 % -------------------------------------------
@@ -177,7 +179,7 @@ data.Parameter = P;
 %first position
 fseek(fid,(data.Parameter.POINT.DATA_START.data-1)*512,'bof');
 %Analogue data parameters
-if isfield(data.Parameter,'ANALOG')
+if data.Parameter.ANALOG.USED.data                      % PD update March 2017
     numAnalogue = data.Parameter.ANALOG.USED.data;
     Alabels = cellstr(data.Parameter.ANALOG.LABELS.data');
     Ascale = data.Parameter.ANALOG.SCALE.data;
@@ -206,7 +208,6 @@ else
     Gscale = [];
     Aoffset = [];
 end
-
 
 
 %Video (3D) data parameters
