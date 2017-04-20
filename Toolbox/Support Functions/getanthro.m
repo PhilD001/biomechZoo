@@ -34,19 +34,19 @@ if isempty(r)
              
         case 'rkneewidth'
             markerDiam = getanthro(data,'MarkerDiameter');
-            [~,r] = jointWidthPiG(data,markerDiam);
+            [~,r] = jointwidthPiG_data(data,markerDiam);
 
         case 'lkneewidth'
             markerDiam = getanthro(data,'MarkerDiameter');
-            [~,~,r] = jointWidthPiG(data,markerDiam);
+            [~,~,r] = jointwidthPiG_data(data,markerDiam);
             
         case 'ranklewidth'
             markerDiam = getanthro(data,'MarkerDiameter');
-            [~,~,~,r] = jointWidthPiG(data,markerDiam);
+            [~,~,~,r] = jointwidthPiG_data(data,markerDiam);
               
         case 'lanklewidth'
              markerDiam = getanthro(data,'MarkerDiameter');
-            [~,~,~,~,r] = jointWidthPiG(data,markerDiam);
+            [~,~,~,~,r] = jointwidthPiG_data(data,markerDiam);
           
         case 'mass'
             r = getanthro(data,'bodymass');

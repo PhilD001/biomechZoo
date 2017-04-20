@@ -2,12 +2,10 @@ function zooinfo
 
 % The biomechanics Toolbox Copyright (c) 2006-2016 (Main contributors)
 %
-% Latest version: v1.3 (November 2016)
-% 
 % Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
+% Philippe C. Dixon (PhD), Harvard University. Cambridge, USA.
+% Yannick Michaud-Paquette (MSc), McGill University. Montreal, Canada.
+% JJ Loh (MSc), Medicus Corda. Montreal, Canada.
 % 
 % Contact:
 % philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
@@ -30,4 +28,9 @@ function zooinfo
 % for the processing, analysis, and visualization of biomechanical movement data
 % Computer Methods and Programs in Biomedicine. 2017. 140:1-10.
 % DOI: http://dx.doi.org/10.1016/j.cmpb.2016.11.007
+
 help zooinfo
+
+version = '1.3.1';
+date = ' (April 2016)';
+disp(['  Latest version: ',num2str(version),date])

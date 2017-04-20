@@ -1,6 +1,6 @@
-function data = makebones(data,type,foot_flat,test)
+function data = makebones_data(data,type,foot_flat,test)
 
-% DATA = MAKEBONES(data,type,foot_flat,test) creates segment 'bones' for use in kinematic / 
+% DATA = MAKEBONES_DATA(data,type,foot_flat,test) creates segment 'bones' for use in kinematic / 
 % kinetic modelling or for visualization in director. Bones are virtual markers representing 
 % segment axes.
 %
@@ -20,7 +20,6 @@ function data = makebones(data,type,foot_flat,test)
 %   'MarkerDiameter, R/LLegLength,R/LKneeWidth,R/LAnkleWidth
 % - Foot length may be inexact during visualization in director. Joint angles are unaffected
 % - Only lower-limb bones are currently created
-% - makebones is depreciated. Use makebones_data
 %
 % See also getbones, bmech_kinematics, bmech_kinetics
 
@@ -32,8 +31,8 @@ function data = makebones(data,type,foot_flat,test)
 % Updated by Philippe C. Dixon June 2016
 % - All segment-emedded axes verified (good agreement)
 % - All joint centers verified (good agreement)
-%
-% Updated by Philippe C. Dixon Dec 2016
+
+% Updated by Philippe C. Dixon De 2016
 % - Improved help
 
 

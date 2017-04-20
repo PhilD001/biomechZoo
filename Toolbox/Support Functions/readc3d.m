@@ -46,8 +46,9 @@ function data =readc3d(fname)
 % Updated by Philippe C. Dixon Aug 24th 2015
 % - Fixed bug in the 'GEN_SCALE' field experienced by some users 
 %
-% Updated by Philippe C. Dixon March 9th 2017
+% Updated by Philippe C. Dixon April 2017
 % - Fixed bug for c3d files without any analog fields 
+% - Added error check for files that can't be opened
 
 
 % -------------------------------------------
@@ -341,6 +342,9 @@ r = data;
 
 function r = getmachinecode(fname)
 fid = fopen(fname,'r');
+if fid==-1
+    error(['unable to open file: ',fname])
+end
 pblock=fread(fid,1,'int8')-1;         %getting the 512 block number where the paramter section is located block 1 = first 512 block of the file
 fseek(fid,pblock*512+3,'bof');
 r = fread(fid,1,'uint8');

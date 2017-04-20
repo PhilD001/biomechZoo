@@ -10,7 +10,10 @@ function data = ankleoffsetPiG_data(data,sdata)
 %
 % RETURNS
 %  data   ...  dynamic trial data with offsets appended to file
-
+%
+% NOTES
+% - This is a likely source of error between PiG and biomechZoo. Further
+%   work could explore why the two estimates sometimes differ
 
 
 data.zoosystem.Anthro.RStaticPlantFlex = mean(deg2rad(sdata.RightAnkleStaticAngle_x.line));

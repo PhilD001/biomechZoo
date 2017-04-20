@@ -9,8 +9,7 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 %  colors     ...  1 x c cell array of colors for each bar
 %  ax         ...  handle of axis
 %  lg         ...  create legend 0: no, 1: yes
-%  type       ...  'standard' or 'special'. If special, first two bars are
-%                  separated from the rest
+%
 % RETURNS
 %  lg         ,,,  Legend handle
 %
@@ -42,7 +41,11 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 %
 % Updated by Philippe C. Dixon March 2016
 % - compatible with r2014b +
+%
+% Updated by Philippe C. Dixon April 2017
+% - compatible with Linux platform
 
+barWidth = 0.9; % default
 
 %---CHECK FOR APPROPRIATE SIZE OF DATA------------------------------
 %
@@ -73,15 +76,21 @@ end
 z = zeros(r,c);
 barvals = [barval; z];
 
-if verLessThan('matlab','8.4.0')
-    h = bar(barvals,0.9,'grouped');
+if verLessThan('matlab','8.4.0') %|| strfind(computer,'GLNXA64')
+    h = bar(barvals,barWidth,'grouped');
     
 else
     barvals = barvals(1,:);
-    x = 1:1:length(barvals);
+    x = 1:1:length(barvals);       % creates even spacing
+    
+    % if length(barvals)==4
+    %    x = [1,2,3.4,4.4];           % an example for uneve spacing
+    % end
+    
     h = zeros(length(barvals),1);
     for i = 1:length(barvals)
-        h(i) = bar(x(i), barvals(i));
+        h(i) = bar(x(i),barvals(i),barWidth);
+        hold on
     end
     
     
@@ -103,7 +112,7 @@ if isequal(colors(1,:),colors(2,:)) && r_col==c
     
     colors = [1 0 0; 0 0 1; 1 1 0; 1 0 1;0 1 1;0 1 0;0 0 0];  % put more if needed
     
-    if ~verLessThan('matlab','8.4.0')
+    if ~verLessThan('matlab','8.4.0') 
         if n_colors > length(colors)
             error('add more colors to matrix')
         end
@@ -120,7 +129,7 @@ end
 
 %---GET POSITION OF MIDDLE OF BAR GRAPHS------------------------------
 %
-if verLessThan('matlab','8.4.0')
+if verLessThan('matlab','8.4.0') 
     bhnd = findobj(ax,'type','patch');
     x = zeros(length(bhnd),1);
     

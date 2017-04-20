@@ -4,13 +4,13 @@ function data = kinematics_data(data,settings)
 % joint angles based on the joint coordinate system of Grood and Suntay (1983)
 %
 % ARGUMENTS
-%  data     ...  Zoo data
+%  data     ...  Zoo data 
 %  settings ...  Settings control (struct) with the following fields:
 %                'graph' (boolean). Graph comparisons agains Vicon. Default, false
 %                'comp'  (boolean). Vicon vs BiomeZoo RMS diff (if available). Default, true
 %
 % RETURNS
-%  data    ...   zoo data appended with kinemaitc channels
+%  data    ...   Zoo data appended with kinemaitc channels
 %
 %
 % NOTES:
@@ -20,9 +20,8 @@ function data = kinematics_data(data,settings)
 % - For PiG, choice of axes for angle computation based on detailed work of Vaughan
 %   (Dynamics of Human Gait 1999, Appendix B p94-96). This is the Grood and Suntay method.
 % - For OFM choice of axes based on trial and error.
-% - Only the lower limb PiG outputs of this funciton have been validated to date
-%   (see Fig4.dpf and Supplemental Fig2.pdf in ~\biomechZoo-samplestudy\Figures\manuscript\ 
-% -  
+% - Only the lower limb PiG outputs of this function have been validated to date
+%   (see Fig4.pdf and Supplemental Fig2.pdf in ~\biomechZoo-samplestudy\Figures\manuscript\ 
 %
 % SUMMARY OF CALCULATIONS
 %
@@ -75,6 +74,10 @@ function data = kinematics_data(data,settings)
 % - biomechZoo pelvis angles validated against PiG outputs for straight
 %   walking see ~/biomechZoo-samplestudy/Figures/Pelvis_kinematics_Straight.pdf
 % - improved graphical outputs
+%
+% Updated by Philippe C. Dixon April 2017
+% - Improved checkflipPig function
+
 
 % Set defaults
 %
@@ -207,7 +210,7 @@ end
 
 
 
-%=================EMBEDDED FUNCTIONS=======================================
+%=================EMBEDDED FUNCTIONS======================================================
 
 
 function [data,settings] = testmode
@@ -225,7 +228,7 @@ else
     error('only c3d and zoo files can be input')
 end
 
-settings.graph  = true;                                    % graph results
+settings.graph  = true;                                         % graph results
 settings.comp   = true;
 
 
@@ -234,20 +237,14 @@ function ort = getdataOFM(d)
 % For HF, FF, HX these are correct axes, for TB x and z are interchanged.
 % This is accounted for in groodsuntay.m
 
-z = (d{2}-d{1})/10;   % Anterior - Origin:          Creates anterior vector
-y = (d{3}-d{1})/10;   % Medial - Origin:            Creates medial vector (right side), Lateral vector (left side)
-x = (d{4}-d{1})/10;   % Distal - Origin:            Creates vector along long axis of bone
-
-% rw = size(x);
-% ort = [];
-% for i = 1:rw
-%     ort = [ort;{[x(i,:);y(i,:);z(i,:)]}]; %for updated grood suntay version
-% end
+z = (d{2}-d{1})/10;                             % Anterior-Origin: ant vect
+y = (d{3}-d{1})/10;                             % Medial-Origin: med vector (right), Lat vect (left)
+x = (d{4}-d{1})/10;                             % Distal-Origin: long axis of bone
 
 rw = length(x);
 ort = cell(rw,1);
 for i = 1:rw
-    ort{i} = [x(i,:);y(i,:);z(i,:)];     %for updated grood suntay version
+    ort{i} = [x(i,:);y(i,:);z(i,:)];            % for updated grood suntay version
 end
 
 
@@ -259,14 +256,14 @@ A = 2;
 L = 3;
 P = 4;
 
-x = (d{A}-d{O})/10;   % Anterior - Origin:          Creates anterior vector
-y = (d{L}-d{O})/10;   % Medial - Origin:            Creates medial vector (right side), Lateral vector (left side)
-z = (d{P}-d{O})/10;   % Distal - Origin:            Creates vector along long axis of bone
+x = (d{A}-d{O})/10;                            % Anterior-Origin: ant vector
+y = (d{L}-d{O})/10;                            % Medial-Origin: med vect (right), Lat vect (left)
+z = (d{P}-d{O})/10;                            % Distal-Origin: long axis of bone
 
 rw = length(x);
 ort = cell(rw,1);
 for i = 1:rw
-    ort{i} = [x(i,:);y(i,:);z(i,:)];     %for updated grood suntay version
+    ort{i} = [x(i,:);y(i,:);z(i,:)];           % for updated grood suntay version
 end
 
 
@@ -289,9 +286,6 @@ function [flx,abd,tw] = groodsuntay(r,jnt,dir)
 % outputs
 
 % Axis set-up follows Vicon
-
-% Updated January 15th 2011
-% - works with VICON2GROODSUNTAY
 
 %---SET UP VARIABLES ---
 
@@ -326,11 +320,7 @@ switch bone
       
     case {'Pelvis','Femur'}  % Hip and Knee
         [floatax,~,~,lat_prox,lat_dist,long_prox,long_dist] = makeaxPiG(pax,dax);
-        
-        %         flx = angle(floatax,long_prox);  % this is actually incorrect but can be fixed by offset
-        %         abd = angle(lat_prox,long_dist);
-        %         tw  = angle(floatax,lat_dist);
-        
+                
         flx = asind(dot(floatax,long_prox,2));
         abd = asind(dot(lat_prox,long_dist,2));
         tw  = asind(dot(floatax,lat_dist,2));
@@ -357,17 +347,17 @@ switch bone
         
         [floatax,~,ant_dist,lat_prox,lat_dist,long_prox] = makeaxOFM(pax,dax);
         
-        flx = angle(floatax,long_prox);        % plantar/ dorsi
-        abd = angle(lat_prox,ant_dist);        % inv / eve
-        tw  = angle(floatax,lat_dist);         % int / ext
+        flx = angle(floatax,long_prox);           % plantar/ dorsi
+        abd = angle(lat_prox,ant_dist);           % inv / eve
+        tw  = angle(floatax,lat_dist);            % int / ext
         
     case {'HindFoot','ForeFoot'}  % forefoot hindfoot angle
         
         [floatax,ant_prox,ant_dist,lat_prox,lat_dist] = makeaxOFM(pax,dax);
         
-        flx = angle(floatax,ant_prox);        % plantar/ dorsi
-        abd = angle(lat_prox,ant_dist);       % int / ext
-        tw  = angle(floatax,lat_dist);        % pro / suppination
+        flx = angle(floatax,ant_prox);            % plantar/ dorsi
+        abd = angle(lat_prox,ant_dist);           % int / ext
+        tw  = angle(floatax,lat_dist);            % pro / suppination
         
     otherwise
         [floatax,~,~,lat_prox,lat_dist,long_prox,long_dist] = makeaxPiG(pax,dax);
@@ -460,14 +450,14 @@ end
 
 function flx = checkflipPiG(flx,float,long_prox)
 
-one = cross(float(1,:),long_prox(1,:));   % here the calculation must be correct
+maxVal = abs(max(flx));
+minVal = abs(min(flx));
 
-if one(1) > 0
-    dir ='pos';
+if maxVal > minVal
+    dir = 'pos';
 else
     dir = 'neg';
 end
-
 
 flcross = zeros(size(float));
 nflx = zeros(size(flx));
@@ -478,7 +468,7 @@ if isin(dir,'pos')
         flcross(i,:) = cross(float(i,:),long_prox(i,:));
         
         if flcross(i,1) < 0
-            nflx(i) = -180-flx(i);
+            nflx(i) = 180-flx(i);
         else
             nflx(i) = flx(i);
         end
@@ -489,8 +479,8 @@ else
     for i = 1:length(float)
         flcross(i,:) = cross(float(i,:),long_prox(i,:));
         
-        if flcross(i,1) > 0
-            nflx(i) = 180-flx(i);
+        if flcross(i,1) < 0
+            nflx(i) = -180-flx(i);
         else
             nflx(i) = flx(i);
         end

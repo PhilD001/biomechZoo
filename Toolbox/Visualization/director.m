@@ -63,10 +63,12 @@ switch action
     
     case 'space'
         
-        if ~isempty(finddobj('figure'))
-            delete(findobj('type','figure','tag','space'));
-        end
+        %fig = findobj('type','figure','tag','space');
         
+%         if ~isempty(finddobj('figure'))
+%             delete(findobj('type','figure','tag','space'));
+%         end
+
         fig = figure('tag','space','color',[0 0 0],'name','director',...
             'menubar','none','numbertitle','off','keypressfcn','dkeypress',...
             'buttondownfcn','director(''buttondown'')','doublebuffer','on','units','centimeters','resizefcn','director(''resize'')','position',[2 2 30 18]);
@@ -134,6 +136,9 @@ switch action
         surface('xdata',x,'ydata',y,'zdata',z,'facecolor',[0 0 1],'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','z');
         
         light('parent',ax2,'position',[3 0 0]);
+        
+        
+        
         director('units load');
         producer.mov = [];
         producer.cut = 0;
@@ -188,8 +193,8 @@ switch action
         set(findobj('tag','delete graph'),'Visible','on');
         
     case 'open'
-        
-        director('clear all objects')
+%         director('space')
+       
         director('load bones');       % loads the bone props
         
         [f,p] = uigetfile({'*.zoo';'*.c3d'},'Pick a file');   % default is c3d or zoo file
@@ -281,14 +286,11 @@ switch action
         ax = findobj('type','axes','tag','data display');
         data_list = get(findobj('tag','data list'),'String');
         ch = data_list{get(findobj('tag','data list'),'Value')};
-        delete(findobj('type','line','tag','x angle'));
-        delete(findobj('type','line','tag','y angle'));
-        delete(findobj('type','line','tag','z angle'));
-        
-        delete(findobj('type','line'));
-        delete(findobj('type','line'));
-        delete(findobj('type','line'));
-        
+        delete(findobj(ax,'type','line','tag','x angle'));
+        delete(findobj(ax,'type','line','tag','y angle'));
+        delete(findobj(ax,'type','line','tag','z angle'));
+        delete(findobj(ax,'type','line'));
+    
         [~,c] = size(data.(ch).line);
         
         if c==1

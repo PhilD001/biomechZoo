@@ -13,6 +13,10 @@ function varargout = props(action,varargin)
 
 % Updated by Philippe C. Dixon December 2016
 % - Added toe 'bones' to zooplugingait subfunction
+%
+% Updated by Philippe C. Dixon April 2017
+% - improved searching of prop files using ensembler
+
 
 switch action
     
@@ -1407,7 +1411,11 @@ if ~isempty(fpch)
     
      for i = 1:nplates
          f = ['forceplate',num2str(i),'.prop'];
-         prp = props('load',[path,'Cinema objects',s,'forceplates',s,f]);     
+         file = engine('fld',path,'search file',f);
+         if isempty(file)
+             error(['cannot locate file: ',f])
+         end
+         prp = props('load',file{1});     
          zooinsertdata(prp,fpch,data);
          setfporientation(prp,data,globalOr)    % set global orientation of FP
          getfpcop(prp,data)

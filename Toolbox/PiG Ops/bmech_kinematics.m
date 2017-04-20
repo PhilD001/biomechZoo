@@ -22,6 +22,9 @@ function bmech_kinematics(fld,settings)
 % Revision History
 %
 % Created by Philippe C. Dixon June 13th 2016
+%
+% Updated by Philippe C. Dixon April 2017
+% - Call to obsolete makebones replaced by makebones_data
 
 
 % Set defaults/error check
@@ -64,7 +67,7 @@ for i = 1:length(flDyn)
     
     % Compute ankle static offset using static trial
     %
-    sdata = makebones(sdata,'static',settings.flat);
+    sdata = makebones_data(sdata,'static',settings.flat);
     sdata = kinematics_data(sdata);
     
     
@@ -72,7 +75,7 @@ for i = 1:length(flDyn)
     %
     batchdisplay(flDyn{i},'computing PiG kinematics')
     data = ankleoffsetPiG_data(data,sdata);
-    data = makebones(data,'dynamic');
+    data = makebones_data(data,'dynamic');
     data = kinematics_data(data,settings);
     
     % save to zoo
