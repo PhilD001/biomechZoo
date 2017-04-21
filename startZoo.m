@@ -25,16 +25,19 @@ lpad = length(pmsg) + pad + length(smsg);                      % length of longe
 frmt = ['%-',num2str(lpad),'s'];                               % format output nicely
 
 
-% Welcome message
-%
-clc
-fprintf('---------------- Welcome to the biomechZoo Toolbox v1.3 ----------------------\n\n')
-
-
 % Get Zoosystem folders and subfolders
 %
 sub = subdir(zoo_fld);
 indx = strfind(sub{1},filesep);                                % find slashes in roots
+
+
+% Welcome message
+%
+path([zoo_fld,filesep,'Support Functions'],path)               % quick add path
+[version,date] = zooinfo;
+clc
+fprintf(['---------------- Welcome to the biomechZoo Toolbox ',version,date,' ----------------------\n\n'])
+
 
 
 % restore default path

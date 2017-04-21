@@ -1,6 +1,6 @@
-function zooinfo
+function [version,date] = zooinfo
 
-% The biomechanics Toolbox Copyright (c) 2006-2016 (Main contributors)
+% The biomechZoo biomechanics Toolbox Copyright (c) 2006-2017 (Main contributors)
 %
 % Main contributors:
 % Philippe C. Dixon (PhD), Harvard University. Cambridge, USA.
@@ -8,7 +8,7 @@ function zooinfo
 % JJ Loh (MSc), Medicus Corda. Montreal, Canada.
 % 
 % Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
+% philippe.dixon@gmail.com 
 % 
 % Web:
 % https://www.biomechzoo.com

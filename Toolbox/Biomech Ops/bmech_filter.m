@@ -22,6 +22,7 @@ function bmech_filter(fld,ch,filt)
 %
 % See also filter_data, filter_line, butter, cheby1, cheby2, ellip,besself
 
+
 % Revision history:
 %
 % Created by JJ Loh 2006
@@ -30,7 +31,6 @@ function bmech_filter(fld,ch,filt)
 % - improved functionality
 % - improved help
 % - additional settings
-
 
 
 % Default settings/error checking
