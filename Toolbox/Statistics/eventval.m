@@ -83,7 +83,9 @@ function evalFile = eventval(varargin)
 % - Clean up for input arguments
 % - Additional information on 'info' sheet
 % - Bug fix: skips files with missing conditions
-
+%
+% Updated by Philippe C. Dixon May 2017
+% - error check for forgetting '.' in extension 
 
 
 % tic  % start calculation timer
@@ -128,6 +130,10 @@ end
 %
 if isempty(fld)
     fld = uigetfolder;
+end
+
+if ~strcmp(ext(1),'.')
+    ext = ['.',ext];
 end
 
 if strcmp(excelserver,'on') && ~strcmp(ext,'.xls')

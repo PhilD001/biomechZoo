@@ -5,7 +5,7 @@ function updatedata(fld)
 
 delete(findobj('type','line'));
 delete(findobj('type','patch'));
-delete(findobj('string','\diamondsuit'));
+delete(findobj('string','\bullet'));
 %--reload-----
 loaddata(fld,findobj('type','figure'));
 clear999

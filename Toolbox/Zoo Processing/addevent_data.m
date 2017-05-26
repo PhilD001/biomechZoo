@@ -63,6 +63,9 @@ for i = 1:length(ch)
     
     switch type
         
+        case 'absMax'  
+            [eyd,exd] = max(abs(yd));
+            
         case 'first'
             exd = 1;
             eyd = yd(exd);

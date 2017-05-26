@@ -1,6 +1,6 @@
 function bmech_partition(fld,evt1,evt2,nfld)
 
-% BMECH_PARTITION(evt1,evt2,fld,folders) partitions (cuts) files from evt1 and evt2.
+% BMECH_PARTITION(fld,evt1,evt2,nfld) partitions (cuts) files from evt1 and evt2.
 %
 % ARGUMENTS
 %  fld      ...  Folder to batch process (string). Default: folder selection window.
@@ -28,7 +28,9 @@ function bmech_partition(fld,evt1,evt2,nfld)
 % Updated by Philippe C. Dixon Sept 2015
 % - implements the new 'zsave' procedure in which the processing information
 %   is saved to the zoo file in the branch 'data.zoosystem.processing'
-
+%
+% Updated by Philippe C. Dixon May 2017
+% - Improved help section
 
 
 % Set Defaults
@@ -47,9 +49,23 @@ if isempty(nfld)
     
     for i = 1:length(fl)
         data = zload(fl{i});
-        batchdisplay(fl{i},'partitioning');
-        data = partition_data(data,evt1,evt2);
-        zsave(fl{i},data,[evt1,' to ',evt2])
+        
+        if ~isempty(findfield(data,evt1)) && ~isempty(findfield(data,evt2))
+            batchdisplay(fl{i},'partitioning');
+            data = partition_data(data,evt1,evt2);
+            zsave(fl{i},data,[evt1,' to ',evt2])
+        else
+            
+            if isempty(findfield(data,evt1))
+                disp(['evt1: ',evt1,' not found'])
+            end
+            if isempty(findfield(data,evt2))
+                disp(['evt2: ',evt2,' not found'])
+            end 
+                
+            nfl{i} = fl{i}; %#ok<AGROW>
+        end
+
     end
     
 else

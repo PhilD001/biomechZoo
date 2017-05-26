@@ -10,6 +10,9 @@ function makebar
 %
 % Updated by Philippe C. Dixon Jan 2017
 % - updated to work with the new resize_ensembler
+%
+% Updated by Philippe C. Dixon May 2017
+% - updated to work with improved GUI settings
 
 ax = findobj(gcf,'type','axes');
 
@@ -23,7 +26,9 @@ for i = 1:length(ax)
         ebar = findobj(ax(i),'LineWidth',1.12);
     end
     
-    if ~isempty(ebar)
+    if isempty(ebar)
+        continue
+    else
         ehnd = findobj(ax(i),'type','text');
         
         lns = findobj(ax(i),'type','line');

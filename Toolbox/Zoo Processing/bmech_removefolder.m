@@ -36,7 +36,6 @@ for i = 1:length(sfld)
         delete(fl{j})
     end
     
-    
     sfld_all = subdir(fld)';
     
     for j = 1:length(sfld_all)

@@ -23,7 +23,9 @@ function r = filter_line(r,filt,fsamp)
 %
 % Created by Philippe C. Dixon July 2016
 % - based on code from JJ Lo 
-
+%
+% Updated by Philippe C. Dixon May 2017
+% - added error checking
 
 % error checking
 %
@@ -31,6 +33,15 @@ if strcmp(filt.pass,'low') || strcmp(filt.pass,'high') || strcmp(filt.pass,'band
     filt.pass = [filt.pass,'pass'];
 end
 
+if isfield(filt,'ftype')
+    filt.type = filt.ftype;
+    filt = rmfield(filt,'ftype');
+end
+
+if isfield(filt,'forder')
+    filt.order = filt.forder;
+    filt = rmfield(filt,'forder');
+end
 
 % add sampling rate to filt struct
 %

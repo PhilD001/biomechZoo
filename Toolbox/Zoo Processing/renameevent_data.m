@@ -17,12 +17,19 @@ function data = renameevent_data(data,evt,nevt)
 %
 % Updated by Philippe C. Dixon Oct 2016
 % -More efficient code used
+%
+% Updated by Philippe C. Dixon May 2017
+% -Error check for non existing event names
 
 
 for i = 1:length(evt)
-   [~,ch] = findfield(data,evt{i}); 
-   data.(ch).event.(nevt{i})=data.(ch).event.(evt{i});  
-   data.(ch).event = rmfield(data.(ch).event, evt{i});
+    [~,ch] = findfield(data,evt{i});
+    if isempty(ch)
+        disp(['Event: ',evt{i},' not found'])
+    else
+        data.(ch).event.(nevt{i})=data.(ch).event.(evt{i});
+        data.(ch).event = rmfield(data.(ch).event, evt{i});
+    end
 end
 
 % for i = 1:length(ch)

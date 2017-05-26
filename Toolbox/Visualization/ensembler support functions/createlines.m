@@ -1,7 +1,6 @@
 function createlines(fig,data,fl,settings)
 
 % settings = CREATELINES(fig,data,fl) used by ensembler GUI to plot lines
-%
 
 
 % Updated by Philippe C. Dixon July 2016
@@ -17,7 +16,7 @@ function createlines(fig,data,fl,settings)
 % Set Defaults for ensembler events
 %
 if nargin==3
-    settings.string = '\diamondsuit';
+    settings.string = '\bullet';
     settings.verticalalignment = 'middle';
     settings.horizontalalignment = 'center';
     settings.FontSize = 14;
@@ -28,8 +27,6 @@ axs = findobj(fig,'type','axes');
 
 for j = 1:length(axs)
     ch = get(axs(j),'tag');
-    
-   
     
     if ~isempty(ch) && isempty(strfind(ch,' '))
             
@@ -47,7 +44,9 @@ for j = 1:length(axs)
         
         [~,c] = size(ydata);
         
-        if c~=1
+        if isempty(c)
+            error('no line data available')
+        elseif c~=1
             error('data must be n x 1 for graphing, explode first')
         end
         

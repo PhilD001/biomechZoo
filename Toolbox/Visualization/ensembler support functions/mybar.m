@@ -11,7 +11,7 @@ function lg=mybar(barval,evalue,conditions,colors,ax,lg)
 %  lg         ...  create legend 0: no, 1: yes
 %
 % RETURNS
-%  lg         ,,,  Legend handle
+%  lg         ...  Legend handle
 %
 % NOTES:
 % - this is an ensembler standalone function. It may not work well outside of the

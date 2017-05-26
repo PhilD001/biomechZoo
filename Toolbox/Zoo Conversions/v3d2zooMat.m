@@ -133,9 +133,9 @@ for i = 1:length(fl)
                 
                 if isin(ch{k},'__')
                      rr = strrep(ch{k},'__','_');
-                     data = addchannel(data,rr,yd,'Video');       % add physical channel
+                     data = addchannel_data(data,rr,yd,'Video');       % add physical channel
                 else
-                    data = addchannel(data,ch{k},yd,'Video');       % add physical channels
+                    data = addchannel_data(data,ch{k},yd,'Video');       % add physical channels
                 end
                 
             end
@@ -263,9 +263,9 @@ for i = 1:length(fl)
                 
                 if isin(ch{k},'__')
                      rr = strrep(ch{k},'__','_');
-                     data = addchannel(data,rr,yd,'Video');       % add physical channel
+                     data = addchannel_data(data,rr,yd,'Video');       % add physical channel
                 else
-                    data = addchannel(data,ch{k},yd,'Video');       % add physical channels
+                    data = addchannel_data(data,ch{k},yd,'Video');       % add physical channels
                 end
                 
             end

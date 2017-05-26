@@ -9,6 +9,9 @@ function startup_ensembler(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh,...
 % Updated Feb 2017 by Philippe C. Dixon
 % - possibility to set font type and size from original ensembler prompt
 % - axes resize automatically if user changes size of figure
+%
+% Updated May 2017 by Philippe C. Dixon
+% - Bug fix for users of legacy Matlab version < r2014b ('8.4.0')
 
 if nargin < 10
     i = 1;
@@ -22,7 +25,6 @@ mult = 1; % label font size multiplier
 
 fig = figure('name',nm,'units',units,'position',[0 0 fw fh],'menubar','none',...
              'numbertitle','off','keypressfcn','ensembler(''keypress'')');
-% ,  th = uitoolbar(fig)
 
 if i == nfigs % only the master gets uimenu
     
@@ -40,6 +42,8 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','increase fonts','callback','ensembler(''increase fonts'')');
     uimenu(mn,'label','property editor on','callback','ensembler(''property editor on'')','separator','on');
     uimenu(mn,'label','property editor off','callback','ensembler(''property editor off'')');
+    uimenu(mn,'label','quickedit','callback','ensembler(''quickedit'')','separator','on');
+
     % uimenu(mn,'label','datacursormode off','callback','ensembler(''datacursormode off'')','separator','on');
     
     mn = uimenu(gcf,'label','Ensembler');
@@ -82,7 +86,6 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','clear titles','callback','ensembler(''clear titles'')');
     uimenu(mn,'label','clear prompt','callback','ensembler(''clear prompt'')');
 
-    
     mn = uimenu(gcf,'label','Line');
     uimenu(mn,'label','line style','callback','ensembler(''line style'')');
     uimenu(mn,'label','line style within','callback','ensembler(''line style within'')');
@@ -91,7 +94,6 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','line color within','callback','ensembler(''line color within'')');
     uimenu(mn,'label','quick style','callback','ensembler(''quick style'')','separator','on');
 
-    
     mn = uimenu(gcf,'label','Bar Graph');
     uimenu(mn,'label','bar graph','callback','ensembler(''bar graph'')');   
     uimenu(mn,'label','bar color','callback','ensembler(''bar color'')');
@@ -126,7 +128,6 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','normalize','callback','ensembler(''normalize'')');
     uimenu(mn,'label','custom','callback','ensembler(''custom'')','separator','on');
 
-    
     mn = uimenu(gcf,'label','Analysis');
     uimenu(mn,'label','coupling angles','callback','ensembler(''coupling angles'')','separator','on');
     uimenu(mn,'label','relative angles','callback','ensembler(''relative phase'')','separator','on');
@@ -158,11 +159,18 @@ for i = 1:length(xvec)
             cnum = length(xvec);
         end
         
-        ax = axes('units',units,'position',[xpos,ypos,xwid,ywid],'tag',...
-                  num2str([lyvec-rnum+1 cnum]),'box','on','userdata',...
-                  [rnum,cnum],'buttondownfcn','ensembler(''buttondown'')',...
-                  'FontName',FontName,'FontSize',FontSize,'LabelFontSizeMultiplier',mult,...
-                  'TitleFontSizeMultiplier',mult,'TitleFontWeight','bold');
+        if verLessThan('matlab','8.4.0') % legacy fix, less customization
+            ax = axes('units',units,'position',[xpos,ypos,xwid,ywid],'tag',...
+                num2str([lyvec-rnum+1 cnum]),'box','on','userdata',...
+                [rnum,cnum],'buttondownfcn','ensembler(''buttondown'')',...
+                'FontName',FontName,'FontSize',FontSize);
+        else
+            ax = axes('units',units,'position',[xpos,ypos,xwid,ywid],'tag',...
+                num2str([lyvec-rnum+1 cnum]),'box','on','userdata',...
+                [rnum,cnum],'buttondownfcn','ensembler(''buttondown'')',...
+                'FontName',FontName,'FontSize',FontSize,'LabelFontSizeMultiplier',mult,...
+                'TitleFontSizeMultiplier',mult,'TitleFontWeight','bold');
+        end
         
         hnd = title(ax,get(ax,'tag'));
         set(hnd,'units','normalized','position',[.5 1 0],'horizontalalignment','center',...

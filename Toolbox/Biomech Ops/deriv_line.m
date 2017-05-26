@@ -31,6 +31,8 @@ function r = deriv_line(r,fsamp,filt)
 %
 % Updated by Philippe C. Dixon March 2017
 % - Bug fix for default options
+%
+% Updated by Philippe C. Dixon May 2017
 
 
 % Set defaults/check arguments

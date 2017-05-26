@@ -21,6 +21,8 @@ function data = deriv_data(data,ch,filt)
 % Revision History
 %
 % Created by Philippe C. Dixon July 2016 
+%
+% Updated by Philippe C. Dixon May 2017
 
 
 % Set defaults/check arguments
@@ -54,9 +56,9 @@ suff = '_dot';
 %
 for i = 1:length(ch)
     section = getsection(data,ch{i});
-    fsamp = data.(section).Freq;
+    fsamp = data.zoosystem.(section).Freq;
     r = deriv_line(data.(ch{i}).line,fsamp,filt);
-    data = adddchannel(data,[ch{i},suff],r,section);    
+    data = addchannel_data(data,[ch{i},suff],r,section);    
 end
 
 

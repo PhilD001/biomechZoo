@@ -121,12 +121,14 @@ if nargin == 0
     action = 'start';
 end
 
-global fld     % give every case access to fld
+global fld                              % give every case access to fld
 
-global f p     % give access to [p,f] for an individual trial
+global f p                              % give every case acces to [p,f] 
 
 
-settings.textstring = '\diamondsuit';
+settings.textstring = '\bullet';        % default 'look' for events
+
+ensembler_axis_highlight(false)         % reset axis highlight
 
 
 %================== BEGIN CASE STATEMENTS ============================
@@ -135,6 +137,8 @@ settings.textstring = '\diamondsuit';
 %   statements listed below
 % - Icons can be added to the ensembler menu bar by editing the
 %   '
+
+
 
 switch action
     
@@ -271,7 +275,6 @@ switch action
         resize_ensembler
         
     case 'clear all'
-        
         %clearcolorbars
         
         lg = findobj('type','axes','tag','legend');
@@ -352,6 +355,7 @@ switch action
         
     case 'combine'
         combine
+        
         
     case 'combine all'
         combine_all
@@ -678,10 +682,10 @@ switch action
         
 %         [legend_h, object_h, plot_h, text_strings] = legend(...) returns
 % 
-%     legend_h — Handle of the legend axes
-%     object_h — Handles of the line, patch, and text graphics objects used in the legend
-%     plot_h — Handles of the lines and other objects used in the plot
-%     text_strings — Cell array of the text strings used in the legend
+%     legend_h ï¿½ Handle of the legend axes
+%     object_h ï¿½ Handles of the line, patch, and text graphics objects used in the legend
+%     plot_h ï¿½ Handles of the lines and other objects used in the plot
+%     text_strings ï¿½ Cell array of the text strings used in the legend
    
     case 'line style'
         tg = get(findobj(gcf,'type','line'),'tag');
@@ -793,6 +797,9 @@ switch action
         
     case 'property editor off'
         propertyeditor('off')
+   
+    case 'quickedit'
+        quickedit(fld)
         
     case 'quick style'
         quickstyle

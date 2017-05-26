@@ -9,7 +9,8 @@ function loaddata(fld,figs)
 % Updated by Philippe C. Dixon Nov 2016
 % - outliers are automatically cleared
 
-settings.string = '\diamondsuit';
+%settings.string = '\diamondsuit';
+settings.string = '\bullet';
 settings.verticalalignment = 'middle';
 settings.horizontalalignment = 'center';
 settings.FontSize = 14;
@@ -23,7 +24,7 @@ for i = 1:length(fl)
     data = zload(fl{i});                     % load zoo data
     fig = findfigure(fl{i},figs);            % find in which figure it belongs
     
-    batchdisplay(fl{i},'loading');           % display loading info to command window
+    batchdisp(fl{i},'loading');           % display loading info to command window
 %     pmt = findobj(fig,'tag','prompt');     % get the figure prompt
 %     set(pmt,'string',fl_cat)               % write to figure prompt
     

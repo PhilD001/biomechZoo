@@ -11,7 +11,9 @@ function buttondown
 %
 % Updated  by Philippe C. Dixon October 2016
 % - use of new function concatEnsPrompt to shorten long ensembler prompts
-
+%
+% Updated by Philippe C. Dixon May 2017
+% - current axis is highlighted see ensembler_axis_highlight
 
 hnd = gcbo;
 
@@ -44,9 +46,8 @@ switch get(gcf,'selectiontype')
             set(txt,'string',temp);
             
             if isempty(strfind(get(gcbo,'userdata'),'average_'))
-                set(findobj('string','\diamondsuit'),'color',[1 0 0]); % set back to red
+                set(findobj('string','\bullet'),'color',[1 0 0]); % set back to red
                 
-
                 lns = findobj(gca,'type','line','linestyle','-');
                 lns = setdiff(lns,gcbo);
                 
@@ -80,9 +81,15 @@ switch get(gcf,'selectiontype')
                 
             end
             
-        elseif isnumeric(get(gcbo,'userdata'));
+        elseif isnumeric(get(gcbo,'userdata'))
             
-            if strcmp(get(gcbo,'type'),'patch') || strcmp(get(gcbo,'type'),'axes')
+            if strcmp(get(gcbo,'type'),'axes')         
+               ensembler_axis_highlight(true)        
+               return
+            end
+            
+            
+            if strcmp(get(gcbo,'type'),'patch') 
                 return
             end
             
@@ -96,6 +103,27 @@ switch get(gcf,'selectiontype')
             
             set(gcbo,'color',[0 0 .98])
             %   set(findobj('userdata',gcbo),'color',[0 0 .98]);
+            
+        elseif strcmp(get(gcbo,'string'),'\bullet') % this is an event
+
+            % set up msg
+            txt = findensobj('prompt',gcf);
+            evt = get(gcbo,'tag');                       % event tag
+            trial = get(get(gcbo,'UserData'),'UserData'); % trial tag
+            trial = concatEnsPrompt(trial);
+            msg = [trial,': ', evt];
+            set(txt,'string',msg);
+            
+            % change color of current event (red to blue)
+            %
+            set(findobj('string','\bullet'),'color',[1 0 0]); % all others red
+            set(gcbo,'color',[0 0 1])                          % set current blue
+
+            % set all lines back to normal
+            %
+             set(findobj('type','line','ButtonDownFcn','ensembler(''buttondown'')'),...
+                         'color',[0 0 0],'LineStyle','-'); % set back to oroginal
+        
         end
 end
 

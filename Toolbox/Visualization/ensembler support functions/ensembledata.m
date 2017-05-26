@@ -11,12 +11,15 @@ function ensembledata(vartype)
 % Updated by Philippe C. Dixon Jan 2017
 % - Bug fix to search for 'average_line' field instead of exact line width
 %   (see ensembledata)
+%
+% Updated by Philippe C. Dixon May 2017
+% - updated to work with improved GUI settings
 
 
 % Set defaults
 %
 avLWidth = 1.5;                                         % width of new average lines
-
+meanEvtWidth = 1.12;                                    % width of mean evt lines
 
 % find figure objects
 %
@@ -55,8 +58,8 @@ for i = 1:length(ax)
             continue
         end
         
-        ehnd = findobj(ax(i),'string','\diamondsuit');
-        meanehnd = findobj(ax(i),'string','\bullet');
+        ehnd = findobj(ax(i),'string','\bullet');
+        meanehnd = findobj(ax(i),'string','\diamondsuit');
         
         mn = nanmean(lstk);
         [r,~] = size(lstk);
@@ -123,7 +126,7 @@ for i = 1:length(ax)
             tg = unique(tg);
             
             for k = 1:length(tg)
-                evt = findobj(ax(i),'string','\diamondsuit','tag',tg{k});
+                evt = findobj(ax(i),'string','\bullet','tag',tg{k});
                 estk = [];
                 for e = 1:length(evt)
                     plate = get(evt(e),'position');
@@ -148,7 +151,7 @@ for i = 1:length(ax)
                 
                 hold(ax(i),'on')
                 
-                ebar = errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',1.12); % mean event has special width
+                ebar = errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',meanEvtWidth); % mean event has special width
                 set(ebar,'tag',[tg{k},'_av_',nm])
                 
                 %--horizontal error bar---
@@ -159,7 +162,7 @@ for i = 1:length(ax)
                 line(x,y,'parent',ax(i),'LineWidth',1.1,'tag',[tg{k},'_av_',nm])
                 
                 text('parent',ax(i),'position',[round(mpos(1)) mpos(2)],...
-                     'tag',[tg{k},'_av_',nm],'string','\bullet','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
+                     'tag',[tg{k},'_av_',nm],'string','\diamondsuit','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
                     'color',[1 0 0],'buttondownfcn',get(ax(i),'buttondownfcn'),'userdata',mnhnd);
             
             end
@@ -185,7 +188,7 @@ for i = 1:length(ax)
                 spos = std(estk);
                 
                 text('parent',ax(i),'position',mpos,...
-                    'tag',tg{k},'string','\bullet','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
+                    'tag',tg{k},'string','\diamondsuit','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
                     'color',[1 0 0],'buttondownfcn',get(ax(i),'buttondownfcn'),'userdata',mnhnd); %[0.2 0.6 0.2]
                 hold(ax(i),'on')
                 errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',1.1)

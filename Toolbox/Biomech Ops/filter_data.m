@@ -22,7 +22,7 @@ function data = filter_data(data,ch,filt)
 % NOTES
 % - Sampling rate will be read from zoo file.
 %
-% See also bmech_filt, filter_line, butter, cheby1, cheby2, ellip,besself
+% See also bmech_filter, filter_line, butter, cheby1, cheby2, ellip,besself
 
 
 % Revision history:
@@ -61,7 +61,11 @@ end
 %
 for j = 1:length(ch)
     
-    if isfield(data,ch{j})
+    if strcmp(ch{j},'zoosystem')
+        disp('skipping zoosystem channel')
+        continue
+    
+    elseif isfield(data,ch{j})
         oline = data.(ch{j}).line;
 
         if ismember(ch{j},data.zoosystem.Analog.Channels)
