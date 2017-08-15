@@ -55,14 +55,19 @@ for i = 1:length(ch)
     end
     
     if ~isfield(data,ch{i})
+<<<<<<< HEAD
+        disp(['channel : ',ch{i}, ' does not exist'])
+        continue
+=======
         error(['channel : ',ch{i}, ' does not exist'])
+>>>>>>> ce593d2da63278ad489609035ebd59b949606333
     end
     
     yd = data.(ch{i}).line;
     
-    switch type
+    switch lower(type)
         
-        case 'absMax'  
+        case 'absmax'  
             [eyd,exd] = max(abs(yd));
             
         case 'first'
@@ -83,7 +88,7 @@ for i = 1:length(ch)
             eyd = max(yd)-min(yd);
             exd = 1;
             
-        case {'FS_FP','FO_FP'}
+        case {'fs_fp','fo_fp'}
             AVR = data.zoosystem.AVR;
             if AVR ~=1
                 error('Video and Analog channels must be at same sampling rate, use bmech_resample')
@@ -115,7 +120,7 @@ for i = 1:length(ch)
             
             
             
-        case {'RFS','RFO','LFS','LFO'}
+        case {'rfs','rfo','lfs','flo'}
             exd = ZeniEventDetect(data,type(1),type(2:end));
             
             if isnan(exd)
