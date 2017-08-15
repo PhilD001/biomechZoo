@@ -30,6 +30,9 @@ function bmech_addevent(fld,ch,ename,type,sfld)
 %   addevent algorithm. This can be useful when events do not 'make sence' for
 %   a particular sub folder. e.g. a subfolder of static pose cannot have a
 %   foot strike event. For these files the event would show [1 NaN 0]
+%
+% Updated by Philippe C. Dixon July 2017
+% - Bug fix for option 'all' for ch (github bug report #4)
 
 
 if nargin==4
@@ -49,18 +52,14 @@ end
 
 cd(fld)
 
-if ischar(ch)
-    ch = {ch};
-end
-
 
 % Batch process
 %
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay( fl{i},['adding event ',ename])
+    batchdisp( fl{i},['adding event ',ename])
     data = addevent_data(data,ch,ename,type);
-    if isin(ch{1},'all')
+    if strcmp(ch,'all')
         zsave(fl{i},data,['added ',type,' to all channels'])
     else
         zsave(fl{i},data,['added ',type,' to channel ',strjoin(ch)])

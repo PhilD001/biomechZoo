@@ -1,6 +1,6 @@
-function loaddata(fld,figs)
+function loaddata(fld,figs,settings)
 
-% LOADDATA(fld,figs) loads line and event data into ensembler
+% LOADDATA(fld,figs,settings) loads line and event data into ensembler
 
 
 % Updated by Philippe C. Dixon Sept 2016
@@ -8,53 +8,29 @@ function loaddata(fld,figs)
 %
 % Updated by Philippe C. Dixon Nov 2016
 % - outliers are automatically cleared
-
-%settings.string = '\diamondsuit';
-settings.string = '\bullet';
-settings.verticalalignment = 'middle';
-settings.horizontalalignment = 'center';
-settings.FontSize = 14;
-settings.color = [1 0 0];
+%
+% Updated by Philippe C. Dixon August 2017
+% - Changes to work with new message box feature at the bottom of main
+%   ensembler window
 
 
 fl = engine('path',fld,'extension','zoo');
 
-for i = 1:length(fl)
-    
-    data = zload(fl{i});                     % load zoo data
-    fig = findfigure(fl{i},figs);            % find in which figure it belongs
-    
-    batchdisp(fl{i},'loading');           % display loading info to command window
-%     pmt = findobj(fig,'tag','prompt');     % get the figure prompt
-%     set(pmt,'string',fl_cat)               % write to figure prompt
-    
-    createlines(fig,data,fl{i},settings);             % draw line
+if isempty(fl)
+    ensembler_msgbox(fld,'No zoo files found')
 end
 
-ensembler('clear outliers')
+for i = 1:length(fl)
+    data = zload(fl{i});                             % load zoo data
+    fig = findfigure(fl{i},figs);                    % find in which figure it belongs
+    batchdisp(fl{i},'loading')                       % keep old version also
+    stop_load = createlines(fig,data,fl{i},settings);           % draw line
+    
+    if stop_load
+        break
+    end
+end
 
-% pmt = findobj('tag','prompt');             % clear prompt
-% for i = 1:length(pmt)
-%     set(pmt,'string','')
-% end
+%ensembler('clear outliers')
+%ensembler_prompt(fld,true)
 
-
-% function fl_cat = batchdisplay(fl,type)
-% 
-% 
-% 
-% if nargin==1
-%     type = 'processing';
-% end
-% 
-% s = filesep; 
-% indx = strfind(fl,s);
-% 
-% if length(indx)<=4
-%     fl_cat = fl;
-% else
-%     fl_cat = fl(indx(end-4):end);
-% end
-
-
-% disp([type,' for: ',fl_cat])

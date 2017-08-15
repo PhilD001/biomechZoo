@@ -1,5 +1,8 @@
 function comparePiG(data,segment,mO,mA,mL,mP)
 
+% COMPAREPIG(data,segment,mO,mA,mL,mP) is used to check outputs of
+% biomechzoo computations against PiG 
+
 if nargin==4
     mL = [];
     mP = [];
@@ -10,6 +13,12 @@ end
 
 switch segment
     
+    case 'Head'
+        seg = 'HED';
+    
+    case 'Thorax'
+        seg = 'TRX';
+    
     case 'Pelvis'
         seg = 'PEL';
         
@@ -19,7 +28,7 @@ switch segment
     case 'Left Tibia'
         seg = 'LTI';
         
-    case 'Left Foot';
+    case 'Left Foot'
         seg = 'LFO';
         
     case 'Right Femur'

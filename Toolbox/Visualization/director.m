@@ -226,6 +226,20 @@ switch action
                 video_chns = data.zoosystem.Video.Channels;
                 all_chns = setdiff(fieldnames(data),'zoosystem');
                 
+                % Attempt to limit marker list to 'true' markers
+                %
+                all = cell(size(all_chns));
+                
+                for i = 1:length(all_chns)
+                    
+                    if ~isin(all_chns{i},{'star'})
+                        all{i} = all_chns{i};
+                    end
+                    
+                end
+                
+                all(cellfun(@isempty,all)) = [];
+                all_chns = all;
                 uicontrol('style','slider','units','centimeters','position',[13 0.1 12 0.5],...
                     'Min',0,'Max',length(data.(video_chns{1}).line),'SliderStep',[1/length(data.(video_chns{1}).line) 10/length(data.(video_chns{1}).line)],'tag','slider','callback',...
                     'director(''slider'')','backgroundcolor',[0.2 0.2 0.2],'foregroundcolor',[0.1 0.1 0.1]);

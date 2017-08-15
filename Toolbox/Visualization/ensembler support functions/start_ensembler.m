@@ -1,7 +1,7 @@
 function start_ensembler
 
-% START_ENSEMBLER is a stand-alone function to control startup of
-% ensembler GUI
+% START_ENSEMBLER is a stand-alone function to control startup window of
+% options for ensembler GUI
 
 
 % NOTES
@@ -12,6 +12,7 @@ function start_ensembler
 %   uimenu section of startup_ensembler
 % - Some functions have been commented out to keep the basic ensembler
 %   version clean, but may still work
+
 
 e=which('ensembler'); % returns path to ensemlber
 path = pathname(e) ;  % local folder where ensembler resides
@@ -35,10 +36,11 @@ fontsize = dval{11};
 units = dval{12};
 
 options.Resize = 'on';
-a = inputdlg({'Names','Figure width','Figure height','Rows','Columns',...
+boxwidth = 50; % width of initial dialog box
+a = inputdlg({'Group names','Figure width','Figure height','Rows','Columns',...
     'Axis width','Axis height','Horizontal spacing','Vertical spacing',...
     'Font Name','Font size','Units'},...
-    'axes',1,{fstring,fwid,fheig,nrows,ncols,xwid,ywid,hspac,vspac,font,fontsize,units},options);
+    'Ensembler Setup Window',[1 boxwidth],{fstring,fwid,fheig,nrows,ncols,xwid,ywid,hspac,vspac,font,fontsize,units},options);
 
 if isempty(a)
     disp('exiting ensembler')
@@ -90,4 +92,8 @@ for i = 1:length(nm)
     startup_ensembler(nm{i},nrows,ncols,xwid,ywid,xspace,yspace,fwid,fheig,i,...
                       nfigs,fontName,fontSize,units)
 end
+
+
+
+
 

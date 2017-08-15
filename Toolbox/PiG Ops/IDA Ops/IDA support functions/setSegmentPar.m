@@ -138,6 +138,7 @@ for i = 1:length(bone(:,1))
     body.(bn).dist_end = djnt/1000;       % output is in m
     body.(bn).com = cm/1000;              % output is in m
     
-    data = addchannel_data(data,[(bn),'com'],cm,'Video');    % add to zoofile
-    
+    if ~isfield(data,[(bn),'com'])
+        data = addchannel_data(data,[(bn),'com'],cm,'Video');    % add to zoofile
+    end
 end

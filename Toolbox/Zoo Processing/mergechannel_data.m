@@ -21,14 +21,19 @@ function data = mergechannel_data(data,ch)
 % Revision history
 %
 % Created by Philippe C. Dixon July 2016
+%
+% Updated by Philippe C. Dixon August 2017
+% - Single channel input are assumed to be root channel and exploded
+%   For example if ch = {'RTOE'}, these will be expanded to 
+%   {'RTOE_x','RTOE_y','RTOE_z'}
 
 
+if ~iscell(ch)
+    ch = {ch};
+end
 
-
-
-
-if length(ch) ~= 3
-    error('merge triplets only x y z')
+if length(ch) == 1
+    ch = explodelist(ch);
 end
 
 % Process
@@ -38,7 +43,7 @@ if isfield(data,ch{1})
     r = zeros(length(data.(ch{1}).line),3);
     section = getsection(data,ch(1));
 
-    for i = 1:length(ch);
+    for i = 1:length(ch)
         r(:,i) = data.(ch{i}).line;
         data= removechannel_data(data,(ch{i}));
     end

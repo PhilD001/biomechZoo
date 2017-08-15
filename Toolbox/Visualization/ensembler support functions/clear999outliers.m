@@ -1,6 +1,7 @@
-function clear999outliers
+function clear999outliers(settings)
+
 a = findobj('type','line');
-b = findobj('String','\diamondsuit');
+b = findobj('String',settings.string);
 
 for i = 1:length(a)
     y = get(a(i),'YData');

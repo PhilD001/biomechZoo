@@ -200,15 +200,22 @@ if strcmp(excelserver,'on')
     invoke(Excel.Workbooks,'Open',evalFile);
     
 else
-    display('Adding Java paths');
+    disp('Adding Java paths');
     r = which('xlwrite.m');
     p = fileparts(r);
     jfl = engine('path',p,'search path','poi_library','extension','.jar');
     
-    for i = 1:length(jfl)
-        batchdisplay(jfl{i},'adding java')
-        javaaddpath(jfl{i});
+    if length(jfl)~=6
+        batchdisp('','missing java files')
     end
+   
+    javaaddpath(jfl{1});    % for loop seems to fail on some platforms
+    javaaddpath(jfl{2});
+    javaaddpath(jfl{3});
+    javaaddpath(jfl{4});
+    javaaddpath(jfl{5});
+    javaaddpath(jfl{6});
+    
 end
 
 

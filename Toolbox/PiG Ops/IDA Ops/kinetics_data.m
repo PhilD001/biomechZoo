@@ -157,7 +157,7 @@ grav = [0 0 grav];
 % - Moment values stored in 'data' (MXL,MYL,...MRZ)converted to Newtons*metres
 % - COP values are divided by 1000 to be in meters
 
-[pgbone,~,data,oxbone] = getbones(data);
+[pgbone,~,data,oxbone] = getbones_data(data);
 pgbone = pgbone(2:end,:);
 
 % set segment par for PIG (inc com)

@@ -7,6 +7,15 @@ function varargout = marker(action,varargin)
 %
 % Updated by Philippe C. Dixon Jan 2016
 % - Bug fixes for backwards comp
+%
+% Updated by Philippe C. Dixon June 2017
+% - clean up pop up window for marker selection
+%
+% Updated by Philippe C. Dixon July 2017
+% - added creation of PiG bones, if available 
+%
+% Updated by Philippe C. Dixon August 2017
+% - Exploded PiG data are automatically merged in order to build bones, if available 
 
 
 switch action
@@ -58,7 +67,7 @@ end
 
 function caliper(varargin)
 
-if nargin == 2;
+if nargin == 2
     h1 = varargin{1};
     h2 = varargin{2};
     if isempty(h1)||isempty(h2)
@@ -71,7 +80,7 @@ else
     bm = finddobj('bomb');
     vr = get(gco,'vertices');
     midpt = mean(vr);
-    if isempty(bm);
+    if isempty(bm)
         set(gcf,'name','');
         return
     else
@@ -141,6 +150,20 @@ end
 %
 if ~isempty(intersect(ch,{'PELO'})) && ~isempty(findobj(finddobj('props'),'tag','Pelvis'))
     props('zoo plugin gait',data);
+elseif ismember({'SACR'},ch)
+    data = makebones_data(data);
+    props('zoo plugin gait',data);
+elseif ismember('SACR_x',ch)  % data have been exploded
+    for i = 1:length(ch)
+        if length(ch{i})==6 && ~isempty(strfind(ch{i},'_x'))
+            chn = ch{i};
+            chn = chn(1:4);
+            data = mergechannel_data(data,chn);
+        end
+      
+    end
+      data = makebones_data(data);
+      props('zoo plugin gait',data);
 end
 
 % Loads force plates (if any)
@@ -155,7 +178,7 @@ v = cell(size(ch));
 
 for i = 1:length(ch)
     
-    if ~isin(ch{i},{'x1','y1','z1','x2','y2','z2','Force','Moment','Angle','Power'}) 
+    if ~isin(ch{i},{'x1','y1','z1','x2','y2','z2','Force','Moment','Angle','Power','star'}) 
         v{i} = ch{i};
     end
     

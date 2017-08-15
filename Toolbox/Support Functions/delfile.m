@@ -50,10 +50,10 @@ for i = 1:length(fl)
         file = engine('fld',pwd,'search file',fl{i});
         
         if isempty(file)
-            disp('file not found')
+            batchdisp('','file not found')
         else
-            %delfile(file{i})
-            java.io.File(fl{i}).delete();
+            batchdisp('','deleting file')
+            java.io.File(file).delete();
         end
     end
     

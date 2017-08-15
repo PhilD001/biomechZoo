@@ -121,7 +121,7 @@ else
     bars  = findobj(ax,'Type','ErrorBar');
 end
 
-disp(['resizing bar graph for: ',get(ax,'Tag')])
+batchdisp('',['resizing bar graph for: ',get(ax,'Tag')])
 
 max_xstk = NaN*zeros(length(bars),1);
 max_ystk = NaN*zeros(length(bars),1);

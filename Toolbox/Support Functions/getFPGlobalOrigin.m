@@ -12,6 +12,10 @@ function [globalOr,orient] = getFPGlobalOrigin(data)
 % Or3 = [0.233	0.916	0];
 %
 % - values are in mm
+%
+% Updated by Philippe C. Dixon July 2017
+% - Adds height of force plates for situations where force plates are not 
+%   on the ground. E.g. stair case study
 
 
 % compute global origin
@@ -24,9 +28,9 @@ for i = 1:nplates
     C2 = makerow(data.zoosystem.Analog.FPlates.CORNERS(1:2,2,i));
     C3 = makerow(data.zoosystem.Analog.FPlates.CORNERS(1:2,3,i));
     C4 = makerow(data.zoosystem.Analog.FPlates.CORNERS(1:2,4,i));
-        
+    height = makerow(data.zoosystem.Analog.FPlates.CORNERS(3,1,i));
     Or = intersection(C1,C3,C2,C4);
-    Or = [Or 0]/1000;
+    Or = [Or height]/1000;
     
     y = [makeunit(C2-C3) 0];  
     x = [makeunit(C4-C3) 0];

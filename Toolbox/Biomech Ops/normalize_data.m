@@ -25,6 +25,10 @@ function data = normalize_data(data,ch,datalength,method)
 % Updated by Philippe C. Dixon July 2016
 % -renamed from normalizedata
 % -bug fix for individual channel selection
+%
+% Updated by Philippe C. Dixon August 2017
+% - automatically skips over any 'star' channel. These channels represent unlabeled 
+%   Vicon markers and don't contain any data
 
 
 % Set defaults/check arguments
@@ -48,7 +52,7 @@ if ismember(ch,{'Video','Analog'})                         % extract all video o
     ch = data.zoosystem.(ch).Channels;                     % analog channels
 end
 
-if strcmp(ch,'all');
+if strcmp(ch,'all')
     ch = setdiff(fieldnames(data),'zoosystem');
 end
 
@@ -58,6 +62,11 @@ end
 
 
 for i = 1:length(ch)
+    
+    if strfind(ch{i},'star')
+        continue
+    end
+
     
     if ~isfield(data,ch{i})
         disp(['channel ',ch{i},'  does not exist'])
@@ -73,9 +82,7 @@ for i = 1:length(ch)
             event = fieldnames(data.(ch{i}).event);
             
             for e = 1:length(event)
-                
-                % if data.(ch{i}).event.(event{e})(2)~=999
-                
+                                
                 if data.(ch{i}).event.(event{e})(1)~=1 && ...
                         data.(ch{i}).event.(event{e})(1) ~= length(data.(ch{i}).line)
                     data.(ch{i}).event.(event{e})(1) = round(data.(ch{i}).event.(event{e})(1)/(olength)*datalength);
@@ -83,9 +90,7 @@ for i = 1:length(ch)
                     data.(ch{i}).event.(event{e})(1) = length(nline);
                     
                 end
-                
-                % end
-                
+                                
             end
         end
         

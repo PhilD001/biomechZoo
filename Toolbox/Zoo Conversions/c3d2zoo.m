@@ -4,6 +4,7 @@ function data = c3d2zoo(fld,del)
 %
 % ARGUMENTS
 %  fld   ...  Folder (batch process) or full path to individual file (string).
+%             Default: file selection box
 %  del   ...  option to delete c3d file after creating zoo file.
 %             Default:'no' or false
 %
@@ -59,6 +60,9 @@ function data = c3d2zoo(fld,del)
 %
 % Updated by Philippe C. Dixon March 9th 2017
 % - Fixed bug for c3d files without any analog fields 
+%
+% Updated by Philippe C. Dixon June 19th 2017
+% - bug fix for analog labels
 
 
 % SET DEFAULTS / ERROR CHECK -----------------------------------------------------------------
@@ -89,7 +93,7 @@ for i = 1:length(fl)
     
     % Extract info from c3d file
     %
-    batchdisplay(fl{i},'converting to zoo');
+    batchdisp(fl{i},'converting to zoo');
     r = readc3d(fl{i});
     zfl = extension(fl{i},'zoo');
     
@@ -124,7 +128,7 @@ for i = 1:length(fl)
         albl{a} = makevalidfield(r.AnalogData.(afld{a}).label);                                  % fixes all invalid fieldnames
         
         if isfield(data,albl{a})
-            albl{v} = [albl{v},num2str(a)];
+            albl{a} = [albl{a},num2str(a)];
         end
         
         temp =  makecolumn(r.AnalogData.(afld{a}).data);
@@ -357,6 +361,7 @@ if isfield(r.Parameter,'EVENT')
             for s = 1:cols
                 ech = [sides(:,s)','_',type(:,s)'];
                 ech = strrep(ech,' ','');
+                ech = makevalidfield(ech);
                 events.(ech).lines(s) = times(s);
             end
             

@@ -1,8 +1,11 @@
-function ensembledata(vartype)
+function ensembledata(vartype,settings)
 
-% ENSEMBLEDATA (vartype) summarizes line and event data from ensembler
+% ENSEMBLEDATA (vartype,settings) summarizes line and event data from ensembler
 % figres by axis and figure
-
+%
+% ARGUMENTS
+%  vartype    ...   Type of ensemble statistic. ('SD','CI','CB',...)
+%  settings   ...   Settings style for events
 
 % Revision History
 %
@@ -14,6 +17,9 @@ function ensembledata(vartype)
 %
 % Updated by Philippe C. Dixon May 2017
 % - updated to work with improved GUI settings
+%
+% Updated by Philippe C. Dixon August 2017
+% - Added settings option for event tagging
 
 
 % Set defaults
@@ -32,7 +38,6 @@ ax = findensobj('axes');
 
 ln = findobj('type','line');                            % return all lines to common state
 set(ln,'linewidth',0.5)
-
 
 for i = 1:length(ax)
     lstk = [];
@@ -58,8 +63,8 @@ for i = 1:length(ax)
             continue
         end
         
-        ehnd = findobj(ax(i),'string','\bullet');
-        meanehnd = findobj(ax(i),'string','\diamondsuit');
+        ehnd = findobj(ax(i),'string',settings.string);
+        meanehnd = findobj(ax(i),'string',settings.ensstring);
         
         mn = nanmean(lstk);
         [r,~] = size(lstk);
@@ -126,7 +131,7 @@ for i = 1:length(ax)
             tg = unique(tg);
             
             for k = 1:length(tg)
-                evt = findobj(ax(i),'string','\bullet','tag',tg{k});
+                evt = findobj(ax(i),'string',settings.string,'tag',tg{k});
                 estk = [];
                 for e = 1:length(evt)
                     plate = get(evt(e),'position');
@@ -162,8 +167,9 @@ for i = 1:length(ax)
                 line(x,y,'parent',ax(i),'LineWidth',1.1,'tag',[tg{k},'_av_',nm])
                 
                 text('parent',ax(i),'position',[round(mpos(1)) mpos(2)],...
-                     'tag',[tg{k},'_av_',nm],'string','\diamondsuit','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
-                    'color',[1 0 0],'buttondownfcn',get(ax(i),'buttondownfcn'),'userdata',mnhnd);
+                     'tag',[tg{k},'_av_',nm],'string',settings.ensstring,'FontSize',10,...
+                     'verticalalignment','middle','horizontalalignment','center',...
+                     'color',[1 0 0],'buttondownfcn',get(ax(i),'buttondownfcn'),'userdata',mnhnd);
             
             end
             
@@ -177,7 +183,7 @@ for i = 1:length(ax)
             tg = unique(get(meanehnd,'tag'));
             
             for k = 1:length(tg)
-                evt = findobj(ax(i),'string','\bullet','tag',tg{k});
+                evt = findobj(ax(i),'string',settings.string,'tag',tg{k});
                 estk = [];
                 for e = 1:length(evt)
                     plate = get(evt(e),'position');
@@ -187,8 +193,8 @@ for i = 1:length(ax)
                 mpos=  mean(estk);
                 spos = std(estk);
                 
-                text('parent',ax(i),'position',mpos,...
-                    'tag',tg{k},'string','\diamondsuit','FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
+                text('parent',ax(i),'position',mpos,'tag',tg{k},'string',settings.ensstring,...
+                    'FontSize',10,'verticalalignment','middle','horizontalalignment','center',...
                     'color',[1 0 0],'buttondownfcn',get(ax(i),'buttondownfcn'),'userdata',mnhnd); %[0.2 0.6 0.2]
                 hold(ax(i),'on')
                 errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',1.1)
@@ -200,7 +206,6 @@ for i = 1:length(ax)
                 x = (starthor:1:endhor);
                 y = mpos(2)*ones(size(x));
                 line(x,y,'parent',ax(i),'LineWidth',1.1)
-                
                 
             end
             

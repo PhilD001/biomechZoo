@@ -59,21 +59,20 @@ for i = 1:length(flDyn)
         elseif length(flStat)>1
             error(['more than one static trial for: ',subname])
         end
-        batchdisplay(flStat{1},'processing static trial')                     % compute quants
+        batchdisp(flStat{1},'processing static trial')                     % compute quants
         
         sdata = zload(flStat{1});
         subname_prev = subname;
+          
+        % Compute ankle static offset using static trial
+        %
+        sdata = makebones_data(sdata,'static',settings.flat);
+        sdata = kinematics_data(sdata);
     end
-    
-    % Compute ankle static offset using static trial
-    %
-    sdata = makebones_data(sdata,'static',settings.flat);
-    sdata = kinematics_data(sdata);
-    
     
     % Create joint kinematics for dynamic trial
     %
-    batchdisplay(flDyn{i},'computing PiG kinematics')
+    batchdisp(flDyn{i},'computing PiG kinematics')
     data = ankleoffsetPiG_data(data,sdata);
     data = makebones_data(data,'dynamic');
     data = kinematics_data(data,settings);

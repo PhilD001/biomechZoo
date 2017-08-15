@@ -6,7 +6,7 @@ function data = partition_data(data,evt1,evt2,ch)
 %  data ...  Zoo data file (struct)
 %  evt1 ...  Name of event for start of partition (string)
 %  evt2 ...  Name of event for end of partition (string)
-%  ch   ...  List of channels to partition (string or cell array of string). 
+%  ch   ...  List of channels to partition (string or cell array of string).
 %            Default 'all' channels
 %
 % RETURNS
@@ -39,6 +39,13 @@ function data = partition_data(data,evt1,evt2,ch)
 %
 % Updated by Philippe C. Dixon October 2016
 % - Partition updates .Indx fields (not fully tested)
+%
+% Updated by Philippe C. Dixon July 1 2017
+% - Replaces events occurs at frame '0' with frame '1'. This error can
+%   occur if data were partionned in Vicon more tightly than where the events
+%   were labeled
+
+
 
 % Set Defaults
 %
@@ -84,8 +91,12 @@ for i = 1:length(ch)
         
     elseif e1(1) > e2(1)
         disp(['event 1: ',evt1, ' occurs after event 2: ',evt2])
-        
     else
+        if e1(1) ==0
+            disp(['event 1: ',evt1, ' occurs at frame 0, event will be moved to frame 1'])
+            e1(1) = 1;
+        end
+        
         r = data.(ch{i}).line(e1(1):e2(1),:);
         data.(ch{i}).line = r;
     end
@@ -113,7 +124,7 @@ for i = 1:length(ch)
         data.zoosystem.Video.Indx = (e1(1):1:e2(1))';
     elseif ismember(ch{i},data.zoosystem.Analog.Channels) && a ==0
         data.zoosystem.Analog.CURRENT_START_FRAME = [e1(1) 0 0];
-        data.zoosystem.Analog.CURRENT_END_FRAME = [e2(1) 0 0];   
+        data.zoosystem.Analog.CURRENT_END_FRAME = [e2(1) 0 0];
         data.zoosystem.Analog.Indx = (e1(1):1:e2(1))';
     end
     

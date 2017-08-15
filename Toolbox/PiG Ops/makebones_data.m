@@ -16,7 +16,7 @@ function data = makebones_data(data,type,foot_flat,test)
 %  data        ... Zoo data with new 'bones' appended
 %
 % NOTES
-% - Following anthroopmetric/metainfo data must be available:
+% - Following anthropometric/metainfo data must be available:
 %   'MarkerDiameter, R/LLegLength,R/LKneeWidth,R/LAnkleWidth
 % - Foot length may be inexact during visualization in director. Joint angles are unaffected
 % - Only lower-limb bones are currently created
@@ -29,12 +29,16 @@ function data = makebones_data(data,type,foot_flat,test)
 % Created by Yannick Michaud-Paqutte 2008
 %
 % Updated by Philippe C. Dixon June 2016
-% - All segment-emedded axes verified (good agreement)
+% - All lower-limb segment-emedded axes verified (good agreement)
 % - All joint centers verified (good agreement)
-
-% Updated by Philippe C. Dixon De 2016
+%
+% Updated by Philippe C. Dixon Dec 2016
 % - Improved help
-
+%
+% Updated by Philippe C. Dixon May 2017
+% - Computation of Head and Throrax segment-emedded axes if available
+% - Head does not agree with Vicon (no static offset procedure)
+% - Thorax has good agrement
 
 % Set defaults ---------------------------------------------------------------------------
 %
@@ -77,6 +81,7 @@ RTIB = data.RTIB.line;
 RANK = data.RANK.line;
 RHEE = data.RHEE.line;
 RTOE = data.RTOE.line;
+
 
 
 
@@ -145,7 +150,90 @@ LAnkleJC = data.LAnkleJC.line;
 %     RAnkleJC(1,:) = [  159.72078594,  326.35772713,   71.54075074];
 % end
 
+% Head coordinate system -----------------------------------------------------------------
+%
+% From PiG manual: 
+% - The head origin is defined as the midpoint between the LFHD and RFHD markers 
+%   (also denoted 'Front'). 
+% - The midpoint between the LBHD and RBHD markers ('Back') is also calculated, along with
+%   the 'Left' and 'Right' sides of the head from the LFHD and LBHD midpoint, and the RFHD 
+%   and RBHD midpoint respectively.
+% - The predominant head axis, the X axis, is defined as the forward facing direction 
+%   (Front - Back). 
+% - The secondary Y axis is the lateral axis from Right to Left (which is orthoganal as usual).
+%
+% * Outputs are not the same as Vicon
 
+if isfield(data,'LFHD') && isfield(data,'RFHD') && isfield(data,'LBHD') && isfield(data,'RBHD')
+    LFHD = data.LFHD.line;
+    RFHD = data.RFHD.line;
+    LBHD = data.LBHD.line;
+    RBHD = data.RBHD.line;
+    
+    segment = 'Head';
+    boneLength = magnitude(RFHD-LFHD);
+    O = (LFHD+RFHD)/2;                                                  % origin or 'front'
+    
+    back  = (LBHD+RBHD)/2;
+    
+    right = (RFHD+RBHD)/2;
+    left = (LFHD+LBHD)/2;
+    
+    A = makeunit(O-back);
+    temp = makeunit(right-left);
+    P = makeunit(cross(temp,A));
+    L = makeunit(cross(P,A));
+    
+    [HEDO,HEDA,HEDL,HEDP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+    
+    data = addchannel_data(data,'HEDO',HEDO,'video');
+    data = addchannel_data(data,'HEDA',HEDA,'video');
+    data = addchannel_data(data,'HEDL',HEDL,'video');
+    data = addchannel_data(data,'HEDP',HEDP,'video');
+    
+end
+
+% Thorax coordinate system
+%
+% From Vicon: 
+% - The orientation of the thorax is defined before the origin. The Z axis, pointing
+%   downwards, is the predominant axis. This is defined as the direction from the midpoint 
+%   of the CLAV and C7 to the midpoint of STRN and T10. 
+% - A secondary direction pointing forwards is the midpoint of C7 and T10 to the midpoint 
+%   of CLAV and STRN. The resulting X axis points forwards, and the Y axis points rightwards.
+% - The thorax origin is then calculated from the CLAV marker, with an offset of half a 
+%   marker diameter backwards along the X axis.
+%
+% * Good agreement with Vicon outputs
+
+if isfield(data,'CLAV') && isfield(data,'C7') && isfield(data,'T10') && isfield(data,'STRN')
+    CLAV = data.CLAV.line;
+    C7 = data.C7.line;
+    
+    STRN = data.STRN.line;
+    T10 = data.T10.line;
+    
+    midClavC7 = (CLAV+C7)/2;
+    midStrT10 = (STRN+T10)/2;
+    midClavStrn = (CLAV+STRN)/2;
+    midC7T10 = (C7+T10)/2;
+    
+    segment = 'Thorax';
+    boneLength = magnitude(STRN-CLAV);               % not important
+    O = CLAV;                                        % marker width offset not done
+    P = makeunit(midStrT10-midClavC7);
+    temp = makeunit(midClavStrn-midC7T10);
+    L = makeunit(cross(P,temp));
+    A = makeunit(cross(L,P));
+    
+    [TRXO,TRXA,TRXL,TRXP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+    
+    data = addchannel_data(data,'TRXO',TRXO,'video');
+    data = addchannel_data(data,'TRXA',TRXA,'video');
+    data = addchannel_data(data,'TRXL',TRXL,'video');
+    data = addchannel_data(data,'TRXP',TRXP,'video');
+    
+end
 
 % Pelvis coordinate system ---------------------------------------------------------------
 %
@@ -265,14 +353,17 @@ boneLength =magnitude(LHEE-LTOE);           % length of bone*
 
 O = LTOE;
 P = LAnkleJC-O;                             % proximal vector (pyCGM: L_axis_z)
+
 Ltemp = LTIL-LAnkleJC;
 A = cross(Ltemp,P);
 L = cross(P,A);
 
-if strcmpi(type,'dynamic')
+if strcmpi(type,'dynamic')  && isfield(data.zoosystem.Anthro,'LStaticPlantFlex')
     LStaticPlantFlex = data.zoosystem.Anthro.LStaticPlantFlex;
     LStaticRotOff    = data.zoosystem.Anthro.LStaticRotOff;
     [A,L,P] = rotateFootAxes(A,L,P,LStaticRotOff,LStaticPlantFlex);
+elseif ~strcmpi(type,'static')
+    disp('Ankle angles may be inexact, please set static offsets')
 end
 
 [LFOO,LFOA,LFOL,LFOP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
@@ -383,17 +474,17 @@ boneLength =magnitude(RHEE-RTOE);                       % length of bone*
 
 O = RTOE;
 P = RAnkleJC-O;                             % proximal vector
-Ltemp = RTIL-RAnkleJC;                      % temp lateral vector
+Ltemp = RTIL-RAnkleJC;                  % temp lateral vector
 A = cross(Ltemp,P);                         % anterior vector
 L = cross(P,A);
 
-if strcmpi(type,'dynamic')
+if strcmpi(type,'dynamic')  && isfield(data.zoosystem.Anthro,'RStaticPlantFlex')
     RStaticPlantFlex = data.zoosystem.Anthro.RStaticPlantFlex;
     RStaticRotOff    = data.zoosystem.Anthro.RStaticRotOff;
     [A,L,P] = rotateFootAxes(A,L,P,RStaticRotOff,RStaticPlantFlex);
+elseif ~strcmpi(type,'sttic')
+    disp('Ankle angles may be inexact, please set static offsets')
 end
-
-
 
 [RFOO,RFOA,RFOL,RFOP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
 

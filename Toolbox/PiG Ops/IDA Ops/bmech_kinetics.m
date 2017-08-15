@@ -33,7 +33,7 @@ if nargin==1
     settings.graph  = false;                                    % graph results
     settings.city   = 'standard';                               % choose g based on city
     settings.filt   = false;                                    % Filter intermediate calc
-    settings.comp   = true; 
+    settings.comp   = true;
     settings.static = 'Static';                                 % name of static folder
 end
 
@@ -59,7 +59,7 @@ for i = 1:length(fl)
 end
 
 for i = 1:length(fl_static)
-        batchdisplay(fl_static{i},'skipping static trial')
+    batchdisplay(fl_static{i},'skipping static trial')
 end
 
 

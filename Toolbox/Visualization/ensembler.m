@@ -106,10 +106,13 @@ function ensembler(action)
 % Updated by Philippe C. Dixon June 2016
 % - Small bug fix to ylabel code for support of color bars in ensembler
 %
-% Updated by Philippe C. Dixon Feb 2017 
+% Updated by Philippe C. Dixon Feb 2017
 % - possibility to set font type and size from original ensembler prompt
 %   (saved in 'default_ensembler_values.mat')
-
+%
+% Updated by Philippe C. Dixon August 2017
+% - Changes to work with new message box feature at the bottom of main
+%   ensembler window
 
 
 % ================= BEGIN SETUP ======================================
@@ -123,22 +126,27 @@ end
 
 global fld                              % give every case access to fld
 
-global f p                              % give every case acces to [p,f] 
+global f p                              % give every case acces to [p,f]
 
 
-settings.textstring = '\bullet';        % default 'look' for events
+% default settings look for ensembler events
+%
+settings.string = '\bullet';                  % style for event
+settings.ensstring = '\diamondsuit';          % style for ensembled event
+settings.verticalalignment = 'middle';
+settings.horizontalalignment = 'center';
+settings.FontSize = 14;
+settings.color = [1 0 0];
+
 
 ensembler_axis_highlight(false)         % reset axis highlight
 
+ensembler_msgbox(fld)
 
 %================== BEGIN CASE STATEMENTS ============================
 %
 % - Each 'icon' in the ensembler menu bar calls one of the case
 %   statements listed below
-% - Icons can be added to the ensembler menu bar by editing the
-%   '
-
-
 
 switch action
     
@@ -149,66 +157,52 @@ switch action
         close all
         start_ensembler
         
+    case 'add gait events'
+        if isempty(fld)
+            ensembler('set working directory')
+        end
+        
+        bmech_gaitevents(fld)
+        update_ensembler_lines(p,f,fld,settings)
+        
     case 'add manual event'
         ch = get(get(gca,'Title'),'String');
         add_manualevent(ch)
-        update_ensembler_lines(p,f,fld)
+        update_ensembler_lines(p,f,fld,settings)
         
-    case 'add max event'
+        
+        
+    case {'add min event','add max event','add ROM event'}
         ch = get(get(gca,'Title'),'String');
+        evt = strrep(action,'add ','');
+        evt = strrep(evt,' event','');
+        
         lines = findobj('type','line','LineWidth',0.5);
         nlines = length(lines);
         
         if nlines ==1
             fl= get(lines,'userdata');           % this is the line handle
             data = zload(fl);
-            
-            [mmax,indx] = max(data.(ch).line);
-            data.(ch).event.max = [indx mmax 1];
-            save(fl,'data');
+            data = addevent_data(data,ch,evt,evt);
+            zsave(fl,data);
         else
-             bmech_addevent(fld, ch,'max','max')
+            bmech_addevent(fld,ch,evt,evt)
         end
         
-%         for i = 1:length(nlines)
-%             fl= get(lines(i),'userdata');           % this is the line handle
-%             data = zload(fl);
-%             data = addevent_data(data,ch,'max','max');
-%             zsave(fl,data,action);
-%         end
-        
-        update_ensembler_lines(p,f,fld)
-        
-    case 'add min event'
-        ch = get(get(gca,'Title'),'String');
-        lines = findobj('type','line','LineWidth',0.5);
-        nlines = length(lines);
-        
-        if nlines ==1
-            fl= get(lines,'userdata');           % this is the line handle
-            data = load(fl,'-mat');
-            data = data.data;
-            [mmin,indx] = min(data.(ch).line);
-            data.(ch).event.min = [indx mmin 1];
-            save(fl,'data');
-        else
-            bmech_addevent(fld,ch,'min','min')
-        end
-        
-        update_ensembler_lines(p,f,fld)
+        update_ensembler_lines(p,f,fld,settings)
         
     case 'add start trial event'
         ch = get(get(gca,'Title'),'String');
         add_manualevent(ch,'start')
-        update_ensembler_lines(p,f,fld)
+        update_ensembler_lines(p,f,fld,settings)
         
     case 'add end trial event'
         ch = get(get(gca,'Title'),'String');
         add_manualevent(ch,'end')
-        update_ensembler_lines(p,f,fld)
+        update_ensembler_lines(p,f,fld,settings)
         
     case 'add other channel event'
-        addotherchannelevent(fld)
+        addotherchannelevent(fld,settings)
         
     case 'axis font size'
         prompt={'Enter the axis font size'};
@@ -224,7 +218,6 @@ switch action
         axisid
         
     case 'bar color'
-        
         ax = findobj(gcf,'type','axes');
         lg = findobj(gcf,'type','axes','tag','legend');
         ax = setdiff(ax,lg);
@@ -239,7 +232,7 @@ switch action
         
         col = colorlist;
         a = associatedlg(tg,col(:,1)');
-                
+        
         for i = 1:length(a(:,1))
             
             if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
@@ -258,11 +251,7 @@ switch action
                 set(br,'FaceColor',ccol)
             end
             
-            
         end
-                
-            
-     
         
     case 'buttondown'
         buttondown
@@ -271,12 +260,11 @@ switch action
         continuousstats(fld,'check')
         
     case 'clear outliers'
-        clear999outliers
+        clear999outliers(settings)
         resize_ensembler
+        ensembler_msgbox(fld,'Outliers cleared')
         
     case 'clear all'
-        %clearcolorbars
-        
         lg = findobj('type','axes','tag','legend');
         
         if ~isempty(lg)
@@ -323,15 +311,19 @@ switch action
             set(get(ax(i),'YLabel'),'String','')
             
         end
-                
+        
+        ensembler_msgbox(fld,'Data cleared')
+        
+        
     case 'clear colorbars'
         clearcolorbars
         
     case 'clear all events'
-        delete(findobj('string',settings.textstring));
+        delete(findobj('string',settings.string));
+        ensembler_msgbox(fld,'All events cleared')
         
     case 'clear event by type'
-        evthnd = findobj('string',settings.textstring);
+        evthnd = findobj('string',settings.string);
         evts =unique(get(evthnd,'Tag'));
         indx = listdlg('promptstring','choose your event type to clear','liststring',evts);
         
@@ -355,19 +347,29 @@ switch action
         
     case 'combine'
         combine
-        
+        ensembler_msgbox(fld,'Data combined')
         
     case 'combine all'
         combine_all
+        ensembler_msgbox(fld,'Data combined')
         
     case 'combine within'
         combine_within
+        ensembler_msgbox(fld,'Data combined')
         
     case 'counttrials'
         counttrials
         
     case 'continuous stats'
         continuousstats(fld,[])
+        
+    case 'convert to zoo'
+        
+        if isempty(fld)
+            c3d2zoo
+        else
+            c3d2zoo(fld)
+        end
         
     case 'coupling angles'
         coupling_angles(fld)
@@ -379,21 +381,24 @@ switch action
         custom_function = custom_function{1};
         run(custom_function)
         if isin(custom_function,'bmech_')
-            update_ensembler_lines(p,f,fld)
+            update_ensembler_lines(p,f,fld,settings)
         end
-          
+        
     case 'datacursormode off'
         datacursormode off
         
     case 'clear titles'
         cleartitles_ensembler
+        ensembler_msgbox(fld,'Titles cleared')
         
     case 'clear all empty axes'
         clearallaxes
+        ensembler_msgbox(fld,'Empty axes cleared')
         
     case 'delete single axis'
         disp('select axes to delete')
         delete(gca)
+        ensembler_msgbox(fld,'Axis deleted')
         
     case 'delete all events'
         ch = get(get(gca,'Title'),'String');
@@ -412,7 +417,7 @@ switch action
             bmech_removeevent(fld,'all')
         end
         
-        update_ensembler_lines(p,f,fld)
+        update_ensembler_lines(p,f,fld,settings)
         
     case 'delete event by type'
         ch = get(get(gca,'Title'),'String');
@@ -426,19 +431,17 @@ switch action
             a={evts(indx)};
             
             fl= get(lines,'userdata');           % this is the line handle
-            data = load(fl,'-mat');
-            data = data.data;
+            data = zload(fl);
             for e = 1:length(a)
-                data.(ch).event = rmfield(data.(ch).event,a{e});
+                data = removeevent_data(data,a{e},ch);
             end
-            save(fl,'data');
+            save(fl,data);
         else
             a=evts(indx);
-            
-            bmech_removeevent(fld,a)
+            bmech_removeevent(fld,a,ch)
         end
         
-        update_ensembler_lines(p,f,fld)
+        update_ensembler_lines(p,f,fld,settings)
         
     case 'delete single event'
         ch = get(get(gca,'Title'),'String');
@@ -448,59 +451,89 @@ switch action
         fl = get(lnhnd,'UserData');
         
         data = zload(fl);
-        data.(ch).event = rmfield(data.(ch).event,evt);
-        save(fl,'data');
+        data = removeevent_data(data,evt,ch);
+        zsave(fl,data);
         
-        update_ensembler_lines(p,f,fld)
+        update_ensembler_lines(p,f,fld,settings)
         
     case 'ensemble data (SD)'
-        ensembledata('SD')
+        ensembledata('SD',settings)
+        ensembler_prompt(fld,true)
+        ensembler_msgbox(fld,'Data ensembled with standard deviations')
         
     case 'ensemble data (CI)'
-        ensembledata('CI')
+        ensembledata('CI',settings)
+        ensembler_prompt(fld,true)
+        ensembler_msgbox(fld,'Data ensembled with confidence intervals')
         
     case 'ensemble data (CB)'
-        ensembledata('CB')
+        ensembledata('CB',settings)
+        ensembler_prompt(fld,true)
+        ensembler_msgbox(fld,'Data ensembled with confidence bands')
         
     case 'ensemble (subject x conditon) (SD)'
-        ensembledatabysubject('SD')
+        ensembledatabysubject('SD',settings)
+        ensembler_prompt(fld,true)
+        ensembler_msgbox(fld,'Data ensembled')
         
     case 'ensemble (subject x conditon) (CI)'
-        ensembledatabysubject('CI');
+        ensembledatabysubject('CI',settings);
+        ensembler_prompt(fld,true)
+        ensembler_msgbox(fld,'Data ensembled')
         
     case 'exit'
         delete(findensobj('figure'));
+        disp('ensembler GUI closed')
         
-    case 'export'
-        exportfig
+    case 'explode channels'
+        
+        if fld==0
+            ensembler('set working directory')
+        end
+        ax = findobj(gcf,'type','axes');
+        ch = cell(size(ax));
+        for i = 1:length(ax)
+            ch{i} = get(ax(i),'tag');
+        end
+        bmech_explode(fld,ch)
+        ensembler_msgbox(fld,'Channels exploded, retag ensembler axes with exploded axes')
+        
+    case 'export figure'
+        prmt = findobj('tag','prompt');
+        msg = findobj('tag','messagebox');
+        
+        set(prmt,'string','')
+        set(msg,'string','','backgroundcolor',get(gcf,'color'));
+        filename = exportfig;
+        set(msg,'backgroundcolor',[0.5 0.5 0.5])
+        ensembler_msgbox(fld,['Figure exported to: ',concatEnsPrompt(filename)])
+        
+    case 'export event data'
+        ensembler_eventval(fld,settings)
+       
         
     case 'filter'
-        fl = engine('path',fld,'extension','zoo');
-        ch = get(gca,'Tag');
-        
-        data = load(fl{1},'-mat');
-        data = data.data;
-        
-        prompt={'Enter your desired cut-off frequency: '};
-        cut = str2double(inputdlg(prompt,'axis title',1));
-        
-        if isfield(data.zoosystem,'Freq')
-            fsamp = data.zoosystem.Freq;
-            
-        elseif isfield(data.zoosystem,'Fsamp')
-            fsamp = data.zoosystem.Fsamp;
-        else
-            prompt={'Enter the sampling rate of your signal: '};
-            fsamp = str2double(inputdlg(prompt,'axis title',1));
+        ax = findobj('type','axes');
+        ch = cell(size(ax));
+        for i = 1:length(ax)
+            ch{i} = get(ax(i),'tag');
         end
+        ch = unique(ch);
         
-        for i=1:length(fl)
-            data = load(fl{i},'-mat');
-            data = data.data;
-            bmech_filter('vector',data.(ch).line,'fsamp',fsamp,'cutoff',cut);
-        end
+        prompt={'type','pass','freq','order'} ;
+        name='Filter settings';
+        numlines=1;
+        defaultanswer={'butterworth','lowpass','10','4'};
+        answer=inputdlg(prompt,name,numlines,defaultanswer);
         
-        update_ensembler_lines(p,f,fld)
+        filt = struct;
+        filt.type = answer{1};
+        filt.pass = answer{2};
+        filt.cutoff = str2double(answer{3});
+        filt.order = str2double(answer{4});
+        
+        bmech_filter(fld,ch,filt)
+        update_ensembler_lines(p,f,fld,settings)
         
     case 'fixcolorbar'
         fixcolorbar
@@ -524,7 +557,7 @@ switch action
         verline
         
     case 'keypress'
-        keypress_ensembler;
+        keypress_ensembler(fld,settings);
         
     case 'legend'
         prmt = findobj('Tag','prompt');
@@ -596,9 +629,9 @@ switch action
         hnd = hnd(indx);
         
         legend(hnd,val,'interpreter','none','units','inches');
+        ensembler_msgbox(fld,'Legend added to figure')
         
     case 'legend within'
-        
         prmt = findobj('Tag','prompt');
         
         if ~isempty(prmt)
@@ -629,7 +662,7 @@ switch action
         ln = setdiff(ln,badln);
         userData = get(ln(1),'UserData');
         
-        if ~isempty(strfind(userData,'average_line'));
+        if ~isempty(strfind(userData,'average_line'))
             tg = cell(length(ln),1);
             for i = 1:length(ln)
                 ud = get(ln(i),'UserData');
@@ -659,7 +692,6 @@ switch action
             end
         end
         
-        
         % display order
         indx = zeros(length(a),1);
         
@@ -672,21 +704,6 @@ switch action
         
         legend(hnd,val,'interpreter','none','units','inches')
         
-%         [legend_h, object_h, plot_h, text_strings] = legend(hnd,val,'interpreter','none');
-% 
-%         txt = findobj(object_h,'type','text')
-%         
-%         for i = 1:length(txt)
-%             set(txt(i),'FontSize',14)
-%         end
-        
-%         [legend_h, object_h, plot_h, text_strings] = legend(...) returns
-% 
-%     legend_h � Handle of the legend axes
-%     object_h � Handles of the line, patch, and text graphics objects used in the legend
-%     plot_h � Handles of the lines and other objects used in the plot
-%     text_strings � Cell array of the text strings used in the legend
-   
     case 'line style'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
@@ -695,16 +712,18 @@ switch action
             ln = findobj('type','line','tag',a{i,1});
             set(ln,'linestyle',a{i,2});
         end
+        ensembler_msgbox(fld,'Line properties updated')
         
     case 'line style within'
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'-','--',':','-.','none'});
-        for i = 1:length(a(:,1));
+        for i = 1:length(a(:,1))
             ax = findobj('type','axes','tag',a{i,1});
             ln = findobj(ax,'type','line');
             set(ln,'linestyle',a{i,2});
         end
+        ensembler_msgbox(fld,'Line properties updated')
         
     case 'line width'
         tg = get(findobj(gcf,'type','line'),'tag');
@@ -714,49 +733,57 @@ switch action
             ln = findobj('type','line','tag',a{i,1});
             set(ln,'linewidth',str2double(a{i,2}));
         end
+        ensembler_msgbox(fld,'Line properties updated')
+        
         
     case 'line color'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
         col = colorlist;
         a = associatedlg(tg,col(:,1)');
-        for i = 1:length(a(:,1));
+        for i = 1:length(a(:,1))
             ln = findobj('type','line','tag',a{i,1});
             [~,indx] = ismember(a{i,2},col(:,1));
             set(ln,'color',col{indx,2});
         end
+        ensembler_msgbox(fld,'Line properties updated')
         
     case 'line color within'
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
         col = colorlist;
         a = associatedlg(tg,col(:,1)');
-        for i = 1:length(a(:,1));
+        for i = 1:length(a(:,1))
             ax = findobj('type','axes','tag',a{i,1});
             ln = findobj(ax,'type','line');
             [~,indx] = ismember(a{i,2},col(:,1));
             set(ln,'color',col{indx,2});
         end
+        ensembler_msgbox(fld,'Line properties updated')
         
     case 'load data'
-        fld = uigetfolder;
-        cd(fld);
-        loaddata(fld,findobj('type','figure'));
+        if fld==0
+            ensembler('set working directory')
+        elseif isempty(fld)
+            ensembler('set working directory')
+        end
+        
+        loaddata(fld,findobj('type','figure'),settings);
         zoom out
         resize_ensembler
         
     case 'load single file'
-        delete(findobj('type','line'));
-        delete(findobj('type','patch'));
-        delete(findobj('string',settings.textstring));
+        %         delete(findobj('type','line'));
+        %         delete(findobj('type','patch'));
+        %         delete(findobj('string',settings.textstring));
         
         [f,p] = uigetfile('*.zoo','select zoo file');
         loadfile(f,p,findobj('type','figure'));
-        zoom out
-        cd(p)
+        ensembler_msgbox(fld,[f,' loaded'])
         
     case 'bar graph'
         makebar
+        ensembler_msgbox(fld,'Bar graphs created')
         
     case 'normative PiG Kinematics'
         normdata('Schwartz Kinematics');
@@ -777,27 +804,28 @@ switch action
         ax = findobj('type','axes');
         ch = cell(size(ax));
         for i = 1:length(ax)
-           ch{i} =  get(ax(i),'tag');
-           set(ax(i),'XLim',[0 datalength])
+            ch{i} =  get(ax(i),'tag');
+            set(ax(i),'XLim',[0 datalength])
         end
-        ch(cellfun(@isempty,ch)) = [];   
+        ch(cellfun(@isempty,ch)) = [];
         ch = unique(ch);
         bmech_normalize(fld,ch,datalength)
         
-        update_ensembler_lines(p,f,fld)
-            
+        update_ensembler_lines(p,f,fld,settings)
+        
     case 'partition'
         prompt={'Enter name of start event: ', 'Enter name of end event'};
         evt = inputdlg(prompt,'axis title',1);
-        bmech_partition(evt(1),evt(2),fld)
-        update_ensembler_lines(p,f,fld)
+        bmech_partition(fld,evt(1),evt(2))
+        update_ensembler_lines(p,f,fld,settings)
+        
         
     case 'property editor on'
         propertyeditor('on')
         
     case 'property editor off'
         propertyeditor('off')
-   
+        
     case 'quickedit'
         quickedit(fld)
         
@@ -815,7 +843,15 @@ switch action
         if ~iscell(tg)
             tg = {tg};
         end
-        [f,p] = uigetfile('*.zoo','choose your zoo channels');
+        [f,p] = uigetfile({'*.zoo';'*.c3d'},'choose your zoo channels');
+        
+        if strfind(f,'.c3d')
+            msg = ['files must be converted to .zoo for use in ensembler, ',...
+                'select Processing-->convert to zoo and retry'];
+            ensembler_msgbox(fld,msg)
+            return
+        end
+        
         cd(p)
         t = load([p,f],'-mat');
         a = associatedlg(unique(tg),setdiff(fieldnames(t.data),{'zoosystem'}));
@@ -840,6 +876,11 @@ switch action
     case 'reorder bars'
         reorder_bars
         
+    case 'set working directory'
+        fld = uigetfolder;
+        cd(fld)
+        ensembler_msgbox(fld)
+        
     case 'save fig'
         filemenufcn(gcbf,'FileSaveAs')
         
@@ -860,7 +901,7 @@ switch action
         tg = get(findobj(gcf,'type','axes'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'b','r','g','c','m','k'});
-        for i = 1:length(a(:,1));
+        for i = 1:length(a(:,1))
             ax = findobj('type','axes','tag',a{i,1});
             pch = findobj(ax,'type','patch');
             set(pch,'FaceColor',a{i,2},'FaceAlpha',0.1);
@@ -868,7 +909,6 @@ switch action
         
     case 'stdline'
         tg = get(findobj(gcf,'type','patch'),'tag');
-        %         tg = setdiff(unique(tg),{''});
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'b','r','g','c','m','k'});
         for i = 1:length(a(:,1))
@@ -884,7 +924,6 @@ switch action
         
     case 'std shade'
         tg = get(findobj(gcf,'type','patch'),'tag');
-        %         tg = unique(tg)
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'.1','.2','.3','.4','.5','.6','.7','.8','.9','1'});
         for i = 1:length(a(:,1))
@@ -894,7 +933,6 @@ switch action
         
     case 'std on off'
         tg = get(findobj(gcf,'type','patch'),'tag');
-        %         tg = unique(tg);
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'on','off'});
         for i = 1:length(a(:,1))
@@ -910,7 +948,6 @@ switch action
         set(gca,'Tag',a{1})
         
     case 'xlabel'
-        
         ax = findobj('type','axes');
         defaultanswer = {'',''};
         
@@ -930,7 +967,6 @@ switch action
             end
             
         end
-        
         
         prompt={'Enter the axis title (1st line): ',...
             'Enter the axis title (2nd line): '};
@@ -1000,7 +1036,6 @@ switch action
         setaxes('ytickmode');
         
     case 'ylabel'
-        
         ax = findobj('type','axes');
         defaultanswer = {'',''};
         
@@ -1060,11 +1095,9 @@ switch action
         zoom out
         
     case 'edit fig names'
-        
         prompt = {'Enter new search string'};
         name = 'Search string';
         numline = 1;
-        %defaultanswer = {get(gcf,'name')};
         defaultanswer = strjoin(get(findobj('type','figure'),'name'),' ');
         sstr=inputdlg(prompt,name,numline,{defaultanswer});
         sstr = cell2mat(sstr);
@@ -1075,9 +1108,7 @@ switch action
         figs = findobj('type','figure');
         
         for i = 1:length(figs)
-            
             set(figs(i),'name',sstr_cell{i});
-            
         end
         
         e=which('ensembler'); % returns path to ensemlber
@@ -1088,7 +1119,6 @@ switch action
         a= a.a;
         
         a{1} = sstr; %#ok<NASGU>
-        
         
         save(defaultvalfile,'a')
         

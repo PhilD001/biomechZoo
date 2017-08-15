@@ -14,6 +14,9 @@ function buttondown
 %
 % Updated by Philippe C. Dixon May 2017
 % - current axis is highlighted see ensembler_axis_highlight
+%
+% Updated by Philippe C. Dixon Aug 2017
+% - Fixed bug with line width after event buttondown
 
 hnd = gcbo;
 
@@ -49,12 +52,17 @@ switch get(gcf,'selectiontype')
                 set(findobj('string','\bullet'),'color',[1 0 0]); % set back to red
                 
                 lns = findobj(gca,'type','line','linestyle','-');
-                lns = setdiff(lns,gcbo);
+                
+                if lns~=gcbo 
+                    lns = setdiff(lns,gcbo);
+                end
                 
                 if isempty(lns)
                     return
                 end
+                
                 ln = lns(1);
+                
                 normalWidth = get(ln,'LineWidth');
                 normalColor = get(ln,'Color');
                 normalStyle = get(ln,'LineStyle');
@@ -122,7 +130,7 @@ switch get(gcf,'selectiontype')
             % set all lines back to normal
             %
              set(findobj('type','line','ButtonDownFcn','ensembler(''buttondown'')'),...
-                         'color',[0 0 0],'LineStyle','-'); % set back to oroginal
+                         'color',[0 0 0],'LineStyle','-','LineWidth',0.5); % set back to oroginal
         
         end
 end

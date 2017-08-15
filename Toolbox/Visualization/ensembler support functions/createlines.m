@@ -1,4 +1,4 @@
-function createlines(fig,data,fl,settings)
+function stop_load = createlines(fig,data,fl,settings)
 
 % settings = CREATELINES(fig,data,fl) used by ensembler GUI to plot lines
 
@@ -8,13 +8,18 @@ function createlines(fig,data,fl,settings)
 %
 % Updated by Philippe C. Dixon Nov 2016
 % - code is more efficient (faster)
-
+%
 % Updated by Philippe C. Dixon Dec 2016
 % - improved handling of empty axes
-
+%
+% Updated by Philippe C. Dixon August 2017
+% - Changes to work with new message box feature at the bottom of main
+%   ensembler window
 
 % Set Defaults for ensembler events
 %
+stop_load = false;
+
 if nargin==3
     settings.string = '\bullet';
     settings.verticalalignment = 'middle';
@@ -25,18 +30,30 @@ end
 
 axs = findobj(fig,'type','axes');
 
+% get current working directory from msg box
+%
+mbox = findobj('tag','messagebox');
+string = get(mbox,'string');
+fld = strrep(string{2},'working directory: ','');
+
 for j = 1:length(axs)
     ch = get(axs(j),'tag');
     
     if ~isempty(ch) && isempty(strfind(ch,' '))
             
-        if ~isfield(data,ch) 
-            error(['ch ',ch,' does not exist in file'])
+        if ~isfield(data,ch)             
+            mbox = findobj('tag','messagebox');
+            string = get(mbox,'string');
+            fld = strrep(string{2},'working directory: ','');
+            msg = ['channel ''',ch,''' does not exist in file'];  
+            ensembler_msgbox(fld,msg);
+            pause(0.2)
+            continue
         end
         
         ax = findobj(fig,'type','axes','tag',ch);
         
-        ydata = data.(ch).line;
+        ydata = data.(ch).line;       
         xdata = (0:length(data.(ch).line)-1);
         offset = 0;
         
@@ -46,8 +63,12 @@ for j = 1:length(axs)
         
         if isempty(c)
             error('no line data available')
-        elseif c~=1
-            error('data must be n x 1 for graphing, explode first')
+        elseif c==3
+             msg = ['n x 3 channels must be separated (exploded) into n x 1 channels. ',...
+                    'Select Processing --> explode channels'];  
+            ensembler_msgbox(fld,msg) 
+            stop_load = true;
+            return
         end
         
         ln = line('parent',ax,'ydata',ydata,'xdata',xdata,'userdata',fl,...
@@ -61,6 +82,8 @@ for j = 1:length(axs)
                 'FontSize',settings.FontSize,'buttondownfcn',get(ax,'buttondownfcn'),'userdata',ln);
         end
         
+    else
+        ensembler_msgbox(fld,'Current channel not found in zoo files')
     end
 end
 

@@ -66,7 +66,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'normalizing channel(s)');
+    batchdisp(fl{i},'normalizing channel(s)');
     data = normalize_data(data,ch,datalength,method);
     zsave(fl{i},data, [num2str(datalength+1) ' frames, method: ',method]);
 end

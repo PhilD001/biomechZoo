@@ -16,6 +16,12 @@ function varargout = props(action,varargin)
 %
 % Updated by Philippe C. Dixon April 2017
 % - improved searching of prop files using ensembler
+%
+% Updated by Philippe C. Dixon July 2017
+% - added ability to deal with Kistler force plates. There are still
+%   some issues with correctly orienting the cop for some force plate
+%   orientations
+% - added creation of PiG bones-if available 
 
 
 switch action
@@ -333,7 +339,7 @@ switch action
         ud.color = [.8 .8 .8];
         ud.mvertices = [];
         ud.mname = [];
-        for i = 1:length(t.object.marker);
+        for i = 1:length(t.object.marker)
             ud.mvertices = [ud.mvertices;t.object.marker(i).position];
             ud.mname = [ud.mname,{t.object.marker(i).tag}];
             marker('create',t.object.marker(i).tag,1.5,t.object.marker(i).position,[1 0 0]);
@@ -422,7 +428,7 @@ switch action
         
         vec = varargin{1};
         [tp,hnd] = currentobject;
-        if ~strcmp(tp,'props');
+        if ~strcmp(tp,'props')
             return
         end
         displaceprop(hnd,vec);
@@ -436,7 +442,7 @@ switch action
         ud = get(hnd,'userdata');
         vr = get(hnd,'vertices');
         
-        if isfield(ud,'currentorientation');
+        if isfield(ud,'currentorientation')
             pre = ud.currentpredis;
             post = ud.currentpostdis;
             ort = ud.currentorientation;
@@ -507,7 +513,7 @@ end
 function bomb(hnd,vindx,findx)
 bm = findbomb(hnd);
 if length(bm)>=3 && strcmp(getbdownfxn,'add face')
-    for i = 1:length(bm);
+    for i = 1:length(bm)
         bud = get(bm(i),'userdata');
         if bud.bindex==1
             delete(bm(i));
@@ -543,7 +549,7 @@ surface('parent',finddobj('axes'),'xdata',x,'ydata',y,'zdata',z,'tag','bomb','us
 
 function r = mindis(vr)
 r = inf;
-for i = 2:length(vr(:,1));
+for i = 2:length(vr(:,1))
     m = displace(vr(i:end,:),-vr(1,:));
     plate = min(sqrt(diag(m*m')));
     r = min(r,plate);
@@ -552,7 +558,7 @@ end
 function r = findbomb(hnd,varargin)
 bm = findobj(finddobj('axes'),'tag','bomb');
 r = [];
-for i = 1:length(bm);
+for i = 1:length(bm)
     bud = get(bm(i),'userdata');
     if bud.object == hnd
         r = [r;bm(i)];
@@ -1381,7 +1387,11 @@ path = pathname(d) ;  % local folder where director resides
 ach =  data.zoosystem.Analog.Channels;
 nplates = data.zoosystem.Analog.FPlates.NUMUSED;
 
-
+if ismember('F1X1',ach)
+    disp('kistler force plates detected, computed GRF')
+    data = kistlerGRF_data(data);
+    ach =  data.zoosystem.Analog.Channels;
+end
 % attempt to catch 'standard' force plate channel names
 %
 fpch = cell(size(ach));

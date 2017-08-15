@@ -51,17 +51,17 @@ if isempty(nfld)
         data = zload(fl{i});
         
         if ~isempty(findfield(data,evt1)) && ~isempty(findfield(data,evt2))
-            batchdisplay(fl{i},'partitioning');
+            batchdisp(fl{i},'partitioning');
             data = partition_data(data,evt1,evt2);
             zsave(fl{i},data,[evt1,' to ',evt2])
         else
             
-            if isempty(findfield(data,evt1))
-                disp(['evt1: ',evt1,' not found'])
-            end
-            if isempty(findfield(data,evt2))
-                disp(['evt2: ',evt2,' not found'])
-            end 
+%             if isempty(findfield(data,evt1))
+%                 disp(['evt1: ',evt1,' not found'])
+%             end
+%             if isempty(findfield(data,evt2))
+%                 disp(['evt2: ',evt2,' not found'])
+%             end 
                 
             nfl{i} = fl{i}; %#ok<AGROW>
         end
@@ -74,7 +74,7 @@ else
         
         if ~isin(fl{i},nfld)
             data = zload(fl{i});
-            batchdisplay(fl{i},'partitioning');
+            batchdisp(fl{i},'partitioning');
             data = partition_data(data,evt1,evt2);
             zsave(fl{i},data,[evt1,' to ', evt2])
         else
@@ -85,5 +85,5 @@ end
 
 nfl(cellfun(@isempty,nfl)) = [];   
 for i = 1:length(nfl)
-    batchdisplay(nfl{i},'not partitioning');
+    batchdisp(nfl{i},'not partitioning');
 end

@@ -1,6 +1,6 @@
-function exportfig(fld,filename)
+function fig_path = exportfig(fld,filename)
 
-% EXPORTFIG(fld,filename) exports ensembler figures for use in publications / LateX
+% filename = EXPORTFIG(fld,filename) exports ensembler figures for use in publications / LateX
 % see for more details: https://github.com/ojwoodford/export_fig
 
 % NOTES
@@ -81,8 +81,11 @@ end
 %
 if isempty( findobj('tag','colormap'))
     export_fig(filename{1}, '-pdf', '-transparent','-q101')  % painters used by default
+    fig_path = [fld,filesep,filename{1},'.pdf'];
+
 else
     export_fig(filename{1}, '-png', '-transparent','-r150')     % cannot vectorize colorbars
+    fig_path = [fld,filesep,filename{1},'.png'];
 end
 
 % if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
@@ -95,7 +98,6 @@ end
 % else
 %     export_fig(filename{1}, '-png', '-transparent','-r150')     % cannot vectorize colorbars
 % end
-
 
 
 

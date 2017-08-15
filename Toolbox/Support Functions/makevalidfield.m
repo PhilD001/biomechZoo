@@ -46,10 +46,6 @@ if ~isempty(strfind(ch,' '))
     ch = strrep(ch,' ','_');
     ch = makevalidfield(ch);
     
-% elseif ~isempty(strfind(ch(1),'_'))
-%     ch = ch(2:end);
-%     ch = makevalidfield(ch);
-    
 elseif ~isempty(strfind(ch,'-'))
     ch = strrep(ch,'-','');
     ch = makevalidfield(ch);
@@ -104,7 +100,6 @@ elseif ~isempty(strfind(ch,'*'))
 
 elseif ~isempty(strfind(ch,'#'))
     ch = strrep(ch,'#','numbersign');
-%     ch = 'numbersign';
     ch = makevalidfield(ch);
 
 elseif ~isempty(strfind(ch,':'))
@@ -133,7 +128,12 @@ elseif ~isempty(str2num(ch(1))) && length(ch) ~=1 %#ok<ST2NM> % don't change
     ch = ch(2:end);
     ch = makevalidfield(ch);
 
-elseif strfind(ch(1),'_');
+elseif strfind(ch(1),'_')
     ch = ch(2:end);
     ch = makevalidfield(ch);
+    
+elseif strfind(ch,'''')
+    ch = strrep(ch,'''','');
+    ch = makevalidfield(ch);
+    
 end

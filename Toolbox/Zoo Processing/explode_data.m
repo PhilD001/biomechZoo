@@ -68,7 +68,7 @@ for i = 1:length(ch);
         end
         
     else
-        disp(['ch ',ch{i} ' does not exist']) 
+        batchdisp('',['ch ',ch{i} ' does not exist']) 
     end
 end
 

@@ -59,7 +59,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'removing events');
+    batchdisp(fl{i},'removing events');
     data = removeevent_data(data,evt,ch);
     
     if isin(ch,'all')

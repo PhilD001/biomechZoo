@@ -48,7 +48,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'exploding data');
+    batchdisp(fl{i},'exploding data');
     data = explode_data(data,ch);
     zsave(fl{i},data);
 end

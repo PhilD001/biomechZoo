@@ -20,7 +20,7 @@ lyd = length(yd);
 fc = [(1:lyd),(2*lyd:-1:lyd+1)];
 
 if length(xd) ~= length(nyd)
-    error('data lengths inconsistent. Check that data are normalized')
+    ensembler_msgbox(pwd,'Data lengths inconsistent. Normalize all data to a single length and try again')
 end
 
 vr = [xd,nyd,zd];

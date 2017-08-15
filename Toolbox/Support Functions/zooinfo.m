@@ -31,6 +31,6 @@ function [version,date] = zooinfo
 
 help zooinfo
 
-version = '1.3.2';
-date = ' (May 2017)';
+version = '1.3.3';
+date = ' (August 2017)';
 disp(['  Latest version: ',num2str(version),date])

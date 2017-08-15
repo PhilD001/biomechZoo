@@ -116,7 +116,7 @@ while 1
     gname = char(fread(fid,abs(numchar),'uint8')'); %group/parameter name
     index = ftell(fid);                             %this is the starting point for the offset
     nextgroup = fread(fid,1,'int16');               %nextgroup = offset to the next group/parameter
-    if numchar < 0;                                 %a negative character length means the group is locked
+    if numchar < 0                                 %a negative character length means the group is locked
         islock = 1;
     else
         islock = 0;

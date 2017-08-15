@@ -66,12 +66,22 @@ for i = 1:length(plates)
     b = localOr.(plates{i})(2)*1000;                         % local coordinates y
     c = localOr.(plates{i})(3)*1000;                         % local coordinates z
     
-    Fx = data.([forceSuf,'x',num2str(i)]).line;              % N
-    Fy = data.([forceSuf,'y',num2str(i)]).line;              % N
-    Fz = data.([forceSuf,'z',num2str(i)]).line;              % N
-    Mx = data.([momentSuf,'x',num2str(i)]).line;             % Nmm
-    My = data.([momentSuf,'y',num2str(i)]).line;             % Nmm
-    Mz = data.([momentSuf,'z',num2str(i)]).line;             % Nmm
+    if isfield(data,[forceSuf,'x',num2str(i)])
+        Fx = data.([forceSuf,'x',num2str(i)]).line;              % N
+        Fy = data.([forceSuf,'y',num2str(i)]).line;              % N
+        Fz = data.([forceSuf,'z',num2str(i)]).line;              % N
+        Mx = data.([momentSuf,'x',num2str(i)]).line;             % Nmm
+        My = data.([momentSuf,'y',num2str(i)]).line;             % Nmm
+        Mz = data.([momentSuf,'z',num2str(i)]).line;             % Nmm
+        
+    else
+        Fx = data.([forceSuf,'X',num2str(i)]).line;              % N
+        Fy = data.([forceSuf,'Y',num2str(i)]).line;              % N
+        Fz = data.([forceSuf,'Z',num2str(i)]).line;              % N
+        Mx = data.([momentSuf,'X',num2str(i)]).line;             % Nmm
+        My = data.([momentSuf,'Y',num2str(i)]).line;             % Nmm
+        Mz = data.([momentSuf,'Z',num2str(i)]).line;             % Nmm
+    end
     
     COP = COP_oneplate([Fx Fy Fz],[Mx My Mz],a,b,c,thresh); 
     COP = ctransform_line(COP,gunit,orientFP.(['FP',num2str(i)]));       

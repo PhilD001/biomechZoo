@@ -34,7 +34,9 @@ function data = addchannel_data(data,ch,ndata,section)
 % Updated by Philippe C. Dixon July 2016
 % - removed backwards compatiblity check
 % - simplified algorithm
-
+%
+% Updated by Philippe C. Dixon June 2017
+% - Added warning for data overwrite if channel already exists
 
 
 % set defaults/error checking 
@@ -53,6 +55,12 @@ if strcmp(section,'analog')
     section = 'Analog';
 end
 
+
+% Check if channel already exists
+%
+if isfield(data,ch)
+    disp(['WARNING: channel ',ch,' already exists, overwriting with new data'])
+end
 
 % Add channel to zoo struct
 %
