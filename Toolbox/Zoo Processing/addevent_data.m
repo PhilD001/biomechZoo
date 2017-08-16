@@ -55,12 +55,8 @@ for i = 1:length(ch)
     end
     
     if ~isfield(data,ch{i})
-<<<<<<< HEAD
         disp(['channel : ',ch{i}, ' does not exist'])
         continue
-=======
-        error(['channel : ',ch{i}, ' does not exist'])
->>>>>>> ce593d2da63278ad489609035ebd59b949606333
     end
     
     yd = data.(ch{i}).line;
@@ -117,9 +113,7 @@ for i = 1:length(ch)
             end
             
             eyd = yd(exd);
-            
-            
-            
+         
         case {'rfs','rfo','lfs','flo'}
             exd = ZeniEventDetect(data,type(1),type(2:end));
             

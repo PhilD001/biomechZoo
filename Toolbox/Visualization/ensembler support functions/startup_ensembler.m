@@ -162,6 +162,7 @@ if i == nfigs % only the master gets uimenu
 end
 
 fpos = get(fig,'position');
+
 % Creates 'prompt' box where trial info is placed when a line is clicked
 %
 uicontrol('units',units,'style','text','position',[0 fpos(4)-.25 fpos(3) .25],'tag',...
@@ -198,31 +199,9 @@ for i = 1:length(xvec)
                 'TitleFontSizeMultiplier',mult,'TitleFontWeight','bold');
         end
         
-        set(ax,'units','normalized')  % auto scales axes
-        
-        % for testing PD Aug 13 2017
-        %         ax2 = axes('position',[0.43 0.11 0.2 0.2],'FontName',FontName);
-        %         set(ax2,'XTick',[0 0.5 1]);
-        %         set(ax2,'XTickMode','auto','units','normalized');
-        %
-        %         axprops = fieldnames(get(ax));
-        %
-        %         for k = 70:length(axprops)
-        %
-        %             ax1prop = get(ax,axprops(k));
-        %             ax2prop = get(ax2,axprops(k));
-        %
-        %             disp(axprops(k))
-        %             ax1prop
-        %             ax2prop
-        %             r = isequal(ax1prop,ax2prop);
-        %
-        %             if r == 0
-        %                 disp(axprops(k))
-        %             end
-        %
-        %         end
-        %-------------------
+        %set(ax,'DataAspectRatio',[1 1 1]) % keep axes square
+        set(ax,'units','normalized')      % auto scales axes
+       
         
         hnd = title(ax,get(ax,'tag'));
         set(hnd,'units','normalized','position',[.5 1 0],'horizontalalignment','center',...
