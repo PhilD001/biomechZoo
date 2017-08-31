@@ -2,10 +2,13 @@ function ensembler_msgbox(fld,msg)
 
 % clears msg box for next run
 
+if nargin==1
+    msg = '';
+end
 
 % Find current directory if it exists
 %
-if isempty(fld)
+if isempty(fld) && isempty(msg)
     sfld = 'not selected';
 else
     indx = strfind(fld,filesep);
@@ -26,10 +29,6 @@ rmsg = ['working directory: ',sfld];
 
 % additional messages
 %
-if nargin==1
-    msg = '';
-end
-
 mbox_hnd = findobj('tag','messagebox');
 
 if ~isempty(mbox_hnd)

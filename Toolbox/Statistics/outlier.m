@@ -8,6 +8,9 @@ function outlier(fl,ch,events)
 %  ch     ...  Channel to turn into outlier
 %  events ...  List of events to ignore, i.e., keep unchanged
 
+% Updated by Philippe Dixon Aug 2017
+% - Bug fix in event search algorithm
+
 if nargin==2
     events = {};
 end
@@ -23,19 +26,21 @@ if ~iscell(ch)
     ch = {ch};
 end
 
+if ~iscell(events)
+    events  = {events};
+end
+
 for i = 1:length(ch)
     disp(['replacing line data for channel ',ch{i},' to 999'])
     data.(ch{i}).line = 999*ones(length(data.(ch{i}).line),1);
-    evts = fieldnames(data.(ch{i}).event);
-    if ~isempty(evts)
-        for j = 1:length(evts)
-            
-            if ~ismember(evts{j},events)
-                disp(['replacing event data for ',evts{j},' to [exd 999 0]'])
-                data.(ch{i}).event.(evts{j})(2) = 999;
-            end
+    
+    for j = 1:length(events)
+        if isfield(data.(ch{i}).event,events{j})
+            disp(['replacing event data for ',events{j},' to [exd 999 0]'])
+            data.(ch{i}).event.(events{j}) = [ 999 999 0];
         end
     end
+    
 end
 
 zsave(fl,data)

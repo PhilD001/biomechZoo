@@ -1,4 +1,4 @@
-function combine_within
+function combine_within(settings)
 
 % combine_within used to combine different axes with full freedom. Great for comparing
 % different computations within a condition. e.g. knee angles grood suntay vs
@@ -32,9 +32,9 @@ for j = 1:length(fig)
         axm = findobj(fig(j),'type','axes','tag',a{1,2});
         
         ln = findobj(axm,'type','line');
-        pch = findobj(axm,'type','patch');           % patches
-        txt = findobj(axm,'string','\diamondsuit');  % line events
-        mtxt = findobj(axm,'string','\bullet');      % mean event
+        pch = findobj(axm,'type','patch');                    % patches
+        txt = findobj(axm,'string',settings.string);          % line events
+        mtxt = findobj(axm,'string',settings.ensstring);      % mean event
         set(ln,'parent',axh);
         set(pch,'parent',axh);
         set(txt,'parent',axh);
@@ -50,12 +50,15 @@ for j = 1:length(fig)
             
             ln = findobj(axm,'type','line');
             pch = findobj(axm,'type','patch');
-            txt = findobj(axm,'string','\diamondsuit');  % line events
-            mtxt = findobj(axm,'string','\bullet');   % mean event
+            txt = findobj(axm,'string',settings.string);       % line events
+            mtxt = findobj(axm,'string',settings.ensstring);   % mean event
+            ebar = findobj(axm,'type','errorbar');              % event error bars
             set(ln,'parent',axh);
             set(pch,'parent',axh);
             set(txt,'parent',axh);
             set(mtxt,'parent',axh);
+            set(ebar,'parent',axh);
+
             bottomhnd(pch);
             
         end

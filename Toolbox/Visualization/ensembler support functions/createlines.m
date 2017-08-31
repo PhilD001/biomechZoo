@@ -47,7 +47,7 @@ for j = 1:length(axs)
             fld = strrep(string{2},'working directory: ','');
             msg = ['channel ''',ch,''' does not exist in file'];  
             ensembler_msgbox(fld,msg);
-            pause(0.2)
+            pause(1e-6)
             continue
         end
         

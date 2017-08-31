@@ -9,11 +9,24 @@ function vout = ctransform(c1,c2,vec)
 %
 % RETURNS
 %   vout  ... n x 3 matrix in c2 rows = samples; columns X Y Z 
-
+%
+%
+% Example
+% Let us consider two coordinate systems
+% c1 = [1 0 0;  0 1 0; 0 0 1]  % in line with the global coordinate system
+% c2 = [0 1 0; -1 0 0; 0 0 1]  % rotated version of c1 90deg about z axis
+% 
+% what would be the coordinates of a vector vec = [2 0 0] from c1 expressed in c2?
+%
+% vout = ctransform(c1,c2,vec)
+%
+% vout = [0 -2 0]
+%
+% see also vecrotate, gunit
 
 % Revision History
 %
-% Created by JJ Loh ??
+% Created by JJ Loh approx 2004
 %
 % Notes
 % - Please see Kwon3d for details http://www.kwon3d.com/theory/transform/transform.html

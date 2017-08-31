@@ -541,15 +541,16 @@ for i = 1:length(fl)
             evt = findfield(data,anthroevtnames{k});          % 1st found is right one
             
             if isempty(evt)
-                error(['missing ',anthroevtnames{k},' event']);
+                disp(['missing ',anthroevtnames{k},' event']);
+                evt = 999;
             end
             
             xd = 1;
             yd = evt;
             
             if ~isnumeric(yd)
-                yd = 999;
-                
+                disp('non numeric anthro event')
+               
             end
             
             if iscell(anthroevtnames)

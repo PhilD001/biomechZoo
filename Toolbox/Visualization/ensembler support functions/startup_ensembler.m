@@ -1,5 +1,5 @@
 function startup_ensembler(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh,...
-    i,nfigs,FontName,FontSize,units)
+    i,nfigs,FontName,FontSize,units,msgbox_space,opening_msg)
 
 % STARTUP_ENSEMBLER initializes the GUI labels
 
@@ -14,9 +14,8 @@ function startup_ensembler(nm,nrows,ncols,xwid,ywid,xspace,yspace,fw,fh,...
 % - Bug fix for users of legacy Matlab version < r2014b ('8.4.0')
 %
 % Updated Aug 2017 by Philippe C. Dixon
-% - Axes now rescale with figure scaling
-% - A new message box feature allows user to receive feedback directly in the ensembler
-%   window
+% - A new message box feature allows user to receive feedback directly in ensembler
+
 
 
 if nargin < 10
@@ -30,7 +29,8 @@ end
 mult = 1; % label font size multiplier
 
 fig = figure('name',nm,'units',units,'position',[0 0 fw fh],'menubar','none',...
-    'numbertitle','off','keypressfcn','ensembler(''keypress'')');
+    'numbertitle','off','keypressfcn','ensembler(''keypress'')',...
+     'Resize','off');
 
 if i == nfigs % only the master gets uimenu
     
@@ -51,6 +51,7 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','increase fonts','callback','ensembler(''increase fonts'')');
     uimenu(mn,'label','property editor on','callback','ensembler(''property editor on'')','separator','on');
     uimenu(mn,'label','property editor off','callback','ensembler(''property editor off'')');
+    uimenu(mn,'label','resize','callback','ensembler(''resize'')');
     uimenu(mn,'label','quickedit','callback','ensembler(''quickedit'')','separator','on');
     
     % uimenu(mn,'label','datacursormode off','callback','ensembler(''datacursormode off'')','separator','on');
@@ -127,9 +128,6 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','add min event','callback','ensembler(''add min event'')');
     uimenu(mn,'label','add ROM event','callback','ensembler(''add ROM event'')');
     uimenu(mn,'label','add gait events','callback','ensembler(''add gait events'')','separator','on');
-
-    
-    
     
     mn = uimenu(gcf,'label','Zoom');
     uimenu(mn,'label','zoom on','callback','ensembler(''zoom on'')');
@@ -150,35 +148,33 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','continuous stats','callback','ensembler(''continuous stats'')','separator','on');
     uimenu(mn,'label','clear colorbars','callback','ensembler(''clear colorbars'')');
     
-    
-    % Creates a 'messagebox' where user feedback could be placed
-    %
-    fpos = get(fig,'position');
-    
-    uicontrol('units',units,'style','text','position',[0 fpos(4)*0.01 fpos(3) .8],'tag',...
-        'messagebox','backgroundcolor',[0.5 0.5 0.5],'FontSize',FontSize,...
-        'HorizontalAlignment','Left');
-     ensembler_msgbox([])
 end
 
-fpos = get(fig,'position');
 
 % Creates 'prompt' box where trial info is placed when a line is clicked
 %
-uicontrol('units',units,'style','text','position',[0 fpos(4)-.25 fpos(3) .25],'tag',...
-    'prompt','backgroundcolor',get(gcf,'color'),'FontSize',FontSize);
+% uicontrol('units',units,'style','text','position',[0 fpos(4)-.25 fpos(3) .25],'tag',...
+%     'prompt','backgroundcolor',get(gcf,'color'),'FontSize',FontSize);
+
+
+fpos = get(fig,'position');
 
 xvec = getspacing(ncols,xwid,xspace,fpos(3));
 yvec = getspacing(nrows,ywid,yspace,fpos(4));
 lyvec = length(yvec);
 
-for i = 1:length(xvec)
-    for j = 1:length(yvec)
-        xpos = (i-1)*xwid+sum(xvec(1:i));
-        ypos = (j-1)*ywid+sum(yvec(1:j));
+% resize figure to make space for msg box
+%
+set(fig,'position',[fpos(1:3)  fpos(4)+msgbox_space]);
+
+for x = 1:length(xvec)
+    for y = 1:length(yvec)
+        xpos = (x-1)*xwid+sum(xvec(1:x));
+        ypos = (y-1)*ywid+sum(yvec(1:y))+msgbox_space;
+        
         %row & column number
-        cnum = mod(i,length(xvec));
-        rnum = mod(j,length(yvec));
+        cnum = mod(x,length(xvec));
+        rnum = mod(y,length(yvec));
         if rnum == 0
             rnum = length(yvec);
         end
@@ -200,7 +196,7 @@ for i = 1:length(xvec)
         end
         
         %set(ax,'DataAspectRatio',[1 1 1]) % keep axes square
-        set(ax,'units','normalized')      % auto scales axes
+        % set(ax,'units','normalized')      % auto scales axes
        
         
         hnd = title(ax,get(ax,'tag'));
@@ -210,6 +206,18 @@ for i = 1:length(xvec)
     end
 end
 
+% craete prompt box for all
+%
+fpos = get(fig,'position');
+uicontrol('units',units,'style','text','position',[0 fpos(4)-0.25 fpos(3) .25],'tag',...
+    'prompt','backgroundcolor',get(gcf,'color'),'FontSize',FontSize);
 
 
-
+% Creates a 'messagebox' where user feedback could be placed
+%
+if i==nfigs
+    uicontrol('units',units,'style','text','position',[0 0 fpos(3) msgbox_space],'tag',...
+        'messagebox','backgroundcolor',[0.5 0.5 0.5],'FontSize',FontSize,...
+        'HorizontalAlignment','Left');
+    ensembler_msgbox([],opening_msg)
+end

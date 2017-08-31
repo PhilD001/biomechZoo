@@ -354,7 +354,7 @@ switch action
         ensembler_msgbox(fld,'Data combined')
         
     case 'combine within'
-        combine_within
+        combine_within(settings)
         ensembler_msgbox(fld,'Data combined')
         
     case 'counttrials'
@@ -822,10 +822,14 @@ switch action
         
     case 'property editor on'
         propertyeditor('on')
+        set(gcf,'resize','on')
         
     case 'property editor off'
         propertyeditor('off')
-        
+       
+    case 'resize'
+        set(gcf,'resize','on')
+
     case 'quickedit'
         quickedit(fld)
         
