@@ -30,7 +30,10 @@ function [nr,nlength]=normalize_line(r,datalength,method)
 % - Interpolation can be performed using any method available in the
 %  'interp1' function
 % - Fixed error with output 'nlength'
-
+%
+% Updated by Philippe C. Dixon Oct 2017
+% - Default setting bug fix for users running this function directly with a 
+%   single argument 
 
 % Set defaults
 %
@@ -41,6 +44,7 @@ end
 
 if nargin==1
     datalength = 100;
+    method = 'linear';
 end
 
 if nargin==2

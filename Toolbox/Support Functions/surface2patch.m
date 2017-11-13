@@ -1,5 +1,21 @@
 function [vr,fc] = surface2patch(x,y,z)
 
+% [vr,fc] = SURFACE2PATCH(x,y,z) converts surface orientation data to patch
+% vertcies format
+%
+% ARGUMENTS
+% x,y,z      ...  surface data
+%
+% RETURNS
+% vr         ...  vertices for patch object
+% fc         ...  faces for patch object 
+%
+% Example
+% [x,y,z] = cylinder(10,1);
+% [vr,fc] = surface2patch(x,y,z);
+
+% Created by JJ Loh 
+
 [rw,cl] = size(x);
 vr = [];
 fc = [];
@@ -12,9 +28,9 @@ for i = 1:cl
 end
 
 findx = [0;findx];
-for i = 1:length(findx)-1;
+for i = 1:length(findx)-1
     vec1 = (findx(i)+1:findx(i+1))';    
-    if i+1 == length(findx);
+    if i+1 == length(findx)
         vec2 = (findx(1)+1:findx(2))';
     else
         vec2 = (findx(i+1)+1:findx(i+2))';

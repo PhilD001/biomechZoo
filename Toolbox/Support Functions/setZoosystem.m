@@ -36,6 +36,8 @@ for i = 1:length(section)
     zoosystem.(section{i}).CURRENT_END_FRAME    = []; 
 end
 
+zoosystem.Processing = '';
+
 zoosystem.AVR = 0;
 
 zoosystem.Analog.FPlates.CORNERS = [];

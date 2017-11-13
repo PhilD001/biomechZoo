@@ -32,6 +32,9 @@ function [data,walkDir] = getDir(data)
 %
 % Updated June 2017
 % - Identifies correct direction for static trials
+%
+% Updated Oct 2017
+% - Error check for files without 'OtherMetaInfo' in zoosystem
 
 % Error Check / Set defaults
 %
@@ -47,29 +50,41 @@ end
 
 % determine type of trial
 %
-if isfield(data.zoosystem.OtherMetaInfo.Parameter,'MANUFACTURER')
-    company = strjoin(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER.COMPANY.data,'');
+if ~isfield(data.zoosystem,'OtherMetaInfo')
+    static=false;
 else
-    company = 'unknown';
-end
-
-if isempty(strfind(company,'AnalysisCorp'))
-    static = data.zoosystem.OtherMetaInfo.Parameter.SUBJECTS.IS_STATIC.data;
-else
-    if isfield(data.zoosystem.CompInfo,'TrialType')
-        trialType = lower(data.zoosystem.CompInfo.TrialType);
-        if strfind(trialType,'static')
+    if isfield(data.zoosystem.OtherMetaInfo.Parameter,'MANUFACTURER')
+        if isfield(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER,'Company')
+            company = strjoin(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER.Company.data,'');
+        elseif isfield(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER,'COMPANY')
+            company = strjoin(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER.COMPANY.data,'');
+        else
+            company = 'unknown';
+        end
+    else
+        company = 'unknown';
+    end
+    
+    
+    if isempty(strfind(company,'AnalysisCorp'))
+        static = data.zoosystem.OtherMetaInfo.Parameter.SUBJECTS.IS_STATIC.data;
+    else
+        if isfield(data.zoosystem.CompInfo,'TrialType')
+            trialType = lower(data.zoosystem.CompInfo.TrialType);
+            if strfind(trialType,'static')
+                static = true;
+            else
+                static = false;
+            end
+        elseif strfind(lower(data.zoosystem.SourceFile),'static')
+            static = true;
+        elseif strfind(lower(data.zoosystem.SourceFile),'vmtmpl')
             static = true;
         else
             static = false;
         end
-    elseif strfind(lower(data.zoosystem.SourceFile),'static')
-        static = true;
-    elseif strfind(lower(data.zoosystem.SourceFile),'vmtmpl')
-        static = true;
-    else
-        static = false;
     end
+    
 end
 
 % Run algorithm for static or dynamic trials
@@ -96,7 +111,7 @@ if static
     end
     
 else
-   
+    
     istart = find(~isnan(SACR(:,1)),1,'first');
     iend = find(~isnan(SACR(:,1)),1,'last');
     SACR = SACR(istart:iend,:);
@@ -113,7 +128,6 @@ else
         axis = 'I';
         dim = 1;
     end
-    
     
     % determine which direction along known axis person is travelling
     %

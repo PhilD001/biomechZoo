@@ -31,7 +31,9 @@ function data = addevent_data(data,ch,ename,type)
 %
 % Updated by Philippe C. Dixon July 2017
 % - Bug fix for option 'all' for ch (github bug report #4)
-
+%
+% Updated by Philippe C. Dixon Nov 2017
+% - Bug fix for reaction force check
 
 % Some settings
 %
@@ -96,7 +98,7 @@ for i = 1:length(ch)
                 m = 1;
             end
             
-            if ~isin(ch,'_')
+            if isempty(strfind(ch{i},'_'))
                 yd = data.(ch{i}).line(:,3);
             else
                 yd = data.(ch{i}).line;

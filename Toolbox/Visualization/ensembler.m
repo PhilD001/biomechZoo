@@ -28,7 +28,8 @@ function ensembler(action)
 %   on Mac OSX platforms
 % - There are known functionality issues with errorbars on Matlab version 2014a and up
 % - Functions tested on v2012a on MAC OS 10.8.6 and Windows 7
-
+% - Users wishing to use the exact version described in the biomechZoo
+%   manuscript can download the original code on github
 
 % Revision History
 %
@@ -84,7 +85,7 @@ function ensembler(action)
 % Updated by Philippe C. Dixon June 2015
 % - improved clearing of old data
 % - improved selection of events and line
-% - imrpoved handling of bar graphs
+% - improved handling of bar graphs
 % - changed interpreter for title to 'none' to display underscore character
 % - bar graphs can be reordered (see case 'reorder bars')
 %
@@ -113,6 +114,9 @@ function ensembler(action)
 % Updated by Philippe C. Dixon August 2017
 % - Changes to work with new message box feature at the bottom of main
 %   ensembler window
+%
+% Updated by Philippe C. Dixon November 2017
+% - bug fix for turning on/off SD visibility on all open figures
 
 
 % ================= BEGIN SETUP ======================================
@@ -129,19 +133,19 @@ global fld                              % give every case access to fld
 global f p                              % give every case acces to [p,f]
 
 
-% default settings look for ensembler events
+% default settings look for ensembler objects
 %
-settings.string = '\bullet';                  % style for event
-settings.ensstring = '\diamondsuit';          % style for ensembled event
-settings.verticalalignment = 'middle';
-settings.horizontalalignment = 'center';
-settings.FontSize = 14;
-settings.color = [1 0 0];
+settings = ensembler_settings;       
+
+curAx = ensembler_axis_highlight(false);       % reset axis highlight
 
 
-ensembler_axis_highlight(false)         % reset axis highlight
 
-ensembler_msgbox(fld)
+ensembler_msgbox(fld)                 % print message to user
+
+% ensembler_processing(fld)           % record processing steps to txt file
+
+% get(curAx,'title')
 
 %================== BEGIN CASE STATEMENTS ============================
 %
@@ -156,7 +160,11 @@ switch action
     case 'restart'
         close all
         start_ensembler
-        
+    
+    case {'save process record','load process record','run process record'}
+         %ensembler_msgbox(fld,['Figure exported to: ',concatEnsPrompt(filename)])
+         ensembler_msgbox('feature not yet supported')
+
     case 'add gait events'
         if isempty(fld)
             ensembler('set working directory')
@@ -166,14 +174,12 @@ switch action
         update_ensembler_lines(p,f,fld,settings)
         
     case 'add manual event'
-        ch = get(get(gca,'Title'),'String');
+        ch = get(get(curAx,'Title'),'String');
         add_manualevent(ch)
         update_ensembler_lines(p,f,fld,settings)
         
-        
-        
     case {'add min event','add max event','add ROM event'}
-        ch = get(get(gca,'Title'),'String');
+        ch = get(get(curAx,'Title'),'String');
         evt = strrep(action,'add ','');
         evt = strrep(evt,' event','');
         
@@ -192,12 +198,12 @@ switch action
         update_ensembler_lines(p,f,fld,settings)
         
     case 'add start trial event'
-        ch = get(get(gca,'Title'),'String');
+        ch = get(get(curAx,'Title'),'String');
         add_manualevent(ch,'start')
         update_ensembler_lines(p,f,fld,settings)
         
     case 'add end trial event'
-        ch = get(get(gca,'Title'),'String');
+        ch = get(get(curAx,'Title'),'String');
         add_manualevent(ch,'end')
         update_ensembler_lines(p,f,fld,settings)
         
@@ -254,7 +260,7 @@ switch action
         end
         
     case 'buttondown'
-        buttondown
+        buttondown(settings)
         
     case 'check continuous stats'
         continuousstats(fld,'check')
@@ -346,7 +352,7 @@ switch action
         end
         
     case 'combine'
-        combine
+        combine(settings)
         ensembler_msgbox(fld,'Data combined')
         
     case 'combine all'
@@ -397,11 +403,11 @@ switch action
         
     case 'delete single axis'
         disp('select axes to delete')
-        delete(gca)
+        delete(curAx)
         ensembler_msgbox(fld,'Axis deleted')
         
     case 'delete all events'
-        ch = get(get(gca,'Title'),'String');
+        ch = get(get(curAx,'Title'),'String');
         lines = findobj('type','line','LineWidth',0.5);
         nlines = length(lines);
         if nlines ==1
@@ -420,7 +426,7 @@ switch action
         update_ensembler_lines(p,f,fld,settings)
         
     case 'delete event by type'
-        ch = get(get(gca,'Title'),'String');
+        ch = get(get(curAx,'Title'),'String');
         lines = findobj('type','line','LineWidth',0.5);
         nlines = length(lines);
         evthnd = findobj('string',settings.textstring);
@@ -444,7 +450,7 @@ switch action
         update_ensembler_lines(p,f,fld,settings)
         
     case 'delete single event'
-        ch = get(get(gca,'Title'),'String');
+        ch = get(get(curAx,'Title'),'String');
         evthnd = gco;
         evt = get(evthnd,'Tag');
         lnhnd = get(evthnd,'userdata');           % this is the line handle
@@ -498,7 +504,7 @@ switch action
         bmech_explode(fld,ch)
         ensembler_msgbox(fld,'Channels exploded, retag ensembler axes with exploded axes')
         
-    case 'export figure'
+    case 'export'
         prmt = findobj('tag','prompt');
         msg = findobj('tag','messagebox');
         
@@ -882,9 +888,13 @@ switch action
         
     case 'set working directory'
         fld = uigetfolder;
-        cd(fld)
-        ensembler_msgbox(fld)
-        
+        if fld==0
+            ensembler_msgbox('','no folder selected')
+        else
+            cd(fld)
+            ensembler_msgbox(fld)
+        end
+       
     case 'save fig'
         filemenufcn(gcbf,'FileSaveAs')
         
@@ -936,7 +946,7 @@ switch action
         end
         
     case 'std on off'
-        tg = get(findobj(gcf,'type','patch'),'tag');
+        tg = get(findobj('type','patch'),'tag');
         tg = setdiff(tg,{''});
         a = associatedlg(tg,{'on','off'});
         for i = 1:length(a(:,1))
@@ -948,8 +958,8 @@ switch action
         prompt={'Enter the figure title'};
         a = inputdlg(prompt,'axis title',1);
         a = [a;' '];
-        set(get(gca,'Title'),'String',a)
-        set(gca,'Tag',a{1})
+        set(get(curAx,'Title'),'String',a)
+        set(curAx,'Tag',a{1})
         
     case 'xlabel'
         ax = findobj('type','axes');
@@ -979,11 +989,11 @@ switch action
         [r,~]  = size(a);
         
         if r==1
-            set(get(gca,'XLabel'),'String',a)
+            set(get(curAx,'XLabel'),'String',a)
         end
         
         if r==2
-            set(get(gca,'XLabel'),'String',a)
+            set(get(curAx,'XLabel'),'String',a)
         end
         
     case 'xlim'
@@ -994,7 +1004,7 @@ switch action
         a = inputdlg(prompt,'axis ticks',1);
         tick = str2double((a{1}));
         
-        xlim = get(gca,'XLim');
+        xlim = get(curAx,'XLim');
         xticks = xlim(1):tick:xlim(2);
         
         ax = findobj('type','axes');
@@ -1007,16 +1017,16 @@ switch action
         a = inputdlg(prompt,'axis ticks',1);
         tick = str2double((a{1}));
         
-        xlim = get(gca,'YLim');
+        xlim = get(curAx,'YLim');
         xticks = xlim(1):tick:xlim(2);
         
-        set(gca,'YTick',xticks)
+        set(curAx,'YTick',xticks)
         
     case 'xlimit'
         prompt={'Enter the lower limit of the axis: ',...
             'Enter the upper limit of the axis): '};
         
-        default = get(gca,'YLim');
+        default = get(curAx,'YLim');
         defaultstr = {num2str(default(1)),num2str(default(2))};
         
         a = inputdlg(prompt,'axis limits',1,defaultstr);
@@ -1043,6 +1053,8 @@ switch action
         ax = findobj('type','axes');
         defaultanswer = {'',''};
         
+        
+        
         for i = 1:length(ax)
             
             if ~isempty(get(ax(i),'YLabel')) && ~isin(get(get(ax(i),'Title'),'Units'),'data')
@@ -1067,27 +1079,29 @@ switch action
         [r,~]  = size(a);
         
         if r==1
-            set(get(gca,'YLabel'),'String',a)
+            set(get(curAx,'YLabel'),'String',a)
         end
         
         if r==2
-            set(get(gca,'YLabel'),'String',a)
+            set(get(curAx,'YLabel'),'String',a)
         end
         
     case 'ylim'
         setaxes('ylim');
         
     case 'ylimit'
+        
+        
         prompt={'Enter the lower limit of the axis: ',...
             'Enter the upper limit of the axis): '};
         
-        default = get(gca,'YLim');
+        default = get(curAx,'YLim');
         defaultstr = {num2str(default(1)),num2str(default(2))};
         a = inputdlg(prompt,'axis limits',1,defaultstr);
         
         lower = str2double(a{1});
         upper = str2double(a{2});
-        set(gca,'YLim',[lower upper])
+        set(curAx,'YLim',[lower upper])
         
     case 'zoom on'
         zoom on

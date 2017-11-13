@@ -9,12 +9,12 @@ function director(action,varargin)
 % NOTES
 % - If trials contain force plate data, force plates and ground reaction
 %   force vectors (for up to three plates) will appear in the virtual space
-%
 % - Additional objects ('props') can be loaded (see 'cinema objects' sub-folder
 %   of 'Visualization' folder. Limited functionality currently exists for
 %   these additional objects.  User is encouraged to modify or add objects
 %   by studying the method used to display force plates
-
+% - Step 3 in the director instructions from the manuscript (appendix C) is
+%   automatically done in current version of director
 
 % Revision History
 %
@@ -50,12 +50,22 @@ function director(action,varargin)
 %
 % Updated by Philippe C. Dixon May 2017
 % - Solved 'stop' button issue (nonresponsive or delayed on certain platforms)
-
+%
+% Updated by Philippe C. Dixon Oct 2017
+% - fixed axis color code mismatch between global axes and graph window
+% - fixed bug where global grid layout disappeared when using graphing
+%   window
 
 global producer;
 global p;
 global f;
 global data;
+
+% default settings
+%
+xcol = [1 0 0]; % red color for x axis arrow
+ycol = [0 1 0]; % green color for y axis arrows
+zcol = [0 0 1]; % blue color for z axis arrows
 
 
 if nargin ==0
@@ -133,11 +143,11 @@ switch action
         ax2 = axes('unit','centimeters','position',[0 0 3 3],'cameraviewangle',40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],...
             'visible','off','tag','orientation window');
         [x,y,z] = arrow([0 0 0],[1 0 0],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',[1 0 0],'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','x');
+        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',xcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','x');
         [x,y,z] = arrow([0 0 0],[0 1 0],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',[0 1 0],'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','y');
+        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',ycol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','y');
         [x,y,z] = arrow([0 0 0],[0 0 1],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',[0 0 1],'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','z');
+        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',zcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','z');
         
         light('parent',ax2,'position',[3 0 0]);
         director('units load');
@@ -305,9 +315,9 @@ switch action
         delete(findobj('type','line','tag','y angle'));
         delete(findobj('type','line','tag','z angle'));
         
-        delete(findobj('type','line'));
-        delete(findobj('type','line'));
-        delete(findobj('type','line'));
+        delete(findobj(ax,'type','line'));  % fix problem where lines of main window are removed
+%         delete(findobj('type','line'));
+%         delete(findobj('type','line'));
         
         [~,c] = size(data.(ch).line);
         
@@ -315,9 +325,9 @@ switch action
             line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,1),'color','r','tag','x angle');
             lg = legend(ax,'1D');
         else
-            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,1),'color','r','tag','x angle');
-            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,2),'color','b','tag','y angle');
-            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,3),'color','g','tag','z angle');
+            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,1),'color',xcol,'tag','x angle');
+            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,2),'color',ycol,'tag','y angle');
+            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,3),'color',zcol,'tag','z angle');
             lg = legend(ax,'X','Y','Z');
         end
         
@@ -481,7 +491,7 @@ switch action
         set(findobj('type','uicontrol','tag','button stop'),'visible','on');
         
         while producer.cut == 0
-            index = index+1;
+            index = index+1;  % increase step length to speed up
             mark('next',flength,av_ratio);
             set(gcf,'name',['preview: frame ',num2str(index)]);
             set(hnd,'string',num2str(index));
@@ -617,107 +627,6 @@ end
 
 
 %===EMBEDDED FUNCTIONS==================================================
-
-function mark(action,varargin)
-
-frm = finddobj('frame','number');
-
-switch action
-    
-    case 'next'
-        
-        frm = frm+1;
-        direction = 'forward';
-        
-    case 'prev'
-        
-        frm = frm-1;
-        direction = 'backward';
-        
-    case 'goto'
-        
-        nfrm = varargin{1};
-        if nfrm > frm
-            direction = 'forward';
-        elseif nfrm < frm
-            direction = 'backward';
-        else
-            direction = 'still';
-        end
-        frm = nfrm;
-        
-    case 'refresh'
-        
-        direction = 'still';
-end
-
-frm = max(frm,1);
-set(finddobj('frame'),'string',num2str(frm));
-actor('goto',frm);
-grips('goto image',frm);
-grips('goto data',frm);
-grips('goto iimage',frm);
-marker('goto',frm);
-specialobject('stick');
-costume('stick');
-
-accessoryfxn('stick');
-grips('random task');
-props('goto',frm);
-cameraman('goto',frm,direction);
-
-lightman('refresh');
-
-as = get(findobj('type','axes','tag','data display'),'Visible');
-
-if ~isempty(as)
-    graph_mark(frm,varargin)
-end
-
-pause(1e-10);
-
-function graph_mark(frm,varargin)
-
-as = get(findobj('type','axes','tag','data display'),'Visible');
-ax = findobj('type','axes','tag','data display');
-
-if frm==1
-    star = findobj('Marker','*');
-    if ~isempty(star)
-        delete(star)
-        return
-    end
-end
-
-if strcmp(as,'on');
-    delete(findobj('type','line','tag','ln frame'));
-    ln = get(findobj('type','axes','tag','data display'),'Children');
-    
-    if ~isempty(ln)
-        
-        a = varargin{1,1};
-        numframes = a{1};
-        av_ratio = a{2};
-        
-        if length(a)>2
-            numframes = a{3};
-        end
-        
-        for i = 1:length(ln)
-            c = get(ln(i),'Color');
-            yd = get(ln(i),'ydata');
-            
-            if length(yd)==numframes*av_ratio
-                frm = frm*av_ratio;
-            end
-            
-            line('parent',ax,'xdata',frm,'ydata',yd(frm),'Marker','*',...
-                 'MarkerSize',8,'tag','ln frame','color',c,...
-                 'LineWidth',1.5);
-            
-        end 
-    end
-end
 
 
 function menu(action)

@@ -59,7 +59,7 @@ function data = kinetics_data(data,settings,filt)
 % see centreofpressure_data
 %
 % Updated by Philippe C. Dixon May 31st 2014
-% - use of bmech_addchannel_data depreciated. Function now calls 'addchannel_data.m'
+% - use of bmech_addchannel_data deprecated. Function now calls 'addchannel_data.m'
 %
 % Updated by Philippe C. Dixon August 2016
 % - Improved functionality with BiomechZoo version 1.3
@@ -281,7 +281,7 @@ fpath = [p,f];
 cd(p)
 ext = extension(fpath);
 
-if isin(ext,'c3d');
+if isin(ext,'c3d')
     zdata= c3d2zoo(fpath);
 elseif isin(ext,'zoo')
     zdata = zload(fpath);

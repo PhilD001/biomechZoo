@@ -26,6 +26,9 @@ function r = filter_line(r,filt,fsamp)
 %
 % Updated by Philippe C. Dixon May 2017
 % - added error checking
+%
+% Updated by Philippe C. Dixon Nov 2017
+% - error check for use of 'cut' instead of 'cutoff'
 
 % error checking
 %
@@ -41,6 +44,12 @@ end
 if isfield(filt,'forder')
     filt.order = filt.forder;
     filt = rmfield(filt,'forder');
+end
+
+
+if isfield(filt,'cut')
+    filt.cutoff = filt.cut;
+    filt = rmfield(filt,'cut');
 end
 
 % add sampling rate to filt struct
@@ -62,7 +71,7 @@ if lim(1)+filt.order*3 < lim(2)
     chunk = r(lim(1):lim(2));  % bug fix by Phil July 2009. Look at first column only. indx was wrong for matrix data
     %  chunk = data(lim(1):lim(2),:);
     nindx = find(isnan(chunk));
-    if ~isempty(nindx);
+    if ~isempty(nindx)
         xd = (1:length(chunk));
         rindx = find(~isnan(chunk));
         ixd = xd(nindx);

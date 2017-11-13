@@ -1,4 +1,5 @@
-function [compcons,maxval] = bmech_continuous_stats_ensembler4(fld,ch,r,alpha,ax,nboots,maxval,check)
+function [compcons,maxval] = bmech_continuous_stats_ensembler4(fld,ch,r,alpha,ax,...
+                             nboots,maxval,check,cohen)
 
 % bmech_continuous_stats_ensembler4 computes continuous stats based on Bootstrap confidence intervals
 %
@@ -9,7 +10,7 @@ function [compcons,maxval] = bmech_continuous_stats_ensembler4(fld,ch,r,alpha,ax
 % alpha        ...   significance level (default 0.05)
 % ax           ...   axis handle
 % check        ...   check the summary statistics
-%
+% cohen        ...   use cohen's d insted of mean difference (boolean)
 %
 % RETURNS
 % compconsstk  ...   used for ensembler. cons gives order of colorbars
@@ -53,7 +54,6 @@ function [compcons,maxval] = bmech_continuous_stats_ensembler4(fld,ch,r,alpha,ax
 
 
 
-
 %---EXTRACT DATA INFORMATION------------------------------------------------------------
 %
 fl = engine('path',fld,'extension','zoo');
@@ -66,17 +66,25 @@ for i = 1:length(ln)
     if ~isempty(get(ln(i),'Tag')) && ~isin(get(ln(i),'Tag'),'hline')
         rr =  get(ln(i),'Tag');
         
-        if isin(rr,'+')
+        nplus = strfind(rr,'+');
+        
+        if length(nplus)==1
             indx = strfind(rr,'+');
             part1 = rr(1:indx-1);
             part2 = rr(indx+1:end);
             
             cons{i}= [part1,'_and_',part2];
             
+        elseif length(nplus)==2
+            indx = strfind(rr,'+');
+            part1 = rr(1:indx(1)-1);
+            part2 = rr(indx(1)+1:indx(2)-1);
+            part3 = rr(indx(2)+1:end);
+            
+            cons{i} = [part1,'_and_',part2,'_and_',part3];
+            
         else
-            
             cons{i} =rr;
-            
         end
         
     end
@@ -85,26 +93,14 @@ end
 cons = sort(cons);
 
 
-
-
-%---EXTRACT SUBJECT AND INFO--------------------------------------------------------------------
-%
-% subs = getsubs_allconditions(fld,cons);
-%
-% if isempty(subs)
-%     disp('WARNING: not all subjects have performed all conditions')
-%     [~,subs] = bmech_getsubs(fld);
-% end
-
-
-%---CREATE R STRUCT-----------------------------------------------------------------------
-%
-% r = grouplines(fld,cons);
-
 %---COMPUTE CONFIDENCE BAND QUANTITIES---------------------------------------------------
 %
-[mdiffdata,~,mult,~,SigDiffIndx,frames,compcons] = computecolorbars(r,cons,ch,fl,nboots,alpha,check);
 
+[mdiffdata,~,mult,~,SigDiffIndx,frames,compcons,~,~,cohendiffdata] = computecolorbars(r,cons,ch,fl,...
+                                           nboots,alpha,check,'yes disp',cohen);
+if cohen
+    mdiffdata = cohendiffdata;
+end
 
 if isempty(check)
     
@@ -147,7 +143,10 @@ for i=1:length(compcons)
     
     %----matchp data to color----
     yd = abs(mdiffdata(i,:));
-    
+   
+%     if maxval >=10.0
+%         mult = mult/10;
+%     end
     c = colormap(jet(maxval*mult));  %uses the jet color map with maxP colors
     
     yd_round = ceil(yd*mult); % ceil must be used since any 0 value would not work
@@ -182,20 +181,19 @@ for i=1:length(compcons)
     set(a,'Color',[0 0 0])
     
     patch('Faces',faces,'Vertices',verts,'FaceColor','flat','FaceVertexCData',av_color,'EdgeAlpha',0);
-
     
     tx = {'A','B','C','D','E','F','G','H','I','J','K','L'};
     
     if i>length(tx)
         error('too many comparisons add more letters to tx')
     end
-    
-    set(get(a,'YLabel'),'String',tx{i})
-    set(get(a,'YLabel'),'Rotation',0)
-    tpos = get(get(a,'YLabel'),'Position');
-    npos = get(gca,'YLim');
-    set(get(a,'YLabel'),'Position',[tpos(1) npos(2) tpos(3)])
-    
+     set(get(a,'YLabel'),'String',tx{i})
+     set(get(a,'YLabel'),'Rotation',0)
+     tpos = get(get(a,'YLabel'),'Position');
+     npos = get(gca,'YLim');
+     set(get(a,'YLabel'),'Position',[tpos(1) npos(2) tpos(3)])
+     text(tpos(1),tpos(2),tx{i},'FontSize',6)    % if above doesn't work well
+
     
     
 end

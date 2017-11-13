@@ -11,7 +11,9 @@ function [data,body] = setSegmentPar(dim,bone,data,SegmentPar,body)
 %
 % Updated May 2014
 % - Compatible with zoosystem v.1.2
-
+%
+% Updated by Philippe C. Dixon Nov 2017
+% - Corrected proximal joint for the L/R foot
 
 for i = 1:length(bone(:,1))
     
@@ -93,8 +95,8 @@ for i = 1:length(bone(:,1))
             com = SegmentPar.Tibia.com;
             
         case 'RightFoot'
-            pjoint = data.RFOP.line;   % edited by PD Sept 2016 RFOO
-            djoint = data.RFOO.line;   % edited by PD Sept 2016 RTOE
+            pjoint = data.RFOP.line;   % original was RFOO, this is an error use RFOP (edited by PD Sept 2016)
+            djoint = data.RFOO.line;   % original was RTOE,RFOO is same (edited by PD Sept 2016)
             com = SegmentPar.Foot.com;
             
         case 'LeftTibiaOFM'

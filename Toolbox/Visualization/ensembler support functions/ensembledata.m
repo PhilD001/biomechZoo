@@ -22,10 +22,6 @@ function ensembledata(vartype,settings)
 % - Added settings option for event tagging
 
 
-% Set defaults
-%
-avLWidth = 1.5;                                         % width of new average lines
-meanEvtWidth = 1.12;                                    % width of mean evt lines
 
 % find figure objects
 %
@@ -103,7 +99,7 @@ for i = 1:length(ax)
             delete(findobj(ax(i),'type','patch'))
         end
         
-        mnhnd = line('parent',ax(i),'xdata',xdata,'ydata',mn,'color',[0 0 0],'linewidth',avLWidth,...
+        mnhnd = line('parent',ax(i),'xdata',xdata,'ydata',mn,'color',[0 0 0],'linewidth',settings.ensembledLineWidth,...
                      'buttondownfcn',bd,'tag',nm,'userdata',['average_line ',get(ax(i),'tag')]);
         
         if isin(computer,'MAC')
@@ -156,7 +152,7 @@ for i = 1:length(ax)
                 
                 hold(ax(i),'on')
                 
-                ebar = errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',meanEvtWidth); % mean event has special width
+                ebar = errorbar(mpos(1),mpos(2),spos(2),'parent',ax(i),'LineWidth',settings.ensembledEventWidth); % mean event has special width
                 set(ebar,'tag',[tg{k},'_av_',nm])
                 
                 %--horizontal error bar---

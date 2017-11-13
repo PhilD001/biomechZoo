@@ -48,18 +48,16 @@ fl_all = engine('path',fld,'extension','zoo');
 fl_static = engine('path',fld,'extension','zoo','search path',settings.static);
 fl = setdiff(fl_all,fl_static);
 
+
 for i = 1:length(fl)
     data = zload(fl{i});                                               % load dyn trial
-    
-    batchdisplay(fl{i},'computing lower-limb kinetics')
-    
-    data = kinetics_data(data,settings,filt);
-    
+    batchdisp(fl{i},'computing lower-limb kinetics')     
+    data = kinetics_data(data,settings,filt); 
     zsave(fl{i},data);
 end
 
 for i = 1:length(fl_static)
-    batchdisplay(fl_static{i},'skipping static trial')
+    batchdisp(fl_static{i},'skipping static trial')
 end
 
 

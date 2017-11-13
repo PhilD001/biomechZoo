@@ -11,6 +11,9 @@ function continuousstats(fld,check)
 % - patch visualization problems on mac platform (<r2014b) persist
 % - code functions without any bugs on windows platform using <r2014b 
 
+
+cohen = false;   % make false to display mean value differences in bars
+
 resize_ensembler   % if there are blank 'x' data continuous stats will fail
 
 ax = findobj('type','axes');
@@ -30,18 +33,18 @@ for i = 1:length(ax)
         if ~isin(ch,'legend')
             alpha = 0.05;
             nboots = 1000;
-            [maxvalstk(i),temp,multstk(i)] = getMaxVal(fld,ch,alpha,ax(i),nboots,check);
+            [maxvalstk(i),temp,multstk(i)] = getmaxval(fld,ch,alpha,ax(i),nboots,check,cohen);
             r.(ch) = temp.(ch);
         end
     end
 end
 
-maxval = max(maxvalstk);
-mult = max(multstk);
-
+maxval = ceil(max(maxvalstk));
+%maxval = 20;
 
 for i = 1:length(ax)
-    
+    maxvalstk(i) = maxval; % for constant max val preset
+
     ln = findobj(ax(i),'type','line');
     
     if ~isempty(ln)
@@ -50,7 +53,7 @@ for i = 1:length(ax)
         if ~isin(ch,'legend')
             alpha = 0.05;
             nboots = 1000;
-            compcons = bmech_continuous_stats_ensembler4(fld,ch,r,alpha,ax(i),nboots,maxvalstk(i),check);
+            compcons = bmech_continuous_stats_ensembler4(fld,ch,r,alpha,ax(i),nboots,maxvalstk(i),check,cohen);
             
         end
     end

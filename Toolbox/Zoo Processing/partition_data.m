@@ -91,12 +91,12 @@ for i = 1:length(ch)
         
     elseif e1(1) > e2(1)
         disp(['event 1: ',evt1, ' occurs after event 2: ',evt2])
+        
     else
         if e1(1) ==0
             disp(['event 1: ',evt1, ' occurs at frame 0, event will be moved to frame 1'])
             e1(1) = 1;
         end
-        
         r = data.(ch{i}).line(e1(1):e2(1),:);
         data.(ch{i}).line = r;
     end

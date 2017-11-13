@@ -34,21 +34,21 @@ switch action
         for i = 1:length(spo);
             ud = get(spo(i),'userdata');
             yd = [];
-            if isfield(ud,'keywords');
+            if isfield(ud,'keywords')
                 s = searchstruct(t,ud.keywords);
                 if iscell(s)
                     s = s{1};
                 end
                 if ~isempty(s) & isstruct(s)
-                    if isfield(s,'line');
+                    if isfield(s,'line')
                         yd = s.line;
                     elseif isfield(s,'mean')
                         yd = s.mean;
                     else
                         yd = [];
                     end
-                    if isstruct(yd);
-                        if isfield(yd,'mean');
+                    if isstruct(yd)
+                        if isfield(yd,'mean')
                             yd = yd.mean;
                         end
                     end
@@ -71,7 +71,7 @@ switch action
             part = 'head';
         end
         nm = get(gco,'tag');
-        if isempty(findobj(objectlist,'string',part,'userdata',nm));
+        if isempty(findobj(objectlist,'string',part,'userdata',nm))
             newlist(nm,part);
         end
 
@@ -87,7 +87,7 @@ switch action
             clr = [];
         end
         
-        switch get(gcf,'selectiontype');
+        switch get(gcf,'selectiontype')
             case 'normal'
                 if ~isempty(clr)
                     set(gcbo,'facecolor',clr);
@@ -112,7 +112,7 @@ switch action
                 end
             case 'alt'
                 if ~isempty(clr)
-                    if isnumeric(get(gcbo,'edgecolor'));
+                    if isnumeric(get(gcbo,'edgecolor'))
                         set(gcbo,'edgecolor',clr);
                     end
                 end
@@ -130,7 +130,7 @@ switch action
         end
     case 'save'
         [tp,hnd] = currentobject;
-        if ~strcmp(tp,'special object');
+        if ~strcmp(tp,'special object')
             return
         end
         [f,p] = uiputfile('*.spo','save file');
@@ -256,7 +256,7 @@ switch action
         bardlg('all');
 end
 
-function r = unitrotate(unt,indx,val);
+function r = unitrotate(unt,indx,val)
 
 eu = unit2euler(unt);
 eu(indx) = eu(indx)+val;

@@ -1,37 +1,22 @@
-function [level1,level2,level3,level4] = extract_filestruct(fld)
+function [level1,level2,level3,level4,level5] = extract_filestruct(fld)
 
-% EXTRACT_FILESTRUCT returns file structure
+% [level1,level2,level3,level4,level5] = EXTRACT_FILESTRUCT(fld) returns file structure
 %
 % ARGUMENTS
-%  fld   ...   root folder to operate on
+%  fld     ...   root folder to operate on
 %
 % RETURNS
 %  level1  ...  1st level of sorting in file tree
 %  level2  ...  2nd level of sorting in file tree
 %  level3  ...  3rd level of sorting in file tree
 %  level4  ...  4th level of sorting in file tree
+%  level5  ...  5th level of sorting in file tree
+%
+% NOTES
+% - Future updates should allow n levels to be sorted
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the 
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement 
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of 
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
-
+% Updated by Philippe C. Dixon Sept 2017
+% - Added a 5th possible level
 
 % EXTRACT ALL FILES
 %
@@ -117,3 +102,23 @@ end
 level4(cellfun(@isempty,level4)) = [];                             % That's some hot programming
 level4 = unique(level4);
 
+
+
+
+% Find 5th level (something else)
+%
+level5 = cell(length(fl),1);
+
+for i = 1:length(subdirs)
+    
+    temp = subdirs{i};
+    indxcon = strfind(subdirs{i},s);
+        
+    if length(indxcon) == length(indxfld) + 5                  % condiitons (if any) are 3  steps down  
+        level5{i} = temp(indxcon(end)+1:end);
+    end
+      
+end
+
+level5(cellfun(@isempty,level5)) = [];                             % That's some hot programming
+level5 = unique(level5);

@@ -39,12 +39,11 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','load data','callback','ensembler(''load data'')','separator','on');
     uimenu(mn,'label','load single file','callback','ensembler(''load single file'')');
     uimenu(mn,'label','save fig','callback','ensembler(''save fig'')','separator','on');
-    uimenu(mn,'label','export figure','callback','ensembler(''export figure'')');
-    uimenu(mn,'label','export event data','callback','ensembler(''export event data'')');
+    uimenu(mn,'label','export','callback','ensembler(''export'')');
+    %uimenu(mn,'label','export event data','callback','ensembler(''export event data'')');
     uimenu(mn,'label','exit','callback','ensembler(''exit'')','separator','on');
     uimenu(mn,'label','restart','callback','ensembler(''restart'')');
 
-    
     mn = uimenu(gcf,'label','Edit');
     uimenu(mn,'label','edit fig names','callback','ensembler(''edit fig names'')');
     uimenu(mn,'label','decrease fonts','callback','ensembler(''decrease fonts'')','separator','on');
@@ -141,7 +140,9 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','normalize','callback','ensembler(''normalize'')');
     uimenu(mn,'label','filter','callback','ensembler(''filter'')','separator','on')
     uimenu(mn,'label','custom','callback','ensembler(''custom'')','separator','on');
-    
+    %uimenu(mn,'label','load process record','callback','ensembler(''load process record'')','separator','on');
+    %uimenu(mn,'label','run process record','callback','ensembler(''run process record'')');
+
     mn = uimenu(gcf,'label','Analysis');
     uimenu(mn,'label','coupling angles','callback','ensembler(''coupling angles'')','separator','on');
     uimenu(mn,'label','relative angles','callback','ensembler(''relative phase'')','separator','on');

@@ -84,7 +84,7 @@ else
     x = 1:1:length(barvals);       % creates even spacing
     
     % if length(barvals)==4
-    %    x = [1,2,3.4,4.4];           % an example for uneve spacing
+    %    x = [1,2,3.4,4.4];           % an example for uneven spacing
     % end
     
     h = zeros(length(barvals),1);

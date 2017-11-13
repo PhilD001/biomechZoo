@@ -18,6 +18,11 @@ function F_prox = F_segment(m,ACOM,Fdis,g,LKIN,GS,segment,ref)
 % F_prox  ...   Force at aproximal joint matrix column 1:3 in XYZ column 4:6 in anatomical
 
 
+% Revision History
+%
+% Updated November 2017 by Philippe
+% - set segment mass to zero for better agreement with Vicon outputs
+
 
 
 if nargin ==7
@@ -36,11 +41,8 @@ else
     k = GS.k;
 end
 
-
-
-
-
-%  m = 0; % compuations compare well with vicon when mass is 0
+% disp('segment mass set to 0 for good agreement with Vicon')
+%m = 0; % computations compare well with vicon when mass is 0
 
 %-------Force in global coordinates XYZ-----
 

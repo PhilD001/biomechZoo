@@ -29,7 +29,9 @@ function Euler=euler(LKIN,fsamp,f)
 %
 % Updated August 15th 2013
 % - user has control over filtering
-
+%
+% Updated Nov 13th 2017
+% - big fix (typo) when run with filter
 
 
 
@@ -119,26 +121,22 @@ r.psi_lfoot   =   asin ( dot(cross(L6,i6,2),k6,2));        %good
 % filter if selected by user
 
 if f==1    % default filtering settings
-    cut = 10;
-    ftype = 'butterworth';
-    order = 4;
-    pass = 'lowpass';
+    %cut = 10;
+    %ftype = 'butterworth';
+    %order = 4;
+    %pass = 'lowpass';
+    filt = setFilt;
     
     ch = fieldnames(r);
-    for i = 1:lenght(ch)
-        r.(ch{i}) = bmech_filter('vector',r.(ch{i}),'fsamp',fsamp,'cut-off',cut,'ftype',ftype,'order',order,'pass',pass);
+    for i = 1:length(ch)
+        r.(ch{i}) = filter_line(r.(ch{i}),filt,fsamp);
     end
     
 elseif isstruct(f)
     ch = fieldnames(r);
-    
-    ftype = f.ftype;
-    order = f.forder;
-    pass = f.pass;
-    cut = f.cutoff;
-    
+   
     for i = 1:lenght(ch)
-        r.(ch{i}) = bmech_filter('vector',r.(ch{i}),'fsamp',fsamp,'cut-off',cut,'ftype',ftype,'order',order,'pass',pass);
+        r.(ch{i}) = filter_line(r.(ch{i}),filt,fsamp);
     end
 end
 

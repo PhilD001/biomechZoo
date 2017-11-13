@@ -19,7 +19,7 @@ function start_ensembler
 % - ensembler finds the correct sizing for you. Thus, the fig width and height options
 %   have been removed. See 'ensembler_figsize' for details
 
-
+close all
 e=which('ensembler'); % returns path to ensemlber
 path = pathname(e) ;  % local folder where ensembler resides
 
@@ -38,19 +38,18 @@ vspac = dval{7};
 font = dval{8};
 fontsize = dval{9};
 units = dval{10};
+fwid = dval{11};
+fheig = dval{12};
+
+
 
 options.Resize = 'on';
-boxwidth = 50; % width of initial dialog box
-% a = inputdlg({'Group names','Figure width','Figure height','Rows','Columns',...
-%     'Axis width','Axis height','Horizontal spacing','Vertical spacing',...
-%     'Font Name','Font size','Units'},...
-%     'Ensembler Setup Window',[1 boxwidth],{fstring,fwid,fheig,nrows,ncols,xwid,ywid,hspac,vspac,font,fontsize,units},options);
+boxwidth = 100; % width of initial dialog box
 
-a = inputdlg({'Group names','Rows','Columns',...
+a = inputdlg({'Group / Condition names','Rows','Columns',...
     'Axis width','Axis height','Horizontal spacing','Vertical spacing',...
-    'Font Name','Font size','Units'},...
-    'Ensembler Setup Window',[1 boxwidth],{fstring,nrows,ncols,xwid,ywid,hspac,vspac,font,fontsize,units},options);
-
+    'Font Name','Font size','Units','Figure Width','Figure Height';},...
+    'Ensembler Setup Window',[1 boxwidth],{fstring,nrows,ncols,xwid,ywid,hspac,vspac,font,fontsize,units,fwid,fheig},options);
 
 if isempty(a)
     disp('exiting ensembler')
@@ -84,18 +83,23 @@ else
     xspace = str2double(a{6});
 end
 
-if strcmp(a{9-2},'even')
-    yspace = a{9-2};
+if strcmp(a{7},'even')
+    yspace = a{7};
 else
-    yspace = str2double(a{9-2});
+    yspace = str2double(a{7});
 end
 
 nm = partitionname(a{1});
 
 nfigs = length(nm);
 
-[fwid,fheig,nxwid,nywid,msgbox_space,msg] = ensemble_figsize(nrows,ncols,xwid,ywid,units);
-
+if strcmp(fwid,'auto') || strcmp(fheig,'auto')
+    [fwid,fheig,nxwid,nywid,msgbox_space,msg] = ensemble_figsize(nrows,ncols,xwid,ywid,units);
+else
+    [~,~,nxwid,nywid,msgbox_space,msg] = ensemble_figsize(nrows,ncols,xwid,ywid,units);
+    fwid = str2double(fwid);
+    fheig = str2double(fheig);
+end
 
 % save default val (possible after fix above)
 %

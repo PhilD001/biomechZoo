@@ -27,10 +27,6 @@ F_2plate = F(:,4:6);
 T_1plate = T(:,1:3);            
 T_2plate = T(:,4:6);
 
-
-
-
-
 COP1 = COP.COP1ida;
 COP2 = COP.COP2ida;
 
@@ -38,8 +34,6 @@ Tz1 = (Tz.Tz1).*-1;
 Tz2 = (Tz.Tz2).*-1;
 
 %   4) FORCE CALCULATIONS
-
-
 
 F_rankle = F_segment(ANTHRO.Segment.RightFoot.Mass,COM.Segment.RightFoot.Acc, F_1plate,       AKIN.Segment.RightFoot.GSAxes,  g);  %matrix 1-3 column XYZ 4-6 column segment based
 F_lankle = F_segment(ANTHRO.Segment.LeftFoot.Mass, COM.Segment.LeftFoot.Acc,  F_2plate,       AKIN.Segment.LeftFoot.GSAxes,   g);

@@ -1,4 +1,4 @@
-function combine
+function combine(settings)
 %
 % COMBINE is main function for combining ensembled graphs for different condition windows
 % The following 'objects' will be combined: 
@@ -37,8 +37,8 @@ for i = 1:length(ax)
     ebarv = findobj(axs,'LineWidth',1.12);                     % error bar horizontal
     evt   = findobj(axs,'type','text');                        % event mark
     
-    set(ln,'parent',ax(i));
-    set(pch,'parent',ax(i));
+    set(ln,'parent',ax(i),'Color',settings.regularLineColor);
+    set(pch,'parent',ax(i),'FaceColor',settings.ensembledPatchColor);
     set(ebarh,'parent',ax(i));
     set(ebarv,'parent',ax(i));
     set(evt,'parent',ax(i));

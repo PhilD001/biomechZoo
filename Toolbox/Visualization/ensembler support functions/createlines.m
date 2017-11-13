@@ -1,8 +1,11 @@
 function stop_load = createlines(fig,data,fl,settings)
 
-% settings = CREATELINES(fig,data,fl) used by ensembler GUI to plot lines
+% stop_load = CREATELINES(fig,data,fl,settings) used by ensembler GUI to 
+% plot lines in each axis
 
 
+% Revision history
+%
 % Updated by Philippe C. Dixon July 2016
 % - commented code using Video Indx to draw lines
 %
@@ -21,11 +24,7 @@ function stop_load = createlines(fig,data,fl,settings)
 stop_load = false;
 
 if nargin==3
-    settings.string = '\bullet';
-    settings.verticalalignment = 'middle';
-    settings.horizontalalignment = 'center';
-    settings.FontSize = 14;
-    settings.color = [1 0 0];
+    settings = ensembler_settings;
 end
 
 axs = findobj(fig,'type','axes');
@@ -72,7 +71,8 @@ for j = 1:length(axs)
         end
         
         ln = line('parent',ax,'ydata',ydata,'xdata',xdata,'userdata',fl,...
-            'buttondownfcn',get(ax,'buttondownfcn'));
+            'buttondownfcn',get(ax,'buttondownfcn'),'LineWidth',settings.regularLineWidth,...
+             'color',settings.regularLineColor);
         
         evt = fieldnames(data.(ch).event);
         for e = 1:length(evt)

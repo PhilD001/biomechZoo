@@ -26,6 +26,9 @@ function ANTHRO = anthro(body,segmentPar)
 %
 % Updated by Philippe C. Dixon October 2016
 % - improved code to avoid bone/segment mismatch
+%
+% Updated by Philippe C. Dixon Nov 2017
+% - corrected error in moment of inertia calculation
 
 
 %------------------ 1- PLUGINGAIT SETUP-------------
@@ -78,7 +81,7 @@ for i = 1:length(bones)
         
         case 'Femur'
             segment = 'Thigh';
-        case 'Tibia',
+        case 'Tibia'
             segment = 'Shank';
         case 'TibiaOFM'
             segment = 'ShankOFM';
@@ -88,10 +91,12 @@ for i = 1:length(bones)
     
     ANTHRO.([side,segment]).Mass   = mBone;
     ANTHRO.([side,segment]).Length = lBone;
-    ANTHRO.([side,segment]).Inertia.x  = mBone*lBone*ro_x^2;
-    ANTHRO.([side,segment]).Inertia.y  = mBone*lBone*ro_y^2;
-    ANTHRO.([side,segment]).Inertia.z  = mBone*lBone*ro_z^2;
-        
+    
+    
+    ANTHRO.([side,segment]).Inertia.x  = mBone*(lBone*ro_x)^2;
+    ANTHRO.([side,segment]).Inertia.y  = mBone*(lBone*ro_y)^2;
+    ANTHRO.([side,segment]).Inertia.z  = mBone*(lBone*ro_z)^2;
+    
 end
 
 % old code
@@ -100,27 +105,27 @@ end
 % ANTHRO.RightThigh.Inertia.x  = M_thigh*(L_rthigh*ro_x)^2;
 % ANTHRO.RightThigh.Inertia.y  = M_thigh*(L_rthigh*ro_y)^2;
 % ANTHRO.RightThigh.Inertia.z  = M_thigh*(L_rthigh*ro_z)^2;
-% 
+%
 % ANTHRO.LeftThigh.Inertia.x  = M_thigh*(L_lthigh*ro_x)^2;
 % ANTHRO.LeftThigh.Inertia.y  = M_thigh*(L_lthigh*ro_y)^2;
 % ANTHRO.LeftThigh.Inertia.z  = M_thigh*(L_lthigh*ro_z)^2;
-% 
+%
 % ANTHRO.RightShank.Inertia.x  = M_shank*(L_rshank*ro_shank_x)^2;
 % ANTHRO.RightShank.Inertia.y  = M_shank*(L_rshank*ro_shank_y)^2;
 % ANTHRO.RightShank.Inertia.z  = M_shank*(L_rshank*ro_shank_z)^2;
-% 
+%
 % ANTHRO.LeftShank.Inertia.x  = M_shank*(L_lshank*ro_shank_x)^2;
 % ANTHRO.LeftShank.Inertia.y  = M_shank*(L_lshank*ro_shank_y)^2;
 % ANTHRO.LeftShank.Inertia.z  = M_shank*(L_lshank*ro_shank_z)^2;
-% 
+%
 % ANTHRO.RightFoot.Inertia.x  = M_foot*(L_rfoot*ro_foot_x)^2;
 % ANTHRO.RightFoot.Inertia.y  = M_foot*(L_rfoot*ro_foot_y)^2;
 % ANTHRO.RightFoot.Inertia.z  = M_foot*(L_rfoot*ro_foot_z)^2;
-% 
+%
 % ANTHRO.LeftFoot.Inertia.x  = M_foot*(L_lfoot*ro_foot_x)^2;
 % ANTHRO.LeftFoot.Inertia.y  = M_foot*(L_lfoot*ro_foot_y)^2;
 % ANTHRO.LeftFoot.Inertia.z  = M_foot*(L_lfoot*ro_foot_z)^2;
-% 
+%
 
 
 %-------------------2-  FOR OXFORD FOOT MODEL ------------------
@@ -128,83 +133,83 @@ end
 %a) -----MASS OF SEGMENTS (kg)-------------
 
 % if isfield(segmentPar,'HindFoot')
-%     
+%
 %     segments = {'RightShankOFM','LeftShankOFM','RightHindFoot','LeftHindFoot','RightForeFoot','LeftForeFoot'};
-%     
+%
 %     M_shank =mass*segmentPar.TibiaOFM.mass;
 %     M_hindfoot = mass*segmentPar.HindFoot.mass;
 %     M_forefoot = mass*segmentPar.ForeFoot.mass;
-%     
+%
 %     M = [M_shank M_shank M_hindfoot M_hindfoot M_forefoot M_forefoot];
 %     % b) -----RADIUS OF GYRATION-----------
-%     
+%
 %     ro_shank_x = segmentPar.TibiaOFM.RadiusGyr_x;
 %     ro_shank_y =  segmentPar.TibiaOFM.RadiusGyr_y;
 %     ro_shank_z =  segmentPar.TibiaOFM.RadiusGyr_z;
-%     
+%
 %     ro_forefoot_x =  segmentPar.ForeFoot.RadiusGyr_x;     %ABD/ADD
 %     ro_forefoot_y = segmentPar.ForeFoot.RadiusGyr_y;     %Flx/Ext
 %     ro_forefoot_z = segmentPar.ForeFoot.RadiusGyr_z;     %INT/EXT
-%     
+%
 %     ro_hindfoot_x =  segmentPar.HindFoot.RadiusGyr_x;     %ABD/ADD
 %     ro_hindfoot_y = segmentPar.HindFoot.RadiusGyr_y;     %Flx/Ext
 %     ro_hindfoot_z = segmentPar.HindFoot.RadiusGyr_z;     %INT/EXT
-%     
-%     
-%     
+%
+%
+%
 %     % c)----- BONE LENGTH----------------
-%     
+%
 %     L_rshank = magnitude(body.RightTibiaOFM.prox_end - body.RightTibiaOFM.dist_end) ;
 %     L_lshank = magnitude(body.LeftTibiaOFM.prox_end - body.LeftTibiaOFM.dist_end) ;
 %     L_rhindfoot = magnitude(body.RightHindFoot.prox_end - body.RightHindFoot.dist_end) ;
 %     L_lhindfoot = magnitude(body.LeftHindFoot.prox_end - body.LeftHindFoot.dist_end) ;
 %     L_rforefoot = magnitude(body.RightForeFoot.prox_end - body.RightForeFoot.dist_end) ;
 %     L_lforefoot = magnitude(body.LeftForeFoot.prox_end - body.LeftForeFoot.dist_end) ;
-%     
+%
 %     L_rshank =  mean(L_rshank(isfinite(L_rshank)));
 %     L_lshank = mean(L_lshank(isfinite(L_lshank)));
 %     L_rhindfoot =  mean(L_rhindfoot(isfinite(L_rhindfoot)));
 %     L_lhindfoot = mean(L_lhindfoot(isfinite(L_lhindfoot)));
 %     L_rforefoot =  mean(L_rforefoot(isfinite(L_rforefoot)));
 %     L_lforefoot = mean(L_lforefoot(isfinite(L_lforefoot)));
-%     
+%
 %     L = [L_rshank  L_lshank  L_rhindfoot L_lhindfoot L_rforefoot L_lforefoot];
-%     
+%
 %     for i = 1:length(segments)
 %         ANTHRO.(segments{i}).Mass = M(i);
 %         ANTHRO.(segments{i}).Length = L(i);
 %     end
-%     
-%     
+%
+%
 %     % d) MOMENT OF INERTIA---------
-%     
-%     
+%
+%
 %     ANTHRO.RightShankOFM.Inertia.x  = M_shank*(L_rshank*ro_shank_x)^2;
 %     ANTHRO.RightShankOFM.Inertia.y  = M_shank*(L_rshank*ro_shank_y)^2;
 %     ANTHRO.RightShankOFM.Inertia.z  = M_shank*(L_rshank*ro_shank_z)^2;
-%     
+%
 %     ANTHRO.LeftShankOFM.Inertia.x  = M_shank*(L_lshank*ro_shank_x)^2;
 %     ANTHRO.LeftShankOFM.Inertia.y  = M_shank*(L_lshank*ro_shank_y)^2;
 %     ANTHRO.LeftShankOFM.Inertia.z  = M_shank*(L_lshank*ro_shank_z)^2;
-%     
+%
 %     ANTHRO.RightHindFoot.Inertia.x  = M_hindfoot*(L_rhindfoot*ro_hindfoot_x)^2;
 %     ANTHRO.RightHindFoot.Inertia.y  = M_hindfoot*(L_rhindfoot*ro_hindfoot_y)^2;
 %     ANTHRO.RightHindFoot.Inertia.z  = M_hindfoot*(L_rhindfoot*ro_hindfoot_z)^2;
-%     
+%
 %     ANTHRO.LeftHindFoot.Inertia.x  = M_hindfoot*(L_lhindfoot*ro_hindfoot_x)^2;
 %     ANTHRO.LeftHindFoot.Inertia.y  = M_hindfoot*(L_lhindfoot*ro_hindfoot_y)^2;
 %     ANTHRO.LeftHindFoot.Inertia.z  = M_hindfoot*(L_lhindfoot*ro_hindfoot_z)^2;
-%     
-%     
+%
+%
 %     ANTHRO.RightForeFoot.Inertia.x  = M_forefoot*(L_rforefoot*ro_forefoot_x)^2;
 %     ANTHRO.RightForeFoot.Inertia.y  = M_forefoot*(L_rforefoot*ro_forefoot_y)^2;
 %     ANTHRO.RightForeFoot.Inertia.z  = M_forefoot*(L_rforefoot*ro_forefoot_z)^2;
-%     
+%
 %     ANTHRO.LeftForeFoot.Inertia.x  = M_forefoot*(L_lforefoot*ro_forefoot_x)^2;
 %     ANTHRO.LeftForeFoot.Inertia.y  = M_forefoot*(L_lforefoot*ro_forefoot_y)^2;
 %     ANTHRO.LeftForeFoot.Inertia.z  = M_forefoot*(L_lforefoot*ro_forefoot_z)^2;
-%     
-%     
+%
+%
 % end
 
 %

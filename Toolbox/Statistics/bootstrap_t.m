@@ -1,4 +1,5 @@
-function [chat_b, cilohat_b, cihihat_b,chat,cilohat,cihihat,muhat_b,muhat,sehat_b,sehat,meanmuhat_b,bias] = bootstrap_t(data,nboots,alpha,display)
+function [chat_b, cilohat_b, cihihat_b,chat,cilohat,cihihat,muhat_b,muhat,...
+          sehat_b,sehat,meanmuhat_b,bias,chat_con,cohen_d] = bootstrap_t(data,nboots,alpha,display)
 
 % bootstap_t computes symmetric confidence intervals based on the bootstrap-t procedure
 %
@@ -36,28 +37,10 @@ function [chat_b, cilohat_b, cihihat_b,chat,cilohat,cihihat,muhat_b,muhat,sehat_
 % - code is easier to understand by using the function datasample instead of bootstrp
 % - added calculations of bias
 % - code can be used to get bootstrap estimates for uneven unpaired data
-
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2
 %
-% Main contributors:
-% Philippe C. Dixon (D.Phil.), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (M.Sc.), McGill University. Montreal, Canada.
-% JJ Loh (M.Sc.), Medicus Corda. Montreal, Canada.
-%
-% Contact:
-% philippe.dixon@gmail.com or pdixon@hsph.harvard.edu
-%
-% Web:
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the conference abstract below if the zoosystem was used in the
-% preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement
-% Analysis Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of
-% Movement Analysis in Adults and Children. Rome, Italy.Sept 29-Oct 4th 2014.
+% Updated by Philippe C. Dixon Feb 2017
+% - stratified bootstrap always used in order to get accurate cohen's d
+%   estimate
 
 
 
@@ -91,18 +74,14 @@ else
 end
 
 
-
-
-
 if ~isstruct(data)  % for single condition or paired differences
-    
     
     %--extract data and compute sample estimates
     
     [n,col] = size(data);
     
-    muhat = mean(data);                            % sample estimate of the mean
-    shat = std(data);                              % Sample estimate of the standard deviation
+    muhat = nanmean(data);                         % sample estimate of the mean
+    shat  = nanstd(data);                          % Sample estimate of the standard deviation
     sehat = shat./sqrt(n);                         % sample estimate of the standard error
     
     df = n-1;                                      % degrees of freedom of sample
@@ -110,6 +89,7 @@ if ~isstruct(data)  % for single condition or paired differences
     
     cilohat = muhat-chat*sehat;                    % sample estimate of lower CI
     cihihat = muhat+chat*sehat;                    % sample estimate of upper CI
+    
     
     
     %--Compute bootstrap estimates
@@ -120,10 +100,10 @@ if ~isstruct(data)  % for single condition or paired differences
     for b = 1:nboots
         [~,indx] = datasample(data(:,1),n);        % return indx of chosen curves
         xb1 = data(indx',:);                       % bth bootstrap sample of data
-        muhat_b(b,:) = mean(xb1);                  % bth bootstrap estimate of the mean
+        muhat_b(b,:) = nanmean(xb1);                  % bth bootstrap estimate of the mean
     end
     
-    sehat_b = std(muhat_b);                        % bootstrap standard error of the mean
+    sehat_b = nanstd(muhat_b);                        % bootstrap standard error of the mean
     
     for b = 1:nboots
         t(b) = max( abs ( muhat_b(b,:) - muhat )  ./ sehat_b );  % t-statistic
@@ -148,8 +128,9 @@ else % for unpaired differences
     end
     col = col1;
     
-    muhat = mean(data1)-mean(data2);                            % mean difference
-    sehat = sqrt((std(data1).^2)/n1 + (std(data2).^2)/n2 );     % Satterthwaite approximation
+    muhat = nanmean(data1)-nanmean(data2);                            % mean difference
+    shat =  sqrt( ( (nanstd(data1).^2) + (nanstd(data2).^2) )/2 );    % SD pooled
+    sehat = sqrt((nanstd(data1).^2)/n1 + (nanstd(data2).^2)/n2 );     % Satterthwaite approximation
     
     df = (n1-1) + (n2-1);
     chat = tinv(1-alpha/2,df);                      % sample estimate of the critical t-value
@@ -171,10 +152,10 @@ else % for unpaired differences
         [~,indx2] = datasample(data2(:,1),n2);        % return indx of chosen curves
         xb2 = data2(indx2',:);                        % bth bootstrap sample of data
         
-        muhat_b(b,:) = mean(xb1) - mean(xb2);         % mean bootstrap diff
+        muhat_b(b,:) = nanmean(xb1) - nanmean(xb2);   % mean bootstrap diff
     end
     
-    sehat_b = std(muhat_b);                           % bootstrap standard error of the mean
+    sehat_b = nanstd(muhat_b);                           % bootstrap standard error of the mean
     
     for b = 1:nboots
         t(b) = max( abs ( muhat_b(b,:) - muhat )  ./ sehat_b );  % t-statistic
@@ -199,7 +180,9 @@ cihihat_b = muhat + chat_b*sehat_b;
 meanmuhat_b = mean(muhat_b);
 bias = muhat-meanmuhat_b;
 
-
+cohen_d = abs(muhat)./shat;                         % sample estimate of cohen's d
+cohen_d(isnan(cohen_d)) = 0;
+chat_con = [];                                % this used to be some output, no longer used
 
 %--DISPLAY RESULTS----------------------------------------------------------------------------
 %

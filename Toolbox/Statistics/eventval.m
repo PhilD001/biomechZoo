@@ -443,7 +443,12 @@ for i = 1:length(fl)
             end
             
             xd = evt(1);
-            yd= data.(chnames{j}).line(evt(1));
+            
+            if xd == 999
+                yd = 999;
+            else
+                yd= data.(chnames{j}).line(evt(1));
+            end
             
             if isnan(yd)
                 yd=999;

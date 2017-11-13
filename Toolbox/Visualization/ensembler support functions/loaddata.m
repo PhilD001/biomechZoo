@@ -2,7 +2,6 @@ function loaddata(fld,figs,settings)
 
 % LOADDATA(fld,figs,settings) loads line and event data into ensembler
 
-
 % Updated by Philippe C. Dixon Sept 2016
 % - edited for faster reading
 %

@@ -52,8 +52,6 @@ end
 
 process = [process,' ',message,' (',date,')'];
 
-
-
 % write processing step to zoosystem
 %
 if ~isfield(data.zoosystem,'Processing')
@@ -66,13 +64,13 @@ end
 
 % check write status of file
 %
-
-if exist(fl,'file')==2
-    [~,values] = fileattrib(fl);
-    if values.UserWrite ==0
-        check = false;
-    end
-end
+% 
+% if exist(fl,'file')==2
+%     [~,values] = fileattrib(fl);
+%     if values.UserWrite ==0
+%         check = false;
+%     end
+% end
 
 
 % if exist(fl,'file')==2 
