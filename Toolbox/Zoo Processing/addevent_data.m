@@ -127,6 +127,16 @@ for i = 1:length(ch)
                 ename = [ename,'1']; %#ok<*AGROW>
             end
             
+            
+        case 'staticstart'        % trims early frame from a static trial
+            exd = length(yd)-10;
+            eyd = 0;
+            
+        case 'staticend'          
+            exd = length(yd);
+            eyd = 0;
+            
+            
         otherwise
             error(['event type: ',type,' does not exist'])
             

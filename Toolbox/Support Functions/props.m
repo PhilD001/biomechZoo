@@ -312,7 +312,7 @@ switch action
             if ~isempty(fieldnames(t.object.marker))
                 ud.mvertices = [];
                 ud.mname = [];
-                for i = 1:length(t.object.marker);
+                for i = 1:length(t.object.marker)
                     ud.mvertices = [ud.mvertices;t.object.marker(i).position];
                     ud.mname = [ud.mname,{t.object.marker(i).tag}];
                 end
@@ -500,13 +500,10 @@ switch action
         %         c3d = varargin{1};
         %         loadanalog(c3d);
         
-    case 'load analog c3d'
+    case {'load analog c3d','load analog zoo'}
         zdata = varargin{1};
         zooloadanalog(zdata);
-        
-    case 'load analog zoo'
-        zdata = varargin{1};
-        zooloadanalog(zdata);
+ 
 
 end
 
@@ -1414,6 +1411,7 @@ if ~isempty(fpch)
     localOr = getFPLocalOrigin(data);
     
     [globalOr,orientFP] = getFPGlobalOrigin(data);
+    
     
      if ~isfield(data,'COP1') 
         data = centreofpressure_data(data,localOr,globalOr,orientFP);

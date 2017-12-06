@@ -1,16 +1,16 @@
 function [data,localjc] = hipjointcentrePiG_data(data,test)
 
-% data = HIPJOINTCENTREPIG_DATA(data,test) computes left and right hip joint centers for 
+% data = HIPJOINTCENTREPIG_DATA(data,test) computes left and right hip joint centers for
 % plug-in gait (PiG) marker data
 %
 % ARGUMENTS
-%  data      ... Zoo data containing PiG markers. Required markers are 'RASI','LASI','SACR' 
+%  data      ... Zoo data containing PiG markers. Required markers are 'RASI','LASI','SACR'
 %                or 'RASI','LASI','RPSI','LPSI'
 %  test      ... Tests against PiG values, if available (boolean). Default: false
-%                            
+%
 % RETURNS
 %  data      ... Zoo data with appended hip joint center virtual marker as RHipJC and LHipJC.
-%  localjc   ... Coordinates of the hip joint centre (struct) in local coordinates 
+%  localjc   ... Coordinates of the hip joint centre (struct) in local coordinates
 %
 % NOTES
 % - computation method based on Davis et al. "A gait analysis data collection and reduction
@@ -37,7 +37,7 @@ function [data,localjc] = hipjointcentrePiG_data(data,test)
 % Set defaults/Error check
 %
 if nargin==1
-   test = false;
+    test = false;
 end
 
 COSBETA  = cos(0.314);                                              % 18.0 deg Davis 1991
@@ -66,10 +66,10 @@ end
 
 % Extract info from data
 %
-if isfield(data.zoosystem,'Anthro') 
-   mDiam = getanthro(data,'MarkerDiameter');
-   rLegLength = getanthro(data,'RLegLength');
-   lLegLength = getanthro(data,'LLegLength');
+if isfield(data.zoosystem,'Anthro')
+    mDiam = getanthro(data,'MarkerDiameter');
+    rLegLength = getanthro(data,'RLegLength');
+    lLegLength = getanthro(data,'LLegLength');
 else
     error('anthropometric info must be added before running this process')
 end
@@ -85,7 +85,7 @@ else
     interAsis = findfield(data,'InterAsisDistance');
 end
 
-legLength = mean([rLegLength lLegLength]);                          
+legLength = mean([rLegLength lLegLength]);
 
 
 
@@ -105,12 +105,34 @@ localjc = struct;
 
 for i = 1:length(side)
     
-    if  isempty(findfield(data,[side{i},'AsisTrochanterDistance'])) || ...
-        data.zoosystem.Anthro.([side{i},'AsisTrochanterDistance'])==0
-        asisTroc = (0.1288*legLength)-48.56;                           % PiG manual 
-    else
+    % check if ASIS-TROC distance is known
+    %
+    if isfield(data.zoosystem.Anthro,[side{i},'AsisTrochanterDistance'])
         asisTroc =  data.zoosystem.Anthro.([side{i},'AsisTrochanterDistance']);
+        if asisTroc ==0
+            asisTroc = [];
+        end
+    else
+        asisTroc = [];
     end
+    
+    % compute ASIS Troc if required
+    if isempty(asisTroc)
+        
+        % GTR is available but ASIS-TROC has not been computed
+        %
+        if isfield(data,[side{i},'GTR'])
+            asisTroc = magnitude(data.([side{i},'ASI']).line-data.([side{i},'GTR']).line);
+            asisTroc = nanmean(asisTroc);
+            data.zoosystem.Anthro.([side{i},'AsisTrochanterDistance']) = asisTroc;
+            
+        else
+            asisTroc = (0.1288*legLength)-48.56;                           % PiG manual
+            data.zoosystem.Anthro.([side{i},'AsisTrochanterDistance']) = asisTroc;
+        end
+    end
+    
+    
     
     C = (legLength*0.115) - 15.3;                                      % (4) Davis 1991
     
@@ -136,11 +158,11 @@ for i = 1:length(side)
     data.zoosystem.Anthro.([side{i},'AsisTrochanterDistance']) = asisTroc;
     data = addchannel_data(data,[side{i},'HipJC'],HipGCS,'Video');
     
-   
+    
     % add pelvis based to struct
     %
     localjc.(side{i}) = HipPCS;
-
+    
     
     % check with existing data if available
     %
@@ -149,8 +171,8 @@ for i = 1:length(side)
         matlab = magnitude(data.([side{i},'HipJC']).line);
         data.([side{i},'HipJC']).event.RMSerror = [1 rmse(vicon,matlab) 0];
     end
-        
-        
+    
+    
     % test plots
     if test ==1
         f = figure;
@@ -188,13 +210,13 @@ end
 
 
 % test ctransform
-% 
+%
 % GCS = [1 0 0; 0 1 0; 0 0 1];
 % PCS = [0.996 0.08 0; -0.08 0.996 0; 0 0 1];
-% 
+%
 % PELO_GCS = [2 2 0];
 % a_PCS = [1 2 0];
-% 
+%
 % a_GCS = ctransform(PCS,GCS,a_PCS)+PELO_GCS;   %
 
 

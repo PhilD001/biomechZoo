@@ -39,6 +39,9 @@ function data = makebones_data(data,type,foot_flat,test)
 % - Computation of Head and Throrax segment-emedded axes if available
 % - Head does not agree with Vicon (no static offset procedure)
 % - Thorax has good agrement
+%
+% Updated by Philippe C. Dixn Nov 2017
+% - Improved support for making bones in the presence of missing frames (NaNs)
 
 % Set defaults ---------------------------------------------------------------------------
 %
@@ -172,6 +175,8 @@ if isfield(data,'LFHD') && isfield(data,'RFHD') && isfield(data,'LBHD') && isfie
     
     segment = 'Head';
     boneLength = magnitude(RFHD-LFHD);
+    boneLength = nanmean(boneLength);
+
     O = (LFHD+RFHD)/2;                                                  % origin or 'front'
     
     back  = (LBHD+RBHD)/2;
@@ -243,6 +248,8 @@ end
 %
 segment = 'Pelvis';
 boneLength = magnitude(LHipJC-RHipJC);
+boneLength = nanmean(boneLength);
+
 O = (RASI+LASI)/2;
 L = makeunit(LASI-RASI);                                             % lateral (L)
 temp = makeunit(LASI - SACR);                                        % temp anterior
@@ -265,6 +272,7 @@ data = addchannel_data(data,'PELP',PELP,'video');
 %
 segment= 'Left Femur';
 boneLength = magnitude(LHipJC-LKneeJC);
+boneLength = nanmean(boneLength);
 
 O = LKneeJC;
 P = LHipJC-O;                            % proximal vector
@@ -285,6 +293,7 @@ data = addchannel_data(data,'LFEP',LFEP,'video');
 %
 segment= 'Right Femur';
 boneLength = magnitude(RHipJC-RKneeJC);
+boneLength = nanmean(boneLength);
 
 O = RKneeJC;
 P = RHipJC-O;                            % proximal vector
@@ -304,6 +313,7 @@ data = addchannel_data(data,'RFEP',RFEP,'video');
 %
 segment = 'Left Tibia';
 boneLength = magnitude(LKneeJC-LAnkleJC);
+boneLength = nanmean(boneLength);
 
 O = LAnkleJC;
 P = LKneeJC-O;                                         % proximal vector     (pyCGM: axis_z)
@@ -325,6 +335,7 @@ data = addchannel_data(data,'LTIP',LTIP,'video');
 %
 segment = 'Right Tibia';
 boneLength = magnitude(RKneeJC-RAnkleJC);
+boneLength = nanmean(boneLength);
 
 O = RAnkleJC;
 P = RKneeJC-O;                             %  proximal vector
@@ -350,6 +361,7 @@ data = addchannel_data(data,'RTIP',RTIP,'video');
 
 segment ='Left Foot';
 boneLength =magnitude(LHEE-LTOE);           % length of bone*
+boneLength = nanmean(boneLength);
 
 O = LTOE;
 P = LAnkleJC-O;                             % proximal vector (pyCGM: L_axis_z)
@@ -471,6 +483,7 @@ end
 %
 segment ='Right Foot';
 boneLength =magnitude(RHEE-RTOE);                       % length of bone*
+boneLength = nanmean(boneLength);
 
 O = RTOE;
 P = RAnkleJC-O;                             % proximal vector

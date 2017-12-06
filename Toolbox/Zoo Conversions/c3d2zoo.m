@@ -63,7 +63,9 @@ function data = c3d2zoo(fld,del)
 %
 % Updated by Philippe C. Dixon June 19th 2017
 % - bug fix for analog labels
-
+%
+% Updated by Philippe C. Dixon Dec 2017
+% - bug fix for c3d files without 'SUBJECT' field in parameter info
 
 % SET DEFAULTS / ERROR CHECK -----------------------------------------------------------------
 %
@@ -228,7 +230,11 @@ function Header = setHeader(r)
 
 Header = struct;
 
-Header.SubName =  makerow(deblank(r.Parameter.SUBJECTS.NAMES.data));
+if isfield(r.Parameter,'SUBJETS')
+    Header.SubName =  makerow(deblank(r.Parameter.SUBJECTS.NAMES.data));
+else
+    Header.SubName = '';
+end
 Header.Date = '';
 Header.Time = '';
 Header.Description = '';  % this remains empty

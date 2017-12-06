@@ -15,9 +15,11 @@ function data = ankleoffsetPiG_data(data,sdata)
 % - This is a likely source of error between PiG and biomechZoo. Further
 %   work could explore why the two estimates sometimes differ
 
+% Updated by Philippe C. Dixon Dec 2017
+% - use of nanmean to avoid problems with missing data
 
-data.zoosystem.Anthro.RStaticPlantFlex = mean(deg2rad(sdata.RightAnkleStaticAngle_x.line));
-data.zoosystem.Anthro.RStaticRotOff = mean(-deg2rad(sdata.RightAnkleStaticAngle_z.line));
+data.zoosystem.Anthro.RStaticPlantFlex = nanmean(deg2rad(sdata.RightAnkleStaticAngle_x.line));
+data.zoosystem.Anthro.RStaticRotOff = nanmean(-deg2rad(sdata.RightAnkleStaticAngle_z.line));
 
-data.zoosystem.Anthro.LStaticPlantFlex = mean(deg2rad(sdata.LeftAnkleStaticAngle_x.line));
-data.zoosystem.Anthro.LStaticRotOff = mean(deg2rad(sdata.LeftAnkleStaticAngle_z.line));
+data.zoosystem.Anthro.LStaticPlantFlex = nanmean(deg2rad(sdata.LeftAnkleStaticAngle_x.line));
+data.zoosystem.Anthro.LStaticRotOff = nanmean(deg2rad(sdata.LeftAnkleStaticAngle_z.line));

@@ -62,7 +62,7 @@ switch joint
         prox = 'KneeJC';
         dist = 'ANK';
         wand = 'TIB';
-        if ~isfield(data,['R',prox]);
+        if ~isfield(data,['R',prox])
             data = jointcentrePiG_data(data,'Knee');
         end
         
@@ -71,7 +71,7 @@ switch joint
         dist = 'KNE';
         wand = 'THI';
         
-        if ~isfield(data,['R',prox]);
+        if ~isfield(data,['R',prox])
             data = hipjointcentrePiG_data(data);
         end
         

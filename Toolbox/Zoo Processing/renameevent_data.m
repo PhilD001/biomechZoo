@@ -1,6 +1,6 @@
 function data = renameevent_data(data,evt,nevt)
 
-% data = RENAMEEVENT_DATA(data,evt,nevt,fl) will rename events in your data. 
+% data = RENAMEEVENT_DATA(data,evt,nevt) will rename events in your data. 
 %
 % ARGUMENTS
 %  data  ...  Zoo data
@@ -20,7 +20,19 @@ function data = renameevent_data(data,evt,nevt)
 %
 % Updated by Philippe C. Dixon May 2017
 % -Error check for non existing event names
+%
+% Updated by Philippe C. Dixon Nov 2017
+% - Added error check for evts that are strings. These are converted to cells 
+%
 
+
+if ~iscell(evt)
+    evt = {evt};
+end
+
+if ~iscell(nevt)
+    nevt = {nevt};
+end
 
 for i = 1:length(evt)
     [~,ch] = findfield(data,evt{i});
@@ -31,12 +43,3 @@ for i = 1:length(evt)
         data.(ch).event = rmfield(data.(ch).event, evt{i});
     end
 end
-
-% for i = 1:length(ch)
-% 
-%     if isfield(data.(ch{i}).event,evt)
-%         disp(['rename event:',fl]);
-%         data.(ch{i}).event.(nevt)=data.(ch{i}).event.(evt);  
-%         data.(ch{i}).event = rmfield(data.(ch{i}).event, evt);
-%     end
-% end

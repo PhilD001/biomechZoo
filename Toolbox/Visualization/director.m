@@ -55,6 +55,10 @@ function director(action,varargin)
 % - fixed axis color code mismatch between global axes and graph window
 % - fixed bug where global grid layout disappeared when using graphing
 %   window
+%
+% Updated by Philippe C. Dixon Dec 2017
+% - improved usability with 'close file' button
+
 
 global producer;
 global p;
@@ -75,7 +79,6 @@ end
 disp(action)
 
 switch action
-    
     
     case 'space'
         
@@ -100,15 +103,17 @@ switch action
         cm = uicontextmenu('tag','main','callback','director(''contextmenu'')');
         
         uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','load zoo','position',[.1 .1 3 .5],'string','Load File','callback','director(''open'')');
+            'tag','load zoo','position',[0.1 0.7 3 .5],'string','Load File','callback','director(''open'')');
         uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','clear all objects','position',[3.5 .1 3 .5],'string','Delete Objects','callback','director(''clear all objects'')');
+            'tag','load zoo','position',[0.1 0.1 3 .5],'string','Close File','callback','director(''close'')');  
         uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','delete graph','position',[3.5 .7 3 .5],'string','Delete Graph','callback','director(''delete graph'')');
+            'tag','clear all objects','position',[3.5 0.1 3 .5],'string','Delete Objects','callback','director(''clear all objects'')');
         uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','first position','position',[6.9 .1 2 .5],'string','First Frame','callback','director(''first position'')');
+            'tag','delete graph','position',[3.5 0.7 3 0.5],'string','Delete Graph','callback','director(''delete graph'')');
         uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','play','position',[10 .1 2 .5],'string','Play','callback','director(''preview'')');
+            'tag','first position','position',[6.9 0.1 2 0.5],'string','First Frame','callback','director(''first position'')');
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
+            'tag','play','position',[10 0.1 2 0.5],'string','Play','callback','director(''preview'')');
         uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[.1 .1 .1],'foregroundcolor',[1 1 1],...
             'tag','button stop','position',[10 .1 2 .5],'string','Stop','callback','director(''button stop'')','visible','off');
         
@@ -117,7 +122,7 @@ switch action
         
         % -----------------    uicontrol turned off ---------------
         uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.9 .9 .9],'foregroundcolor',[0 0 0],...
-            'tag','displacement','position',[1 1 1.2 .5],'string','1 cm','userdata',1,'callback','director(''units'')',...
+            'tag','displacement','position',[1 1.5 1.2 .5],'string','1 cm','userdata',1,'callback','director(''units'')',...
             'deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
         uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.8 .8 .8],'foregroundcolor',[0 0 0],...
             'tag','angle','position',[4.6 .1 1.2 .5],'string','1 deg','userdata',1,'callback','director(''units'')',...
@@ -177,10 +182,10 @@ switch action
         end
         
     case 'clear all objects'
-        
         ax = finddobj('axes');
         delete(findobj(ax,'type','patch'));
         delete(findobj(ax,'type','surface'));
+       % director('cleanup')
         
     case 'delete graph'
         
@@ -203,10 +208,107 @@ switch action
         set(findobj('tag','open graph'),'Visible','off');
         set(findobj('tag','delete graph'),'Visible','on');
         
+        
+    case 'close'
+        
+        % find existing director figure
+        %
+        fig = findobj('type','figure','tag','space');
+        position = get(fig,'position');
+        
+        % delete everything in existing director figure
+        %
+        hnd = allchild(fig);
+        delete(hnd)
+        
+        % reset everything in figure
+        %
+        set(fig,'tag','space','color',[0 0 0],'name','director',...
+            'menubar','none','numbertitle','off','keypressfcn','dkeypress',...
+            'buttondownfcn','director(''buttondown'')','doublebuffer','on','units','centimeters','resizefcn','director(''resize'')','position',position);
+        
+        ud.mark = [];
+        lbl = (-1000:100:1000);
+        
+        ax = axes('parent',fig,'units','normalized','position',[0 0 1 1],'dataaspectratio',[1 1 1],'color',[0 0 0],...
+            'xcolor',[0 0 0],'ycolor',[0 0 0],'zcolor',[0 0 0],'xtick',[],'ytick',[],'ztick',[],'buttondownfcn','cameraman(''buttondown'');',...
+            'view',[114 25],'visible','on','userdata',ud,'tag','space','cameraviewanglemode','manual','xlim',[-1000 1000],'ylim',[-1000 1000],'zlim',[0 500],...
+            'xtickmode','auto','ytickmode','auto','xgrid','off','ygrid','off','cameraposition',[200 200 250]*5,'cameratarget',[0 0 0],...
+            'xtick',lbl,'ytick',lbl,'xticklabel',[],'yticklabel',[],'gridlinestyle','-','cameraviewangle',10);
+        
+        light('position',get(ax,'cameraposition'),'buttondownfcn','cameraman(''buttondown'')','parent',ax,'tag','camera light','style','local');
+        cm = uicontextmenu('tag','main','callback','director(''contextmenu'')');
+        
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
+            'tag','load zoo','position',[0.1 0.7 3 .5],'string','Load File','callback','director(''open'')');
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
+            'tag','load zoo','position',[0.1 0.1 3 .5],'string','Close File','callback','director(''close'')');  
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
+            'tag','clear all objects','position',[3.5 0.1 3 .5],'string','Delete Objects','callback','director(''clear all objects'')');
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
+            'tag','delete graph','position',[3.5 0.7 3 0.5],'string','Delete Graph','callback','director(''delete graph'')');
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
+            'tag','first position','position',[6.9 0.1 2 0.5],'string','First Frame','callback','director(''first position'')');
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
+            'tag','play','position',[10 0.1 2 0.5],'string','Play','callback','director(''preview'')');
+        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[.1 .1 .1],'foregroundcolor',[1 1 1],...
+            'tag','button stop','position',[10 .1 2 .5],'string','Stop','callback','director(''button stop'')','visible','off');
+        
+        uicontrol('style','text','units','centimeters','backgroundcolor',[0 0 0],'foregroundcolor',[1 1 1],...
+            'tag','frame','position',[24.75 .1 1.5 .7],'string','1','FontSize',14);
+        
+        % -----------------    uicontrol turned off ---------------
+        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.9 .9 .9],'foregroundcolor',[0 0 0],...
+            'tag','displacement','position',[1 1.5 1.2 .5],'string','1 cm','userdata',1,'callback','director(''units'')',...
+            'deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
+        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.8 .8 .8],'foregroundcolor',[0 0 0],...
+            'tag','angle','position',[4.6 .1 1.2 .5],'string','1 deg','userdata',1,'callback','director(''units'')',...
+            'deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
+        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.8 .8 .8],'foregroundcolor',[0 0 0],...
+            'tag','volume','position',[5.9 .1 1.2 .5],'string','1 cm3','userdata',1,'callback','director(''units'')',...
+            'deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
+        % ---------------------------------------------------------
+        
+        xd = [lbl,lbl];
+        xd(1:2:end) = lbl;
+        xd(2:2:end) = lbl;
+        yd = xd;
+        yd(1:4:end) = max(lbl);
+        yd(2:4:end) = min(lbl);
+        yd(3:4:end) = min(lbl);
+        yd(4:4:end) = max(lbl);
+        
+        nyd = [yd,fliplr(xd)];
+        nxd = [xd,yd];
+        line('parent',ax,'xdata',nxd,'ydata',nyd,'zdata',zeros(size(nyd)),'color',[0 0 0],'buttondownfcn','cameraman(''buttondown'');','tag','camera grid');
+        
+        ax2 = axes('unit','centimeters','position',[0 0 3 3],'cameraviewangle',40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],...
+            'visible','off','tag','orientation window');
+        [x,y,z] = arrow([0 0 0],[1 0 0],20);
+        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',xcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','x');
+        [x,y,z] = arrow([0 0 0],[0 1 0],20);
+        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',ycol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','y');
+        [x,y,z] = arrow([0 0 0],[0 0 1],20);
+        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',zcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','z');
+        
+        light('parent',ax2,'position',[3 0 0]);
+        director('units load');
+        producer.mov = [];
+        producer.cut = 0;
+        producer.gravity = 1;
+        producer.grips = struct;
+        director('person','director');
+        warning off;
+        director('resize')
+        
+        set(findobj('type','uicontrol'),'units','normalized');
+                
     case 'open'
         
         director('clear all objects')
         director('load bones');       % loads the bone props
+        
+        
         
         [f,p] = uigetfile({'*.zoo';'*.c3d'},'Pick a file');   % default is c3d or zoo file
         cd(p);
@@ -507,7 +609,9 @@ switch action
         set(gcf,'name','director');
         
     case 'slider'
-        index = round(get(findobj('tag','slider'),'Value'));
+        index = get(findobj('tag','slider'),'Value');
+        
+        index = round(index);
         hnd = finddobj('frame');
         set(hnd,'string',num2str(index));
         flength = length(data.zoosystem.Video.Indx);

@@ -12,33 +12,33 @@ function varargout = marker(action,varargin)
 % - clean up pop up window for marker selection
 %
 % Updated by Philippe C. Dixon July 2017
-% - added creation of PiG bones, if available 
+% - added creation of PiG bones, if available
 %
 % Updated by Philippe C. Dixon August 2017
-% - Exploded PiG data are automatically merged in order to build bones, if available 
+% - Exploded PiG data are automatically merged in order to build bones, if available
 
 
 switch action
     
     case 'buttondown'
-        if strcmp(get(gcf,'selectiontype'),'alt')            
+        if strcmp(get(gcf,'selectiontype'),'alt')
             hnd1 = finddobj('highlight');
             caliper(hnd1,gcbo);
         end
         set(finddobj('current object'),'string',get(gcbo,'tag'));
         set(finddobj('highlight'),'ambientstrength',.3);
-        set(gcbo,'ambientstrength',.6);        
+        set(gcbo,'ambientstrength',.6);
         if ~strcmp(currentperson,'props')
             cameraman('buttondown');
             return
         end
-        if ~strcmp(get(gcf,'selectiontype'),'alt')            
+        if ~strcmp(get(gcf,'selectiontype'),'alt')
             caliper;
         end
         
         buttondownfxn;
-    
-    case 'create' 
+        
+    case 'create'
         %createmarker(name,size,position,color)
         varargout{1} = createmarker(varargin{1},varargin{2},varargin{3},varargin{4});
         
@@ -47,22 +47,18 @@ switch action
         loadz3d(varargin{1});
         props('refresh');
         
-    case 'load c3d'
+    case {'load c3d','load zoo'}
         delete(finddobj('marker'));
         data = loadfile(varargin{1});
         props('refresh');
         varargout{1} = data;
         
-    case 'load zoo'
-        delete(finddobj('marker'));
-        data = loadfile(varargin{1});
-        props('refresh');
-        varargout{1} = data;
-
+        
+        
     case 'goto'
         mark(varargin{1});
-    
-
+        
+        
 end
 
 function caliper(varargin)
@@ -87,7 +83,7 @@ else
         bud = get(bm(1),'userdata');
         vr = get(bud.object,'vertices');
         vr = vr(bud.vindex,:);
-        delta = midpt-vr;       
+        delta = midpt-vr;
     end
 end
 mg = sqrt(delta*delta');
@@ -127,11 +123,11 @@ if isin(ext,'zoo')
     
 elseif isin(ext,'c3d')
     data = c3d2zoo(filename);
-
+    
 else
     error('unknown file type')
 end
-    
+
 % Hard code footwear type (Uncomment to show skates)
 %
 % data.zoosystem.Anthro.Feet = 'skates';
@@ -148,27 +144,14 @@ end
 
 % Load Plug-in Gait bones
 %
-if ~isempty(intersect(ch,{'PELO'})) && ~isempty(findobj(finddobj('props'),'tag','Pelvis'))
-    props('zoo plugin gait',data);
-elseif ismember({'SACR'},ch)
-    data = makebones_data(data);
-    props('zoo plugin gait',data);
-elseif ismember('SACR_x',ch)  % data have been exploded
-    for i = 1:length(ch)
-        if length(ch{i})==6 && ~isempty(strfind(ch{i},'_x'))
-            chn = ch{i};
-            chn = chn(1:4);
-            data = mergechannel_data(data,chn);
-        end
-      
-    end
-      data = makebones_data(data);
-      props('zoo plugin gait',data);
-end
+data = getPiG(data,ch);
+props('zoo plugin gait',data);
+
+
 
 % Loads force plates (if any)
 %
-props('load analog zoo',data);  
+props('load analog zoo',data);
 
 
 
@@ -178,13 +161,13 @@ v = cell(size(ch));
 
 for i = 1:length(ch)
     
-    if ~isin(ch{i},{'x1','y1','z1','x2','y2','z2','Force','Moment','Angle','Power','star'}) 
+    if ~isin(ch{i},{'x1','y1','z1','x2','y2','z2','Force','Moment','Angle','Power','star'})
         v{i} = ch{i};
     end
     
 end
 
-v(cellfun(@isempty,v)) = [];   
+v(cellfun(@isempty,v)) = [];
 
 
 % Display markers in animation
@@ -202,33 +185,82 @@ end
 
 % Load foot props (modify feet to skates if subject is a skater)
 %
-if isfield(data.zoosystem.Anthro,'Feet') 
+if isfield(data.zoosystem.Anthro,'Feet')
     
     feet = data.zoosystem.Anthro.Feet;
     
     if isin(feet,'skates')
-    
-    d = which('director'); % returns path to ensemlber
-    p = pathname(d) ;  % local folder where director resides
-    p = [p,s,'Cinema objects',s,'skate'];
-    
-    skate_fl = engine('fld',p,'extension','prop');
-    
-    for i = 1:length(skate_fl)
-        props('load skates',skate_fl{i});
-    end
-    
-    %    remove feet
-    
-    fpatch = {'LeftToe','RightToe','LeftFoot','RightFoot'};
-    for i = 1:length(fpatch)
-        hnd =  findobj('type','patch','tag',fpatch{i});
-        set(hnd,'FaceColor','none');
-    end
+        
+        d = which('director'); % returns path to ensemlber
+        p = pathname(d) ;  % local folder where director resides
+        p = [p,s,'Cinema objects',s,'skate'];
+        
+        skate_fl = engine('fld',p,'extension','prop');
+        
+        for i = 1:length(skate_fl)
+            props('load skates',skate_fl{i});
+        end
+        
+        %    remove feet
+        
+        fpatch = {'LeftToe','RightToe','LeftFoot','RightFoot'};
+        for i = 1:length(fpatch)
+            hnd =  findobj('type','patch','tag',fpatch{i});
+            set(hnd,'FaceColor','none');
+        end
     end
     
 end
 
+function data = getPiG(data,ch)
+
+
+if ~isempty(intersect(ch,{'PELO'})) && ~isempty(findobj(finddobj('props'),'tag','Pelvis'))
+    disp('PiG bones detected')
+    
+elseif ismember({'SACR'},ch)
+    disp('Creating PiG bones')
+    data = makebones_data(data);
+    
+elseif ismember('SACR_x',ch)  % data have been exploded
+    disp('Creating PiG bones from exploded data')
+    
+    for i = 1:length(ch)
+        if length(ch{i})==6 && ~isempty(strfind(ch{i},'_x'))
+            chn = ch{i};
+            chn = chn(1:4);
+            data = mergechannel_data(data,chn);
+        end
+        
+    end
+    data = makebones_data(data);
+    
+elseif ismember({'RPSI','LPSI'},ch)
+    disp('Creating PiG bones from alternative PiG marker set')
+    if ~isfield(data.zoosystem.Anthro,'RAnkleWidth')
+        disp('Estimating knee and ankle joint centre for display purposes only')
+        data = addchannel_data(data,'RKneeJC',data.RKNE.line,'video');
+        data = addchannel_data(data,'LKneeJC',data.LKNE.line,'video');
+        data = addchannel_data(data,'RAnkleJC',data.RANK.line,'video');
+        data = addchannel_data(data,'LAnkleJC',data.LANK.line,'video');
+    end
+    data = makebones_data(data);
+    
+elseif ismember({'RPSI_x','LPSI_x'},ch)
+    disp('Creating PiG bones from alternative exploded PiG marker set')
+    
+    for i = 1:length(ch)
+        if length(ch{i})==6 && ~isempty(strfind(ch{i},'_x'))
+            chn = ch{i};
+            chn = chn(1:4);
+            data = mergechannel_data(data,chn);
+        end
+        
+    end
+    
+    data = makebones_data(data);
+    
+end
 
 
 function loadz3d(filename)
@@ -239,7 +271,7 @@ for i = 1:length(fld)
     if ~isfield(r.data.(tg),'line')
         continue
     end
-    dis = r.data.(tg).line;    
+    dis = r.data.(tg).line;
     createmarker(tg,1.5,dis,newcolor(i));
 end
 
@@ -261,18 +293,18 @@ function mark(frm)
 mrk = finddobj('marker');
 for i = 1:length(mrk)
     mud = get(mrk(i),'userdata');
-    indx = min(max(1,frm),length(mud.dis(:,1)));    
+    indx = min(max(1,frm),length(mud.dis(:,1)));
     dis = mud.dis(indx,:);
     vr = displace(mud.vertices,dis);
     set(mrk(i),'vertices',vr);
 end
-    
+
 function r = getbdownfxn
 hnd = findobj(findobj(finddobj('figure'),'tag','bdownfxns'),'value',1);
 
 if isempty(hnd)
-    r = 'nothing';   
+    r = 'nothing';
 else
     r = get(hnd,'string');
 end
-    
+
