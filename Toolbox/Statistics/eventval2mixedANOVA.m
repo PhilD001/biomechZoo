@@ -1,6 +1,6 @@
 function eventval2mixedANOVA(varargin)
 
-% eventval2mixedANOVA (varargin) will output data to a spreadsheet for mixed ANOVA 
+% eventval2mixedANOVA (varargin) will output data to a spreadsheet for mixed ANOVA
 % analysis in third party software
 %
 % ARGUMENTS
@@ -48,7 +48,7 @@ function eventval2mixedANOVA(varargin)
 %
 % Updated by Philippe C. Dixon August 2017
 % - Reorganised to avoid reading the excel file after starting the write
-%   process. This avoids errors on some platforms and should be quicker. 
+%   process. This avoids errors on some platforms and should be quicker.
 % - Users should set the excel server to 'off'. Future versions may
 %   depreciate the excel server option as java seems to handle all
 %   situations/platforms
@@ -214,7 +214,11 @@ for j = 1:length(ch)
         for a = 1:length(conditions)
             r = conditions{a};
             indx = strfind(r,filesep);
-            cons{a} = r(indx(1)+1:end);
+            if isempty(indx)
+                cons{a} = r;
+            else
+                cons{a} = r(indx(1)+1:end);
+            end
         end
     end
     cons= unique(cons);
@@ -235,7 +239,9 @@ for j = 1:length(ch)
                 grp = txt(n,2);
                 grp = grp{1};
                 indxx = strfind(grp,filesep);
-                grp = grp(1:indxx(1)-1);
+                if ~isempty(indxx)
+                    grp = grp(1:indxx(1)-1);
+                end
             end
         end
         
@@ -247,7 +253,7 @@ for j = 1:length(ch)
             sub_con_stk = [];
             
             for n = 1:length(txt)
-                r = txt(n,2);  
+                r = txt(n,2);
                 if  isin(r{1},cons{l}) && isin(cons{l},grp)
                     plate = xlsdata(n,:);
                     sub_con_stk = [sub_con_stk;plate];             % all data for subject k, condition l
@@ -311,7 +317,7 @@ for j = 1:length(ch)
                     alldata.(name).data = temp;
                 end
                 alldata.(name).data(k,l) = mean_sub_con_evt(2);
-
+                
             end
         end
         

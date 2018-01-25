@@ -59,13 +59,14 @@ function data = c3d2zoo(fld,del)
 % - added units for EMG (voltage)
 %
 % Updated by Philippe C. Dixon March 9th 2017
-% - Fixed bug for c3d files without any analog fields 
+% - Fixed bug for c3d files without any analog fields
 %
 % Updated by Philippe C. Dixon June 19th 2017
 % - bug fix for analog labels
 %
 % Updated by Philippe C. Dixon Dec 2017
 % - bug fix for c3d files without 'SUBJECT' field in parameter info
+% - bug fix for c3d files without 'ANALOG' field in parameter info
 
 % SET DEFAULTS / ERROR CHECK -----------------------------------------------------------------
 %
@@ -142,7 +143,9 @@ for i = 1:length(fl)
     %
     data.zoosystem.Video.Freq = r.Header.VideoHZ;
     
-    if r.Parameter.ANALOG.USED.data   % updated by PD March 2017
+    if ~isfield(r.Parameter,'ANALOG')
+        data.zoosystem.Analog.Freq = 0;
+    elseif r.Parameter.ANALOG.USED.data   % updated by PD March 2017
         data.zoosystem.Analog.Freq = r.Parameter.ANALOG.RATE.data;
     else
         data.zoosystem.Analog.Freq = 0;
@@ -213,7 +216,7 @@ for i = 1:length(fl)
     
     if del
         delete(fl{i})
-    end  
+    end
 end
 
 %---SHOW END OF PROGRAM-------------------------------------------------------------------------
@@ -244,7 +247,7 @@ function Units = setUnits(r,data)
 
 pch = fieldnames(r.Parameter.POINT);
 
- %       data.zoosystem.Units.Forces = makerow(r.Parameter.POINT.FORCE_UNITS.data);
+%       data.zoosystem.Units.Forces = makerow(r.Parameter.POINT.FORCE_UNITS.data);
 
 
 for j = 1:length(pch)
@@ -316,6 +319,12 @@ if isfield(r.Parameter,'FORCE_PLATFORM')
         FPlates.LOCALORIGIN = [];
         FPlates.NUMUSED = 0;
     end
+    
+else
+    FPlates.CORNERS = [];
+    FPlates.LOCALORIGIN = [];
+    FPlates.NUMUSED = 0;
+    
 end
 
 
@@ -333,15 +342,15 @@ if isfield(r.Parameter,'PROCESSING')
         
         Anthro.(ach{j}) =  rr;
     end
-   
+    
 else
-    Anthro = struct;  
+    Anthro = struct;
 end
 
 function data = setEvents_data(data,r)
 
 if isfield(r.Parameter,'EVENT')
-
+    
     vidFreq = data.zoosystem.Video.Freq;
     
     vch = data.zoosystem.Video.Channels;
@@ -349,7 +358,7 @@ if isfield(r.Parameter,'EVENT')
     if isempty(vch)
         disp('missing video channels')
         return
-    else 
+    else
         vch = data.zoosystem.Video.Channels{1};
     end
     
@@ -363,7 +372,7 @@ if isfield(r.Parameter,'EVENT')
             
             [~,cols] = size(sides);
             
-            events = struct;            
+            events = struct;
             for s = 1:cols
                 ech = [sides(:,s)','_',type(:,s)'];
                 ech = strrep(ech,' ','');
@@ -393,7 +402,7 @@ if isfield(r.Parameter,'EVENT')
             end
         end
     end
-   
-
+    
+    
 end
 

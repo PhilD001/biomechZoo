@@ -29,11 +29,11 @@ tic                                                                          % s
 
 if nargin==0
     fld = uigetfolder;
-    del = 'no';
+    del = false;
 end
 
 if nargin==1
-    del = 'no';
+    del = false;
 end
 
 [fld,fl,saveFile] = checkinput(fld,'.c3d');
@@ -47,7 +47,7 @@ for i = 1:length(fl)
     
     % Extract info from c3d file
     %
-    batchdisplay(fl{i},'converting to zoo');
+    batchdisp(fl{i},'converting to zoo');
     r = readc3dBtk(fl{i});
     zfl = extension(fl{i},'zoo');
     
@@ -84,8 +84,7 @@ for i = 1:length(fl)
         if isfield(data,albl{a})
             disp(['WARNING: Repeated channel name ',albl{a}, ' to be renamed ',albl{a},num2str(v)])
         end
-        
-        temp =  makecolumn(r.AnalogData.(afld{a}));
+        temp = r.AnalogData.(afld{a});
         data = addchannel_data(data,albl{a},temp,'analog');
     end
     
@@ -167,12 +166,11 @@ for i = 1:length(fl)
         disp('zoo file loaded to workspace')
         disp(' ')
     end
-    
-    if del
-        delete(fl{i})
-    end
-    
-    
+        
+end
+
+if del
+   delfile(fl)
 end
 
 %---SHOW END OF PROGRAM-------------------------------------------------------------------------
@@ -222,6 +220,14 @@ if isfield(Units,'Power')
     Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS
 end
 
+% add force plate units usually Newtons
+%
+if strcmp(r.Parameter.FORCE_PLATFORM.USED.description,'Forceplates used')
+    Units.Force = 'N';
+    Units.Moment = 'Nmm';        
+    Units.CentreOfPressure = 'mm';
+end
+
 function FPlates = setFPinfo(r)
 
 if isfield(r.Parameter,'FORCE_PLATFORM')
@@ -246,12 +252,7 @@ if isfield(r.Parameter,'FORCE_PLATFORM')
         FPlates.NUMUSED = r.Parameter.FORCE_PLATFORM.USED.data;
         
         a = r.Parameter.ANALOG.LABELS.data;
-        
-        temp = cell(r.Parameter.FORCE_PLATFORM.USED.data*6,1);
-        for j = 1:(r.Parameter.FORCE_PLATFORM.USED.data)*6
-            temp{j} = makevalidfield(a{j});   % different from c3d2zoo
-        end
-        FPlates.LABELS = temp;
+        FPlates.LABELS = makevalidfield(a)';
         
     else
         FPlates.CORNERS = [];

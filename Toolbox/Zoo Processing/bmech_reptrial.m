@@ -147,7 +147,6 @@ nlength = 100;
 trials = fieldnames(gdata);
 bstk = zeros(length(trials),length(ch));
    
-
 % check for and (temporarily) explode any n x 3 channels
 %
 och = ch; % copy of original channels
@@ -185,7 +184,7 @@ for i = 1:length(ch)
     meanval = mean(valstk,1);               % mean value for a given sub/con/channel
     
     if ~isempty(find(isnan(meanval), 1))
-        error('data contains NaNs')
+        error(['data contains NaNs in channel ',ch{i}])
     end
     
     for j = 1:length(trials)
@@ -233,9 +232,7 @@ for i = 1:length(ach)
         gdata.(trials{file_indx}).(ach{i}).event.(['mean_',evts{j}]) = mean_evt;
         gdata.(trials{file_indx}).(ach{i}).event.(['sd_',evts{j}]) = sd_evt;
     end
-    %     else
-    %         disp(['ch: ',ach{i},' not found'])
-    %     end
+  
 end
 
 

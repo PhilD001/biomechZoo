@@ -55,14 +55,6 @@ if isempty(nfld)
             data = partition_data(data,evt1,evt2);
             zsave(fl{i},data,[evt1,' to ',evt2])
         else
-            
-%             if isempty(findfield(data,evt1))
-%                 disp(['evt1: ',evt1,' not found'])
-%             end
-%             if isempty(findfield(data,evt2))
-%                 disp(['evt2: ',evt2,' not found'])
-%             end 
-                
             nfl{i} = fl{i}; %#ok<AGROW>
         end
 

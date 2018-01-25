@@ -33,6 +33,9 @@ function [data,localjc] = hipjointcentrePiG_data(data,test)
 %
 % Updated by Philippe C. Dixon July 2016
 % - computes error wrt to vicon if data are available
+%
+% Updated by Philippe C Dixon December 2017
+% - Bug fix for data with rows < cols e.g. [2 x 3] 
 
 % Set defaults/Error check
 %
@@ -149,7 +152,8 @@ for i = 1:length(side)
     % Transform from pelvis coordinate system to global coordinate system
     HipGCS = ones(size(RASI));
     GCS = gunit;
-    for j = 1:length(RASI)
+    rows= size(RASI,1);
+    for j = 1:rows
         PCS = [PELx(j,:); PELy(j,:) ; PELz(j,:)];
         HipGCS(j,:) = ctransform(PCS,GCS,HipPCS)+PELO(j,:);
     end

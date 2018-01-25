@@ -34,12 +34,15 @@ if ~iscell(nevt)
     nevt = {nevt};
 end
 
+ch = setdiff(fieldnames(data),'zoosystem');
+
 for i = 1:length(evt)
-    [~,ch] = findfield(data,evt{i});
-    if isempty(ch)
-        disp(['Event: ',evt{i},' not found'])
-    else
-        data.(ch).event.(nevt{i})=data.(ch).event.(evt{i});
-        data.(ch).event = rmfield(data.(ch).event, evt{i});
+    for j = 1:length(ch)
+        if isfield(data.(ch{j}).event,evt{i})
+            disp(['event ',evt{i},'found in channel ',ch{j}])
+            data.(ch{j}).event.(nevt{i})=data.(ch{j}).event.(evt{i});
+            data.(ch{j}).event = rmfield(data.(ch{j}).event, evt{i});
+        end
     end
 end
+

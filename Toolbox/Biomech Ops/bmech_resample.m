@@ -57,7 +57,7 @@ end
 
 fl = engine('path',fld,'extension','zoo');
 
-for i = 1:length(fl);
+for i = 1:length(fl)
     batchdisplay(fl{i},'resampling')
     data = zload(fl{i});
     data = resample_data(data,ch,p,q,method);

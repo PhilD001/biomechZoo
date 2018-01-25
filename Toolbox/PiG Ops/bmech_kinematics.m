@@ -25,7 +25,9 @@ function bmech_kinematics(fld,settings)
 %
 % Updated by Philippe C. Dixon April 2017
 % - Call to obsolete makebones replaced by makebones_data
-
+%
+% Updated by Philippe C. Dixon Jan 2018
+% - Fixed bug for missing empty subname in 'data.zoosystem.Header.SubName'
 
 % Set defaults/error check
 
@@ -35,7 +37,6 @@ if nargin==1
     settings.graph = false;
     settings.comp = true;
 end
-
 
 cd(fld)
 
@@ -51,6 +52,11 @@ for i = 1:length(flDyn)
     data = zload(flDyn{i});                                               % load dyn trial
     subname = deblank(data.zoosystem.Header.SubName);                     % ID subject
     
+    if isempty(subname)
+        [~,subname] = fileparts(data.zoosystem.SourceFile);
+        subname = subname(1:end-2);
+    end
+
     if ~strcmp(subname_prev,subname)                                      % load static
         flStat = engine('path',fld,'extension','zoo',...                  % associated with
             'search path',[subname,filesep,settings.static]);            % dyn trial
@@ -59,8 +65,10 @@ for i = 1:length(flDyn)
         elseif length(flStat)>1
             error(['more than one static trial for: ',subname])
         end
-        batchdisp(flStat{1},'processing static trial')                     % compute quants
-        
+        [~,flStatFile] = fileparts(flStat{1});
+        disp(' ')
+        disp(['processing static trial ',flStatFile,' for subject ',subname])                     % compute quants
+        disp(' ')
         sdata = zload(flStat{1});
         subname_prev = subname;
           

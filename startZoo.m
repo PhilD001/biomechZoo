@@ -128,8 +128,8 @@ help_fld = strrep(sfld,'sample study','examples');
     end
     
 else
-    fprintf('\nHelp files not found in current setup\n')
-    fprintf('Download help files <a href="https://github.com/PhilD001/biomechzoo-help">here</a>\n')
+    fprintf('\nHelp and sample study files not found in current setup\n')
+    fprintf('Download help and sample study files <a href="https://github.com/PhilD001/biomechzoo-help">here</a>\n')
     
 end
 

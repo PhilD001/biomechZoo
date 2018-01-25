@@ -83,7 +83,7 @@ for i = 1:length(plates)
         Mz = data.([momentSuf,'Z',num2str(i)]).line;             % Nmm
     end
     
-    COP = COP_oneplate([Fx Fy Fz],[Mx My Mz],a,b,c,thresh); 
+    COP = COP_oneplate([Fx Fy Fz],[Mx My Mz],a,b,c,thresh);
     COP = ctransform_line(COP,gunit,orientFP.(['FP',num2str(i)]));       
    
     COP(:,1) = COP(:,1) + ag;  

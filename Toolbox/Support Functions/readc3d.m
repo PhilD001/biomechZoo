@@ -4,7 +4,7 @@ function data =readc3d(fname)
 %
 % ARGUMENTS
 %  fname     ... the c3d file and path (as a string) eg: 'c:\documents\myfile.c3d'
-% 
+%
 % RETURNS
 %  data      ...  structured array
 %
@@ -41,14 +41,17 @@ function data =readc3d(fname)
 %  multiple locations.  Now this function can consolidate the label names.
 %
 % Updated by Philippe C. Dixon May 19th 2015
-% - removed unused embedded function 
-% 
+% - removed unused embedded function
+%
 % Updated by Philippe C. Dixon Aug 24th 2015
-% - Fixed bug in the 'GEN_SCALE' field experienced by some users 
+% - Fixed bug in the 'GEN_SCALE' field experienced by some users
 %
 % Updated by Philippe C. Dixon April 2017
-% - Fixed bug for c3d files without any analog fields 
+% - Fixed bug for c3d files without any analog fields
 % - Added error check for files that can't be opened
+%
+% Updated by Philippe C. Dixon December 2017
+% - bug fix for c3d files without 'ANALOG' field in parameter info
 
 
 % -------------------------------------------
@@ -122,30 +125,30 @@ while 1
         islock = 0;
     end
     fld = [];                                   %fld = structured field to add to the output
-    fld.id = id;                                %fld has fields id and description   
+    fld.id = id;                                %fld has fields id and description
     fld.islock = islock;
     
     
-    if id < 0                                       %groups always have id <0 parameters are always >0  
+    if id < 0                                       %groups always have id <0 parameters are always >0
         dnum = fread(fid,1,'uint8');                %number of characters of the desctription
         desc = char(fread(fid,dnum,'uint8')');      %description of the group/parameter
         fld.description = desc;
         P.(gname)=fld;                              %add the field to the variable P
     else %it is a parameter
         dtype = fread(fid,1,'int8');                %what type of data -1 = char 1 = byte  2 = 16 bit integer 3 = 32 bit floating point
-        numdim = fread(fid,1,'uint8');              %number of dimensions (0 to 7 dimensions)        
+        numdim = fread(fid,1,'uint8');              %number of dimensions (0 to 7 dimensions)
         fld.datatype = dtype;                       %data type of the parameter -1=character, 1=byte, 2=integer, 3= floting point, 4=real
-        fld.numberDIM = numdim;                     %number of dimensions (0-7) 0 = scalar, 1=vector, 2=2D matrix,3=3D matrix,...etc 
+        fld.numberDIM = numdim;                     %number of dimensions (0-7) 0 = scalar, 1=vector, 2=2D matrix,3=3D matrix,...etc
         fld.DIMsize = fread(fid,numdim,'uint8');    %size of each dimension eg [2,3]= 2d matrix with 2 rows and 3 columns
         dsize = fld.DIMsize';                       %the fread function only reads row vectors
         
         if isempty(dsize)                           %if dsize is empty then we read a scalar
             dsize = 1;
-        end            
+        end
         if length(dsize) > 2
             dsize = prod(dsize);                    %fread can only handle up to 2 dimensions
         end                                         %if it is greater than 2 dimensions, then just read all data in a single vector.
-
+        
         switch dtype
             case -1 %character data
                 pdata = char(fread(fid,dsize,'uint8'));
@@ -160,7 +163,7 @@ while 1
         end
         dnum = fread(fid,1,'uint8');             %number of characters in the description
         desc = char(fread(fid,dnum,'uint8')');      %description string
-        fld.description = desc;        
+        fld.description = desc;
         fld.data = pdata;                            %add data to parameter structured var
         P = setparameter(P,gname,fld);              %add parameter to the appropriate group
     end
@@ -168,7 +171,7 @@ while 1
         break
     end
     fseek(fid,index+nextgroup,'bof');               %go to next group/parameter.
-
+    
 end
 data.Header = H;
 data.ParameterHeader = Pheader;
@@ -180,15 +183,24 @@ data.Parameter = P;
 %first position
 fseek(fid,(data.Parameter.POINT.DATA_START.data-1)*512,'bof');
 %Analogue data parameters
-if data.Parameter.ANALOG.USED.data                      % PD update March 2017
+
+
+if ~isfield(data.Parameter,'ANALOG')                       % PD update for Optitrak
+    numAnalogue = 0;
+    Alabels = [];
+    Ascale = [];
+    Gscale = [];
+    Aoffset = [];
+    
+elseif data.Parameter.ANALOG.USED.data                      % PD update March 2017
     numAnalogue = data.Parameter.ANALOG.USED.data;
     Alabels = cellstr(data.Parameter.ANALOG.LABELS.data');
     Ascale = data.Parameter.ANALOG.SCALE.data;
     
     if isfield(data.Parameter.ANALOG,'EN_SCALE')
-       Gscale = data.Parameter.ANALOG.EN_SCALE.data;
+        Gscale = data.Parameter.ANALOG.EN_SCALE.data;
     else
-       Gscale = data.Parameter.ANALOG.GEN_SCALE.data;
+        Gscale = data.Parameter.ANALOG.GEN_SCALE.data;
     end
     
     Aoffset = data.Parameter.ANALOG.OFFSET.data;
@@ -197,11 +209,11 @@ if data.Parameter.ANALOG.USED.data                      % PD update March 2017
     else
         issigned = 'SIGNED';
     end
-    if strcmp(issigned,'SIGNED');
+    if strcmp(issigned,'SIGNED')
         issigned = 1;
     else
         issigned = 0;
-    end    
+    end
 else
     numAnalogue = 0;
     Alabels = [];
@@ -213,15 +225,15 @@ end
 
 %Video (3D) data parameters
 numVideo = data.Parameter.POINT.USED.data;
-if isfield(data.Parameter.POINT,'LABELS');
+if isfield(data.Parameter.POINT,'LABELS')
     Vlabels = cellstr(data.Parameter.POINT.LABELS.data');
 else
     Vlabels = {};
-end    
+end
 
 for i = 2:length(fieldnames(data.Parameter.POINT))
     fieldName = ['LABELS',num2str(i)];
-    if isfield(data.Parameter.POINT,fieldName);
+    if isfield(data.Parameter.POINT,fieldName)
         Vlabels = [Vlabels;cellstr(data.Parameter.POINT.(fieldName).data')];
     else
         break
@@ -230,7 +242,7 @@ end
 Vscale = data.Parameter.POINT.SCALE.data;
 numFrames = data.Parameter.POINT.FRAMES.data;
 
-inc = 4*numVideo+H.SamplesPerFrame;  
+inc = 4*numVideo+H.SamplesPerFrame;
 %inc is the increment.  Increment is the number of elements in a video
 %frame and this consist of:
 %The number of Video Channels*4 (xdata,ydata,zdata,and residual) + The
@@ -243,15 +255,15 @@ inc = 4*numVideo+H.SamplesPerFrame;
 numdatapts = numFrames*inc;
 %number of data points to read this is:
 %(Number of frames)*(Number of data per frame)
-                                                    
-                                                  
+
+
 %READING the DATA
 if Vscale >= 0   %integer format
     AVdata = fread(fid,numdatapts,'int16',machinetype);
 else            %floating point format
     AVdata = fread(fid,numdatapts,'float32',machinetype);
 end
-    
+
 
 V = struct;
 %data for all Video channels
@@ -272,16 +284,16 @@ for i = 1:numVideo
     Vdata.zdata = videoconvert(zd,Vscale,indx);
     Vdata.residual = residual;
     offset = offset+4;
-    V.(['channel',num2str(i)]) = Vdata;    
+    V.(['channel',num2str(i)]) = Vdata;
 end
 
 offset = 4*numVideo;  %offset is a pointer to the first data point of the first channel of Analog data
 A = struct;
-for i = 1:numAnalogue 
+for i = 1:numAnalogue
     Adata.label = Alabels{i};
     Aframedata = [];
     %A given analog channel can have multiple samples per frame of video
-    for j = 0:H.SamplesPerChannel-1 
+    for j = 0:H.SamplesPerChannel-1
         stindx = offset+i+j*numAnalogue;
         plate = AVdata(stindx:inc:end);
         Aframedata = [Aframedata,plate];
@@ -289,10 +301,10 @@ for i = 1:numAnalogue
     Adata.data = analogconvert(merge(Aframedata),Aoffset(i),Ascale(i),Gscale,issigned);  %recombine the multiple samples to one vector
     A.(['channel',num2str(i)]) = Adata;
 end
-    
+
 data.VideoData = V;
 data.AnalogData= A;
-    
+
 fclose(fid);
 
 
@@ -312,7 +324,7 @@ end
 function r = merge(data)
 %this function will recombine the analogue data because the potential for multiple
 %samples per frame of video.
-%each row of "data" corresponds to a single video frame; 
+%each row of "data" corresponds to a single video frame;
 [rw,cl] = size(data);
 r = zeros(rw*cl,1);
 for i = 1:cl
@@ -356,5 +368,5 @@ for i = 2:3
     nindx = find(data(:,i)==0);
     indx = intersect(indx,nindx);
 end
-    
-r = indx;    
+
+r = indx;

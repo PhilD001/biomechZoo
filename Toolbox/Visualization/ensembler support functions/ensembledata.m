@@ -20,7 +20,9 @@ function ensembledata(vartype,settings)
 %
 % Updated by Philippe C. Dixon August 2017
 % - Added settings option for event tagging
-
+%
+% Updated by Philippe C. Dixon Dec 2017
+% - bug fix for events with nan data (use of nanmean)
 
 
 % find figure objects
@@ -138,7 +140,7 @@ for i = 1:length(ax)
                     
                 end
                 
-                mpos=  mean(estk);
+                mpos=  nanmean(estk);
                 
                 switch vartype
                     

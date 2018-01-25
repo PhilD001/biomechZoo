@@ -1,6 +1,6 @@
 function r = extractevents(fld,cons,subjects,ch,evt)
 
-% R = EXTRACTEVENTS(FLD,SUBJECTS,CONS,CH,EVT) extracts event data from zoo file
+% R = EXTRACTEVENTS(fld,cons,subjects,ch,evt) extracts event data from zoo file
 %
 % ARGUMENTS
 %  fld         ...    Folder to operate on as string
@@ -17,6 +17,9 @@ function r = extractevents(fld,cons,subjects,ch,evt)
 % Updated November 2017 by Philippe C. Dixon
 % - improved output display
 
+if ~iscell(cons)
+    cons = {cons};
+end
 
 r = struct;
 s = filesep;                                                    % determines slash direction

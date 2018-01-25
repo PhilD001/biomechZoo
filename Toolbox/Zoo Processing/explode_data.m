@@ -34,7 +34,7 @@ end
 
 % Process
 %
-for i = 1:length(ch);
+for i = 1:length(ch)
     
     if isfield(data,ch{i})
         cname = ch{i};

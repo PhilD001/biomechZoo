@@ -117,7 +117,10 @@ function ensembler(action)
 %
 % Updated by Philippe C. Dixon November 2017
 % - bug fix for turning on/off SD visibility on all open figures
-
+%
+% Updated by Philippe C. Dixon December 2017
+% - bug fix which caused emsembler exit to exit all figures including
+% director
 
 % ================= BEGIN SETUP ======================================
 %
@@ -488,7 +491,7 @@ switch action
         ensembler_msgbox(fld,'Data ensembled')
         
     case 'exit'
-        delete(findensobj('figure'));
+        delete(findensobj('figure','KeyPressFcn','ensembler(''keypress'')'))
         disp('ensembler GUI closed')
         
     case 'explode channels'

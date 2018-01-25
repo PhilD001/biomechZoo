@@ -37,11 +37,18 @@ function data = addchannel_data(data,ch,ndata,section)
 %
 % Updated by Philippe C. Dixon June 2017
 % - Added warning for data overwrite if channel already exists
-
+%
+% Updtated by Philippe C. Dixon December 20178
+% - bug fix for repeated channel names in zoosystem branch when adding the
+%   same channel multiple times
 
 % set defaults/error checking 
 %
 [~,c] = size(ndata);
+
+if iscell(ch)
+    ch = ch{1};
+end
 
 if c>3
     error('data must be nx1 or nx3')
@@ -71,5 +78,8 @@ data.(ch).event = struct;
 % Add channel to appropriate channel list
 %
 ochs = makecolumn(data.zoosystem.(section).Channels);
-nchs = [ochs; ch];
-data.zoosystem.(section).Channels = nchs;
+
+if ~ismember(ch,ochs)
+    nchs = [ochs; ch];
+    data.zoosystem.(section).Channels = nchs;
+end

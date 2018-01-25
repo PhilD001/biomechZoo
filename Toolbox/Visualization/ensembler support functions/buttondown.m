@@ -10,7 +10,7 @@ function buttondown(settings)
 % - improved contrast of selected line
 %
 % Updated  by Philippe C. Dixon October 2016
-% - use of new function concatEnsPrompt to shorten long ensembler prompts
+% - use of new function concatPrompt to shorten long ensembler prompts
 %
 % Updated by Philippe C. Dixon May 2017
 % - current axis is highlighted see ensembler_axis_highlight
@@ -19,6 +19,9 @@ function buttondown(settings)
 % - Fixed bug with line width after event buttondown
 % - Improved sizing of ensembler prompt at top of figure
 % - Removed hard coding for some line styles and colors
+%
+% Updated by Philppe C. Dixon Jan 2018
+% - Bug fix for extra long file paths for lines and events
 
 hnd = gcbo;
 stype = get(gcf,'selectiontype');
@@ -47,6 +50,8 @@ switch stype
         
         if ischar(get(gcbo,'userdata'))
             txt = findensobj('prompt',gcf);
+            txtUnits = get(txt,'Units');
+            figUnits = get(gcf,'Units');
             temp = get(gcbo,'userdata');
             
             fsize = get(gcf,'position');
@@ -54,6 +59,7 @@ switch stype
             
             while true
                 set(txt,'string',temp);
+                set(txt,'units',figUnits)
                 tsize = get(txt,'extent');
                 
                 if isempty(tsize)
@@ -68,6 +74,10 @@ switch stype
                 end
             end
             
+            % reset units
+            %
+            set(txt,'units',txtUnits)
+
             
             if isempty(strfind(get(gcbo,'userdata'),'average_'))
                 set(findobj('string',settings.string),'color',settings.color); % set back
@@ -184,7 +194,36 @@ switch stype
             txt = findensobj('prompt',gcf);
             evt = get(gcbo,'tag');                       % event tag
             trial = get(get(gcbo,'UserData'),'UserData'); % trial tag
-            trial = concatEnsPrompt(trial);
+            
+            txtUnits = get(txt,'Units');
+            figUnits = get(gcf,'Units');
+            
+            fsize = get(gcf,'position');
+            fsize = fsize(3);
+            
+            while true
+                set(txt,'string',trial);
+                set(txt,'units',figUnits)
+                tsize = get(txt,'extent');
+                
+                if isempty(tsize)
+                    break
+                end
+                tsize = tsize(3);
+                
+                if tsize > fsize
+                    trial = concatPrompt(trial);
+                else
+                    break
+                end
+            end
+            
+            % reset units
+            %
+            set(txt,'units',txtUnits)
+            
+            
+            % set msg
             msg = [trial,': ', evt];
             set(txt,'string',msg);
             

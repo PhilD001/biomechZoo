@@ -1,7 +1,7 @@
 function [vr,fc] = surface2patch(x,y,z)
 
 % [vr,fc] = SURFACE2PATCH(x,y,z) converts surface orientation data to patch
-% vertcies format
+% vertices format
 %
 % ARGUMENTS
 % x,y,z      ...  surface data

@@ -44,7 +44,9 @@ function data = partition_data(data,evt1,evt2,ch)
 % - Replaces events occurs at frame '0' with frame '1'. This error can
 %   occur if data were partionned in Vicon more tightly than where the events
 %   were labeled
-
+%
+% Updated by Philippe C. Dixon Jan 2017
+% - Improved error checking / handling
 
 
 % Set Defaults
@@ -63,29 +65,34 @@ e1 = findfield(data,evt1);         % both events must be for data of the same ty
 e2 = findfield(data,evt2);         % either analog or video
 
 
-
-
-%-----check if events are present-----
+% Check for event problems
 %
 if isempty(e1)
-    disp(['event ',e1, ' not found']);
+    disp(['event ',evt1, ' not found']);
     return
 end
 
 if isempty(e2)
-    disp(['event ',e2, ' not found']);
+    disp(['event ',evt2, ' not found']);
     return
 end
 
+if isnan(e1(1))
+    disp(['event ',evt1, ' is not a number (NaN)']);
+    return
+end
 
+if isnan(e2(1))
+    disp(['event ',evt2, ' is not a number (NaN)']);
+    return
+end
 
 a = 0;
 v = 0;
 for i = 1:length(ch)
-    
     if isfield(data.(ch{i}),'line')~=1
         disp(['the channel ',ch{i}, ' is missing the line field'])
-        
+       
     elseif length(data.(ch{i}).line)<(e2(1)-e1(1))
         disp(['the channel ',ch{i}, ' has insufficient data points for partitionning'])
         
@@ -97,7 +104,13 @@ for i = 1:length(ch)
             disp(['event 1: ',evt1, ' occurs at frame 0, event will be moved to frame 1'])
             e1(1) = 1;
         end
-        r = data.(ch{i}).line(e1(1):e2(1),:);
+        
+        try
+            r = data.(ch{i}).line(e1(1):e2(1),:);
+        catch
+            error([ch{i},' may not have sufficient frames for partition, check vector'])
+        end
+        
         data.(ch{i}).line = r;
     end
     event = fieldnames(data.(ch{i}).event);

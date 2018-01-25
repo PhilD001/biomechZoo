@@ -495,7 +495,7 @@ if strcmpi(type,'dynamic')  && isfield(data.zoosystem.Anthro,'RStaticPlantFlex')
     RStaticPlantFlex = data.zoosystem.Anthro.RStaticPlantFlex;
     RStaticRotOff    = data.zoosystem.Anthro.RStaticRotOff;
     [A,L,P] = rotateFootAxes(A,L,P,RStaticRotOff,RStaticPlantFlex);
-elseif ~strcmpi(type,'sttic')
+elseif ~strcmpi(type,'static')
     disp('Ankle angles may be inexact, please set static offsets')
 end
 

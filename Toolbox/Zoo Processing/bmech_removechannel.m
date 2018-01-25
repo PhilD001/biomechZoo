@@ -24,7 +24,9 @@ function bmech_removechannel(fld,ch,action)
 %
 % Updated by Philippe C. Dixon July 2016
 % - reformatted for zosystem v1.3
-
+%
+% Updated by Philippe C. Dixon December 2017
+% - Better support for invalid 'action' input
 
 
 % Set defaults/Error check
@@ -42,7 +44,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'removing channel');
+    batchdisp(fl{i},'removing channel');
     
     [chn,suff] = getchannels(data,ch,action);
     
@@ -51,14 +53,20 @@ for i = 1:length(fl)
 end
 
 
-function [ch,suff] = getchannels(data,ch,action)
+function [nch,suff] = getchannels(data,och,action)
+
+och = makecolumn(och);
 
 if strcmp(action,'keep')
     allch = setdiff(fieldnames(data),'zoosystem');
-    ch = (setdiff(allch,ch));
+    nch = setdiff(allch,och);
+elseif strcmp(action,'remove')
+    nch = och;
+else
+    error(['unknown action ',action, ' please select ''keep'' or ''remove'''])   
 end
 
-if length(ch)==1
+if length(nch)==1
     suff = 'channel';
 else
     suff = 'channels';

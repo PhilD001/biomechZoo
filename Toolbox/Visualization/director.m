@@ -76,7 +76,7 @@ if nargin ==0
     action = 'space';
 end
 
-disp(action)
+% disp(action)
 
 switch action
     
@@ -308,8 +308,6 @@ switch action
         director('clear all objects')
         director('load bones');       % loads the bone props
         
-        
-        
         [f,p] = uigetfile({'*.zoo';'*.c3d'},'Pick a file');   % default is c3d or zoo file
         cd(p);
         
@@ -322,8 +320,7 @@ switch action
         delete(finddobj('graph'));
         
         set(findobj('tag','open graph'),'Visible','off');
-        
-        
+     
         switch lower(ext)
             
             case {'.zoo','.c3d'}
@@ -392,9 +389,6 @@ switch action
                 lightman('load',[p,f]);
             case '.prop'
                 props('load',[p,f]);
-                %             case '.c3d'                  % original code
-                %                 marker('load c3d',[p,f]);
-                
             case '.z3d'
                 marker('load z3d',[p,f]);
         end

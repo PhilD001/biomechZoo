@@ -3,19 +3,14 @@ function bmech_cocontraction(fld,pairs)
 % BMECH_COCONTRACTION computes co-contraction index for muscle pairs
 %
 % ARGUMENTS
-%  fld           ...   folder to operate on
-%  pairs       ...   Names of muscle pairs (cell array of strings). Default = {'VM_MG','VM_MH','VL_LG','VL_LH'}
-
-
-
-if nargin==0
-    fld = uigetfolder;
-    pairs = {'VM_MG','VM_MH','VL_LG','VL_LH'};                                           % muscle pairs for co-contraction
-end
-
-if nargin==1
-    pairs = {'VM_MG','VM_MH','VL_LG','VL_LH'};                                           % muscle pairs for co-contraction
-end
+%  fld         ...   folder to operate on
+%  pairs       ...   Names of muscle pairs (cell array of strings). 
+%                    Default = {'VM_MG','VM_MH','VL_LG','VL_LH'}
+%
+% NOTES
+% - See cocontraction_line for co-contraction computational approach
+%
+% See also cocontraction_data, cocontraction_line
 
 % Batch process
 %

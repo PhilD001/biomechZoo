@@ -6,7 +6,7 @@ fig = findobj('type','fig');
 
 if action
     
-    temp = concatEnsPrompt(fld);
+    temp = concatPrompt(fld);
     for i = 1:length(fig)
         pmt = findobj(fig(i),'tag','prompt');     % get the figure prompt
         set(pmt,'string',temp)

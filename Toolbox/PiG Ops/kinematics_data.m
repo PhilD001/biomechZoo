@@ -80,7 +80,16 @@ function data = kinematics_data(data,settings)
 % - global head and thorax angles included
 % - More testing of global angles in all directions
 % - Fixed bug with graphing outputs
-
+%
+% Updated by Philippe C. Dixn Dec 2017
+% - Bug fix for axis flipping for large ROM movement at the hip and knee
+%   based on 'atan2' approach from pyCGM (see pyCGM.py --> getangle). For
+%   more info see: Schwartz and Dixon "The Effect of Subject Measurement Error on 
+%   Joint Kinematics in the Conventional Gait Model: Insights From the Open-source \
+%   pyCGM tool using High Performance Computing Methods". Plos One, In
+%   press. Update for ankle and pelvis should be considered
+% - Bug fix for static trials with less than 3 frames ('length' changed to
+%  'size') when building ort in 'getdataPiG' sub function
 
 
 % Set defaults
@@ -275,7 +284,7 @@ x = (d{A}-d{O})/10;   % Anterior - Origin:          Creates anterior vector
 y = (d{L}-d{O})/10;   % Medial - Origin:            Creates medial vector (right side), Lateral vector (left side)
 z = (d{P}-d{O})/10;   % Distal - Origin:            Creates vector along long axis of bone
 
-rw = length(x);
+[rw,~] = size(x);
 ort = cell(rw,1);
 for i = 1:rw
     ort{i} = [x(i,:);y(i,:);z(i,:)];     %for updated grood suntay version
@@ -336,16 +345,22 @@ switch bone
         [flx,abd,tw] = checkdir(flx,abdx,twix,twiy,dir);
         
     case {'Pelvis','Femur'}  % Hip and Knee
-        [floatax,~,~,lat_prox,lat_dist,long_prox,long_dist] = makeaxPiG(pax,dax);
+        [floatax,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist]= makeaxPiG(pax,dax);
+        % old code biomechZoo some flip problems with large angles
+        % flx = asind(dot(floatax,long_prox,2));
+        % abd = asind(dot(lat_prox,long_dist,2));
+        % tw  = asind(dot(floatax,lat_dist,2));
+        %
+        % if isnear(max(abs(flx)),90,1)
+        %    flx = checkflipPiG(flx,floatax,long_prox);
+        % end
         
-        flx = asind(dot(floatax,long_prox,2));
-        abd = asind(dot(lat_prox,long_dist,2));
-        tw  = asind(dot(floatax,lat_dist,2));
-        
-        if isnear(max(abs(flx)),90,1)
-            flx = checkflipPiG(flx,floatax,long_prox);
-        end
-        
+        % New code based on pyCGM approach (see pyCGM.py --> getangle)
+        %
+        abd = -1*dot(lat_prox,long_dist,2);
+        [flx,tw] = checkflip_pyCGM(abd,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist);
+        abd = asind(abd);
+          
     case 'Tibia'   % Ankle PG angles
         [floatax,ant_prox,~,lat_prox,lat_dist,~,long_dist] = makeaxPiG(pax,dax);
         
@@ -426,13 +441,13 @@ long_dist = zeros(length(pax),3);
 floatax = zeros(length(pax),3);
 
 for i = 1:length(pax)
-    ant_prox(i,:) = pax{i}(1,:);
-    lat_prox(i,:) = pax{i}(2,:);
-    long_prox(i,:) = pax{i}(3,:);
+    ant_prox(i,:) = makeunit(pax{i}(1,:));
+    lat_prox(i,:) = makeunit(pax{i}(2,:));
+    long_prox(i,:) = makeunit(pax{i}(3,:));
     
-    ant_dist(i,:) = dax{i}(1,:);
-    lat_dist(i,:) =  dax{i}(2,:);
-    long_dist(i,:) = dax{i}(3,:);
+    ant_dist(i,:) = makeunit(dax{i}(1,:));
+    lat_dist(i,:) =  makeunit(dax{i}(2,:));
+    long_dist(i,:) = makeunit(dax{i}(3,:));
     
     floatax(i,:) =cross(lat_prox(i,:),long_dist(i,:));
 end
@@ -445,6 +460,7 @@ lat_prox = makeunit(lat_prox);
 lat_dist = makeunit(lat_dist);
 long_prox = makeunit(long_prox);
 long_dist = makeunit(long_dist);
+
 
 
 function [floatax,ant_prox,ant_dist,lat_prox,lat_dist,long_prox] = makeaxOFM(pax,dax)
@@ -470,6 +486,27 @@ for i = 1:length(pax)
     floatax(i,:) = cross(lat_prox(i,:), ant_dist(i,:));
 end
 
+function [flx,tw] = checkflip_pyCGM(abd,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist)
+
+flx = zeros(size(abd));
+tw  = zeros(size(abd));
+
+for i = 1:length(abd)
+
+    if (-pi/2 < abd(i)) &&  ( abd(i) < pi/2)
+        flx(i) = atan2(dot(long_dist(i,:),ant_prox(i,:)), dot(long_dist(i,:),long_prox(i,:)));
+        tw(i)  = atan2(dot(lat_dist(i,:), lat_prox(i,:)), dot(ant_dist(i,:),  lat_prox(i,:)));        
+    else
+        flx(i) = atan2(-1*dot(long_dist(i,:),ant_prox(i,:)), dot(long_dist(i,:),long_prox(i,:)));
+        tw(i)  = atan2(-1*dot(lat_dist(i,:), lat_prox(i,:)), dot(ant_dist(i,:),  lat_prox(i,:)));        
+    end
+    
+end
+
+% convert to degrees
+%
+flx = rad2deg(flx);
+tw  = rad2deg(tw);
 
 function flx = checkflipPiG(flx,float,long_prox)
 
@@ -528,21 +565,41 @@ if isfield(KIN,'RightKnee')  % checks for plugin gait
     r.LeftPelvis.Obliquity  = -KIN.GlobalPelvis.abd;
     r.LeftPelvis.IntExt     = -KIN.GlobalPelvis.tw;
     
-    r.RightHip.FlxExt = KIN.RightHip.flx;
-    r.RightHip.AbdAdd = -KIN.RightHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    r.RightHip.IntExt = -KIN.RightHip.tw;
+    % original biomechZoo style
+    %
+    % r.RightHip.FlxExt = KIN.RightHip.flx;
+    % r.RightHip.AbdAdd = -KIN.RightHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    % r.RightHip.IntExt = -KIN.RightHip.tw;
     
-    r.LeftHip.FlxExt = KIN.LeftHip.flx;
-    r.LeftHip.AbdAdd = KIN.LeftHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    r.LeftHip.IntExt = KIN.LeftHip.tw;
+    % r.LeftHip.FlxExt = KIN.LeftHip.flx;
+    % r.LeftHip.AbdAdd = KIN.LeftHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    % r.LeftHip.IntExt = KIN.LeftHip.tw;
     
-    r.RightKnee.FlxExt = -KIN.RightKnee.flx;
-    r.RightKnee.AbdAdd = -KIN.RightKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    r.RightKnee.IntExt = -KIN.RightKnee.tw;
+    % r.RightKnee.FlxExt = -KIN.RightKnee.flx;
+    % r.RightKnee.AbdAdd = -KIN.RightKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    % r.RightKnee.IntExt = -KIN.RightKnee.tw;
     
-    r.LeftKnee.FlxExt = -KIN.LeftKnee.flx;
-    r.LeftKnee.AbdAdd = KIN.LeftKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    r.LeftKnee.IntExt = KIN.LeftKnee.tw;
+    % r.LeftKnee.FlxExt = -KIN.LeftKnee.flx;
+    % r.LeftKnee.AbdAdd = KIN.LeftKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    % r.LeftKnee.IntExt = KIN.LeftKnee.tw;
+    
+    % new offsets based on pyCGM atan2 approach
+    %
+    r.RightHip.FlxExt = -KIN.RightHip.flx;
+    r.RightHip.AbdAdd =  KIN.RightHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    r.RightHip.IntExt = -KIN.RightHip.tw + 90;
+    
+    r.LeftHip.FlxExt = -KIN.LeftHip.flx;
+    r.LeftHip.AbdAdd = -KIN.LeftHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    r.LeftHip.IntExt =  KIN.LeftHip.tw - 90;
+    
+    r.RightKnee.FlxExt = KIN.RightKnee.flx;
+    r.RightKnee.AbdAdd = KIN.RightKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    r.RightKnee.IntExt = -KIN.RightKnee.tw + 90;
+    
+    r.LeftKnee.FlxExt = KIN.LeftKnee.flx;
+    r.LeftKnee.AbdAdd = -KIN.LeftKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
+    r.LeftKnee.IntExt = KIN.LeftKnee.tw -90;
     
     r.RightAnkle.PlaDor = -KIN.RightAnkle.flx;
     r.RightAnkle.IntExt = -KIN.RightAnkle.abd;     % vicon int/ext is the same as IDA Abd/Add (

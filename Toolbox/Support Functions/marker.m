@@ -16,7 +16,10 @@ function varargout = marker(action,varargin)
 %
 % Updated by Philippe C. Dixon August 2017
 % - Exploded PiG data are automatically merged in order to build bones, if available
-
+%
+% Updated by Philippe C. Dixon January 2018
+% - Improved search for markers to display
+% - Attempts to merge exploded marker data to display markers in director
 
 switch action
     
@@ -132,8 +135,16 @@ end
 %
 % data.zoosystem.Anthro.Feet = 'skates';
 
-% Extract all channels in file
+
+% check if data were exploded
 %
+[explode,ch_exp] = checkExplode(data);
+if explode
+    for i = 1:length(ch_exp)
+        data = mergechannel_data(data,ch_exp{i});
+    end
+end
+
 % Extract all channels in file
 %
 if ~isfield(data.zoosystem.Video,'Channels')
@@ -141,6 +152,7 @@ if ~isfield(data.zoosystem.Video,'Channels')
 else
     ch = data.zoosystem.Video.Channels;
 end
+
 
 % Load Plug-in Gait bones
 %
@@ -161,8 +173,13 @@ v = cell(size(ch));
 
 for i = 1:length(ch)
     
-    if ~isin(ch{i},{'x1','y1','z1','x2','y2','z2','Force','Moment','Angle','Power','star'})
-        v{i} = ch{i};
+    if ~isin(ch{i},{'x1','y1','z1','x2','y2','z2','Force','Moment','Angle','Power',...
+            'GRF','star'})
+        
+        [~,cc] = size(data.(ch{i}).line);
+        if cc==3
+            v{i} = ch{i};
+        end
     end
     
 end
@@ -308,3 +325,31 @@ else
     r = get(hnd,'string');
 end
 
+function [explode,ch_exp] = checkExplode(data)
+
+process = data.zoosystem.Processing;
+explode = false;
+for i = 1:length(process)
+    if strfind(process{i},'explode')
+        explode = true;
+    end
+end
+
+if explode
+    ch = data.zoosystem.Video.Channels;
+    ch_exp = cell(size(ch));
+    for i = 1:length(ch)
+        
+        if isempty(strfind(ch{i},'Angle'))
+            if ~isempty(strfind(ch{i},'_x'))
+                temp = ch{i};
+                ch_exp{i} = temp(1:end-2);
+            end
+        end
+    end
+    
+    ch_exp(cellfun(@isempty,ch_exp)) = [];
+    
+else
+    ch_exp = [];
+end

@@ -22,7 +22,10 @@ function varargout = props(action,varargin)
 %   some issues with correctly orienting the cop for some force plate
 %   orientations
 % - added creation of PiG bones-if available 
-
+%
+% Updated by Philippe C. Dixon Dec 2017
+% - Bug fix of 'ghost bones' for long trials (data in bones ud.dis was
+%   appearing in visualization. These are now rendered as NaNs)
 
 switch action
     
@@ -278,14 +281,14 @@ switch action
             object.marker = struct;
             object.cdata = get(hnd,'cdata');
             
-            for i = 1:length(mrk);
+            for i = 1:length(mrk)
                 object.marker(i).tag = get(mrk(i),'tag');
                 object.marker(i).position = mean(get(mrk(i),'vertices'));
             end
         end
         object.vertexnormals = get(hnd,'vertexnormals');
         [f,p] = uiputfile('*.prop');
-        if f == 0;
+        if f == 0
             return
         end
         save([p,f],'object');
@@ -296,19 +299,31 @@ switch action
         skate(hnd);
         
     case 'load'
-        
         filename = varargin{1};
         t = load(filename,'-mat');
-        if isfield(t.object,'association')|| isfield(t.object,'joint') || isfield(t.object,'vertices');
+        [f,p] = partitionfile(filename);
+        f = extension(f,'');
+        if strfind(p,'golembones')
             ud = t.object;
+            ud.dis = NaN*ud.dis; % removes 'ghost' data from bones
+        
+        elseif isfield(t.object,'association')|| isfield(t.object,'joint') || isfield(t.object,'vertices')
+            ud = t.object;
+       
+             if strfind(f,'one')
+                ud.color = [1 1 1];
+             end
+            
         else
             ud.vertices = t.object.vert;
             ud.faces = t.object.face;
+            
             if isfield(t.object,'cdata')
                 ud.cdata = t.object.cdata;
             else
                 ud.color = [.8 .8 .8];
             end
+            
             if ~isempty(fieldnames(t.object.marker))
                 ud.mvertices = [];
                 ud.mname = [];
@@ -318,8 +333,7 @@ switch action
                 end
             end
         end
-        [f,p] = partitionfile(filename);
-        f = extension(f,'');
+       
         if nargin == 2
             varargout{1} = createprop(ud,f);
         else
@@ -621,7 +635,7 @@ function c = createprop(ud,tg)
 
 % places prop at origin
 ax = finddobj('axes');
-if isfield(ud,'cdata');
+if isfield(ud,'cdata')
     cdata = ud.cdata;
     ud = rmfield(ud,'cdata');
 elseif isfield(ud,'bodypart')
@@ -655,7 +669,7 @@ c = patch('parent',ax,'tag',tg,'facecolor','flat','edgecolor','none','buttondown
     'FaceLighting','gouraud','createfcn','props(''createfcn'')','clipping','off','facevertexalphadata',1,'facealpha',.99);
 
 
-if isfield(ud,'vertexnormals');
+if isfield(ud,'vertexnormals')
     set(c,'vertexnormals',ud.vertexnormals);
 end
 
@@ -888,7 +902,7 @@ for i = 1:length(phnd)
         set(phnd(i),'vertices',vr,'faces',fc,'cdata',cdata,'vertexnormals',nvr);
         continue
         
-    elseif isfield(pud,'fx');
+    elseif isfield(pud,'fx')
         forceplate('refresh',phnd(i));
         continue
         
@@ -1375,9 +1389,6 @@ end
 
 function zooloadanalog(data)
 
-s = filesep;    % determine slash direction based on computer type
-
-
 d = which('director'); % returns path to ensemlber
 path = pathname(d) ;  % local folder where director resides
 
@@ -1389,6 +1400,7 @@ if ismember('F1X1',ach)
     data = kistlerGRF_data(data);
     ach =  data.zoosystem.Analog.Channels;
 end
+
 % attempt to catch 'standard' force plate channel names
 %
 fpch = cell(size(ach));
@@ -1405,7 +1417,6 @@ end
 
 fpch(cellfun(@isempty,fpch)) = [];     
 
-
 % compute cop in global coordinates
 if ~isempty(fpch)
     localOr = getFPLocalOrigin(data);
@@ -1420,13 +1431,20 @@ if ~isempty(fpch)
      for i = 1:nplates
          f = ['forceplate',num2str(i),'.prop'];
          file = engine('fld',path,'search file',f);
+        
          if isempty(file)
              error(['cannot locate file: ',f])
          end
-         prp = props('load',file{1});     
+         prp = props('load',file{1});  
          zooinsertdata(prp,fpch,data);
          setfporientation(prp,data,globalOr)    % set global orientation of FP
          getfpcop(prp,data)
+         
+         % add on number of plate
+         % if i==1
+         %    numPlate = engine('fld',path,'search file','one.prop');
+         %    numprp = props('load',numPlate{1});
+         % end
      end
     
 
@@ -1479,7 +1497,6 @@ end
 % move force plate
 pud.vertices = displace(pud.vertices,globalOr.(['FP',fpnum])*100);         %displace FP checked good
 
-
 set(phnd,'userdata',pud);
 
 
@@ -1493,7 +1510,7 @@ if isfield(pud,'fz')
     if isempty(indx)
         error('force field empty')
     end
-    if max(zdata.(ch{indx}).line) < 10;   % these are forces of body on ground
+    if max(zdata.(ch{indx}).line) < 10   % these are forces of body on ground
         conv = -1;
     else                                  % these are forces of ground on body
         conv = 1;
@@ -1542,7 +1559,7 @@ end
 
 function indx = myfindstr(cl,str1,str2)
 indx = [];
-for i = 1:length(cl);
+for i = 1:length(cl)
     if ~isempty(findstr(cl{i},str1)) && ~isempty(findstr(cl{i},str2))
         indx = i;
         return
@@ -1583,7 +1600,7 @@ hd = findobj(finddobj('axes'),'tag',[side,'Foot']);
 hud = get(hd,'userdata');
 if isempty(hud)
     return
-elseif isfield(hud,'ort');
+elseif isfield(hud,'ort')
     
     ort = hud.ort;
     ort = makeunit(ort);

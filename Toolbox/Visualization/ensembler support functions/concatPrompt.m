@@ -6,8 +6,17 @@ function prmt = concatPrompt(prmt,n)
 if nargin==1
     
     indx = strfind(prmt,filesep);
-    if length(indx) >1
-        prmt = prmt(indx(2):end);
+    if length(indx) > 6
+       prmt = prmt(indx(5):end);
+    elseif length(indx) > 5
+       prmt = prmt(indx(4):end);
+    elseif length(indx) > 4
+       prmt = prmt(indx(3):end);
+    elseif length(indx) > 3
+       prmt = prmt(indx(2):end);
+    elseif length(indx) > 2
+       prmt = prmt(indx(1):end);
+       
     end
     
 else

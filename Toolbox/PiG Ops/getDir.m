@@ -1,10 +1,11 @@
-function [data,walkDir] = getDir(data)
+function [data,walkDir] = getDir(data,ch)
 
 % [data,dir] = GETDIR(data,ch) determines the global axis and direction of
 % walking
 %
 % ARGUMENTS
 %  data    ... Zoo data
+%  ch      ... Channel to use to determine direction. Default 'SACR'
 %
 % RETURNS
 %  data    ... Zoo data with direction information added to 'data.zoosystem.CompInfo.Direction'
@@ -35,18 +36,24 @@ function [data,walkDir] = getDir(data)
 %
 % Updated Oct 2017
 % - Error check for files without 'OtherMetaInfo' in zoosystem
+%
+% Updated Dec 2017
+% - Bug fix for some Qualysis systems
+% - Bug fix for PiG data with 'RPSI/LPSI' instead of 'SACR'
 
 % Error Check / Set defaults
 %
-
-if isfield(data,'LPSI') && ~isfield(data,'SACR')
-    SACR = (data.LPSI.line + data.RPSI.line)/2;
-elseif isfield(data,'SACR')
-    SACR = data.SACR.line;
+if nargin==1
+    if isfield(data,'LPSI') && ~isfield(data,'SACR')
+        vec = (data.LPSI.line + data.RPSI.line)/2;
+    elseif isfield(data,'SACR')
+        vec = data.SACR.line;
+    else
+        error('getDir works with PiG data using SACR or L/R PSI markers')
+    end
 else
-    error('getDir works with PiG data using SACR or L/R PSI markers')
+    vec = data.(ch).line;
 end
-
 
 % determine type of trial
 %
@@ -57,7 +64,14 @@ else
         if isfield(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER,'Company')
             company = strjoin(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER.Company.data,'');
         elseif isfield(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER,'COMPANY')
+
+            if isfield(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER.COMPANY,'data')
+         
             company = strjoin(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER.COMPANY.data,'');
+            else
+               company =  strjoin(data.zoosystem.OtherMetaInfo.Parameter.MANUFACTURER.COMPANY.info.values,'');
+            end
+        
         else
             company = 'unknown';
         end
@@ -91,8 +105,8 @@ end
 %
 if static
     front = nanmean(data.RASI.line);
-    back = nanmean(data.SACR.line);
-    
+    back = nanmean(vec);
+  
     xr = front(1);
     yr = front(2);
     xs = back(1);
@@ -112,14 +126,14 @@ if static
     
 else
     
-    istart = find(~isnan(SACR(:,1)),1,'first');
-    iend = find(~isnan(SACR(:,1)),1,'last');
-    SACR = SACR(istart:iend,:);
+    istart = find(~isnan(vec(:,1)),1,'first');
+    iend = find(~isnan(vec(:,1)),1,'last');
+    vec = vec(istart:iend,:);
     
     % Determine if most of motion is along global X or Y
     %
-    X = abs(SACR(1,1)-SACR(end,1));
-    Y = abs(SACR(1,2)-SACR(end,2));
+    X = abs(vec(1,1)-vec(end,1));
+    Y = abs(vec(1,2)-vec(end,2));
     
     if Y > X % moving along Y
         axis = 'J';
@@ -131,11 +145,11 @@ else
     
     % determine which direction along known axis person is travelling
     %
-    SACR =  SACR(:,dim);
-    indx = ~isnan(SACR);
-    SACR = SACR(indx);
+    vec =  vec(:,dim);
+    indx = ~isnan(vec);
+    vec = vec(indx);
     
-    if SACR(1) >  SACR(end)  %
+    if vec(1) >  vec(end)  %
         dir = 'neg'; % negative slope
     else
         dir = 'pos';

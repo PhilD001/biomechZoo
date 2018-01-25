@@ -1,6 +1,6 @@
 function [version,date] = zooinfo
 
-% The biomechZoo biomechanics Toolbox Copyright (c) 2006-2017 (Main contributors)
+% The biomechZoo biomechanics Toolbox Copyright (c) 2006-2018 (Main contributors)
 %
 % Main contributors:
 % Philippe C. Dixon (PhD), Harvard University. Cambridge, USA.
@@ -31,6 +31,6 @@ function [version,date] = zooinfo
 
 help zooinfo
 
-version = '1.3.5';
-date = ' (December 2017)';
+version = '1.3.6';
+date = ' (January 2018)';
 disp(['  Latest version: ',num2str(version),date])

@@ -34,6 +34,10 @@ function [nr,nlength]=normalize_line(r,datalength,method)
 % Updated by Philippe C. Dixon Oct 2017
 % - Default setting bug fix for users running this function directly with a 
 %   single argument 
+%
+% Updated by Philippe C. Dixon Dec 2017
+% - Bug fix for data that contains all NaN. Now NaN data will remain, but
+%   will be returned of length datalength-1
 
 % Set defaults
 %
@@ -66,12 +70,14 @@ for i = 1:cols
     xxd(nindx) = [];
     yyd = yd;
     yyd(nindx) = [];
+ 
     if isempty(yyd)
-        nr = [];
-        return
+        nr = NaN*ones(datalength+1,1);            % new code PD
+        % nr = [];                                % JJ original code
+    else
+        nr(:,i) = interp1(xxd,yyd,id,method);     % interpolation using default linear interpolation
     end
    
-    nr(:,i) = interp1(xxd,yyd,id,method);         % interpolation using default linear interpolation      
     
 end
 nlength = length(nr);

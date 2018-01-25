@@ -68,7 +68,7 @@ if isempty(order)
     indx = str2num(char(a(:,2)));
     
     if isequal(indx,nums')     % user modified left column
-        error('please modify number order in right column')
+       ensembler_msgbox('','please modify number order in right column')
     end
     
     if ~isequal(sort(indx),nums')
