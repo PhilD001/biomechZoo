@@ -1,7 +1,6 @@
 function data = renamechannel_data(data,och,nch)
 
 % data = RENAMECHANNEL_DATA(data,och,nch) renames zoo channels 
-
 % ARGUMENTS
 %  data  ...  zoo file
 %  och   ...  Name of old channels (cell array of strings or single string) e.g. {'ch1','ch2'}

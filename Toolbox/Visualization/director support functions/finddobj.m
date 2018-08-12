@@ -1,8 +1,33 @@
 function varargout = finddobj(action,varargin)
 
+% varargout =  FINDDOBJ(action,varargin) is a function for short hand
+% finding of obejcts in director
+
 switch action
+    
+    
     case 'figure'
-        varargout{1} = findobj('tag','space','type','figure');
+        
+        tab = findobj('type','uitab');
+        if ~isempty(tab)
+            varargout{1} = findobj('tag','space');
+            
+            check = true;
+            count = 2;
+            while check
+                t = get(tab(count),'Title');
+                if strcmp(t,'Director')
+                    varargout{2} = tab(count);
+                    check = false;
+                else
+                    count = count+1;
+                end
+            end
+        else
+            varargout{1} = findobj('tag','space','type','figure');
+            varargout{2} = varargout{1};
+        end
+        
     case 'axes'
         varargout{1} = findobj(finddobj('figure'),'type','axes','units','normalized','tag','space');
     case 'person menu'
@@ -27,7 +52,8 @@ switch action
         end
     case 'frame'
         if nargin == 1
-            varargout{1} = findobj('parent',finddobj('figure'),'tag','frame','style','text');
+            % varargout{1} = findobj('parent',finddobj('figure'),'tag','frame','style','text');
+            varargout{1} = findobj('tag','frame','style','text');
         else
             varargout{1} = str2num(get(finddobj('frame'),'string'));
         end
@@ -38,7 +64,7 @@ switch action
             ac = varargin{1};
             hnd = finddobj('special object');
             stk = [];
-            for i = 1:length(hnd);
+            for i = 1:length(hnd)
                 ud = get(hnd(i),'userdata');
                 d = ud.data;
                 for j = 1:length(d)
@@ -52,12 +78,12 @@ switch action
         end
     case 'units'
         if nargin == 1
-            fig = finddobj('figure');
-            unt = findobj(fig,'style','togglebutton','callback','director(''units'')');
+            %fig = finddobj('figure');
+            unt = findobj('style','togglebutton','callback','director(''units'')');
             varargout{1} = findobj(unt,'value',1);
             varargout{2} = unt;
         elseif nargin == 2
-            [a,hnd] = finddobj('units');
+            [~,hnd] = finddobj('units');
             switch varargin{1}
                 case 'displacement'
                     varargout{1} = findobj(hnd,'tag','displacement');
@@ -84,7 +110,7 @@ switch action
         varargout{1} = ac;
     case 'marker'
         varargout{1} = findobj(finddobj('axes'),'createfcn','marker(''createfcn'')');
-                
+        
     case 'props'
         if nargin ==1
             varargout{1} = findobj(finddobj('axes'),'createfcn','props(''createfcn'')');
@@ -104,7 +130,7 @@ switch action
                     end
                     varargout{1} = stk;
             end
-        end                                    
+        end
     case 'accessory'
         varargout{1} = findobj(finddobj('axes'),'buttondownfcn','accessoryfxn(''buttondown'')');
     case 'graph'
@@ -133,7 +159,7 @@ switch action
         ax = finddobj('axes');
         fig = finddobj('figure');
         h1 = findobj(fig,'style','pushbutton','tag','specialobject');
-        h2 = findobj(ax,'tag','costumepointer');        
+        h2 = findobj(ax,'tag','costumepointer');
         h3 = findobj(ax,'tag','bomb1');
         h4 = findobj(ax,'tag','bomb2');
         h5 = findobj(ax,'tag','bomb3');
@@ -164,5 +190,5 @@ switch action
                 varargout{1} = findobj(finddobj('axes'),'tag',varargin{1});
         end
 end
-        
+
 end

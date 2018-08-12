@@ -85,8 +85,11 @@ function evalFile = eventval(varargin)
 % - Bug fix: skips files with missing conditions
 %
 % Updated by Philippe C. Dixon May 2017
-% - error check for forgetting '.' in extension 
-
+% - error check for forgetting '.' in extension
+%
+% Updated by Philippe C. Dixon March 2018
+% - added 'summary' sheet with all events from all channels grouped
+% - not verified with global events
 
 % tic  % start calculation timer
 
@@ -208,7 +211,7 @@ else
     if length(jfl)~=6
         batchdisp('','missing java files')
     end
-   
+    
     javaaddpath(jfl{1});    % for loop seems to fail on some platforms
     javaaddpath(jfl{2});
     javaaddpath(jfl{3});
@@ -324,7 +327,7 @@ ecell2 = {'E','G','I','K','M','O','Q','S','U','W','Y','AA','AC','AE','AG','AI','
 for i = 1:length(fl)
     batchdisp(fl{i},'Extracting data to spreadsheet')
     
-    fileNum = i;            
+    fileNum = i;
     
     % Load zoo file and extract filename
     %
@@ -404,6 +407,7 @@ for i = 1:length(fl)
         error(['subject ',subject, ' not in list of subjects'])
     end
     
+    summary_offset = 1;
     for j = 1:length(chnames)               % set the basic structure of spreadsheet
         initialpos = 0;
         chname = chnames{j};
@@ -414,6 +418,20 @@ for i = 1:length(fl)
         end
         
         if strcmp(excelserver,'on')
+            
+            % additional 'summary' sheet
+            if j==1
+                xlswrite1(evalFile,{'SUBJECT'},'summary','A1');
+                xlswrite1(evalFile,{'CONDITION'},'summary','B1');
+                xlswrite1(evalFile,{'TRIAL'},'summary','C1');
+                xlswrite1(evalFile,{'EVENT'},'summary','F1');
+                
+                xlswrite1(evalFile,{fname},'summary',['C',num2str(initialpos+3+fileNum)]);
+                xlswrite1(evalFile,{subject},'summary',['A',num2str(initialpos+3+fileNum)]);
+                xlswrite1(evalFile,{con},'summary',['B',num2str(initialpos+3+fileNum)]);
+            end
+            
+            
             xlswrite1(evalFile,{'SUBJECT'},chname,'A1');
             xlswrite1(evalFile,{'CONDITION'},chname,'B1');
             xlswrite1(evalFile,{'TRIAL'},chname,'C1');
@@ -422,7 +440,24 @@ for i = 1:length(fl)
             xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
             xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
             xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
+            
+            
+            
         else
+            
+            % extra 'summary' sheet
+            if j==1
+                xlwrite(evalFile,{'SUBJECT'},'summary','A1');
+                xlwrite(evalFile,{'CONDITION'},'summary','B1');
+                xlwrite(evalFile,{'TRIAL'},'summary','C1');
+                xlwrite(evalFile,{'EVENT'},'summary','F1');
+                
+                xlwrite(evalFile,{fname},'summary',['C',num2str(initialpos+3+fileNum)]);
+                xlwrite(evalFile,{subject},'summary',['A',num2str(initialpos+3+fileNum)]);
+                xlwrite(evalFile,{con},'summary',['B',num2str(initialpos+3+fileNum)]);
+            end
+            
+            
             xlwrite(evalFile,{'SUBJECT'},chname,'A1');
             xlwrite(evalFile,{'CONDITION'},chname,'B1');
             xlwrite(evalFile,{'TRIAL'},chname,'C1');
@@ -431,15 +466,17 @@ for i = 1:length(fl)
             xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
             xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
             xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
-        end                               % create headers
+            
+            
+        end
         
         % write global events
         %
-        for k = 1:length(globalevtnames)
-            evt = findfield(data,globalevtnames{k});          % 1st found is right one
+        for g = 1:length(globalevtnames)
+            evt = findfield(data,globalevtnames{g});          % 1st found is right one
             
             if isempty(evt)
-                error(['missing ',globalevtnames{k},' event']);
+                error(['missing ',globalevtnames{g},' event']);
             end
             
             xd = evt(1);
@@ -453,26 +490,47 @@ for i = 1:length(fl)
             if isnan(yd)
                 yd=999;
                 disp(' ')
-                disp(['the global event ',globalevtnames{k}, ' corresponds to a NaN in the local ch ',chnames{j}])
+                disp(['the global event ',globalevtnames{g}, ' corresponds to a NaN in the local ch ',chnames{j}])
                 disp('replacing your event with NaNs')
                 disp(' ')
             end
             
             if strcmp(excelserver,'on')
-                xlswrite1(evalFile,{globalevtnames(k)},chname,[ecell1{k},'2']);
-                xlswrite1(evalFile,{'xdata'},chname,[ecell1{k},'3']);
-                xlswrite1(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
-                xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]);
+                xlswrite1(evalFile,{globalevtnames(g)},chname,[ecell1{g},'2']);
+                xlswrite1(evalFile,{'xdata'},chname,[ecell1{g},'3']);
+                xlswrite1(evalFile,{'ydata'},chname,[ecell2{g},'3']);
+                xlswrite1(evalFile,xd,chname,[ecell1{g},num2str(3+fileNum)]);
+                xlswrite1(evalFile,yd,chname,[ecell2{g},num2str(3+fileNum)]);
+                
+                % summary sheet
+                xlswrite1(evalFile,{globalevtnames(g)},'summary',[ecell1{g},'2']);
+                xlswrite1(evalFile,{'xdata'},'summary',[ecell1{g},'3']);
+                xlswrite1(evalFile,{'ydata'},'summary',[ecell2{g},'3']);
+                xlswrite1(evalFile,xd,'summary',[ecell1{g},num2str(3+fileNum)]);
+                xlswrite1(evalFile,yd,'summary',[ecell2{g},num2str(3+fileNum)]);
+                
+                
             else
-                xlwrite(evalFile,{globalevtnames(k)},chname,[ecell1{k},'2']);
-                xlwrite(evalFile,{'xdata'},chname,[ecell1{k},'3']);
-                xlwrite(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
-                xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]);
+                xlwrite(evalFile,{globalevtnames(g)},chname,[ecell1{g},'2']);
+                xlwrite(evalFile,{'xdata'},chname,[ecell1{g},'3']);
+                xlwrite(evalFile,{'ydata'},chname,[ecell2{g},'3']);
+                xlwrite(evalFile,xd,chname,[ecell1{g},num2str(3+fileNum)]);
+                xlwrite(evalFile,yd,chname,[ecell2{g},num2str(3+fileNum)]);
+                
+                % summary sheet
+                xlwrite(evalFile,{globalevtnames(g)},'summary',[ecell1{g},'2']);
+                xlwrite(evalFile,{'xdata'},'summary',[ecell1{g},'3']);
+                xlwrite(evalFile,{'ydata'},'summary',[ecell2{g},'3']);
+                xlwrite(evalFile,xd,'summary',[ecell1{g},num2str(3+fileNum)]);
+                xlwrite(evalFile,yd,'summary',[ecell2{g},num2str(3+fileNum)]);
+                
             end
+            summary_offset = summary_offset+1; 
             
-            
+        end
+        
+        if isempty(g)
+            g = 0;
         end
         
         % Write local events
@@ -496,6 +554,13 @@ for i = 1:length(fl)
                     xlswrite1(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
                     xlswrite1(evalFile,xd,chname,[ecell1{n+offset},num2str(3+fileNum)]);
                     xlswrite1(evalFile,yd,chname,[ecell2{n+offset},num2str(3+fileNum)]);
+                    
+                    %extra summary sheet
+                    xlswrite1(evalFile,{[chname,'_',localevtnames{n}]},'summary',[ecell1{g+n+offset},'2']);
+                    xlswrite1(evalFile,{'xdata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
+                    xlswrite1(evalFile,{'ydata'},'summary',[ecell2{g+n+offset+summary_offset},'3']);
+                    xlswrite1(evalFile,xd,'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
+                    xlswrite1(evalFile,yd,'summary',[ecell2{g+n+offset+summary_offset},num2str(3+fileNum)]);
                 else
                     xlwrite(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
                     xlwrite(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
@@ -503,17 +568,24 @@ for i = 1:length(fl)
                     xlwrite(evalFile,xd,chname,[ecell1{n+offset},num2str(3+fileNum)]);
                     xlwrite(evalFile,yd,chname,[ecell2{n+offset},num2str(3+fileNum)]);
                     
+                    % extra summary sheet
+                    xlwrite(evalFile,{[chname,'_',localevtnames{n}]},'summary',[ecell1{g+n+offset+summary_offset},'2']);
+                    xlwrite(evalFile,{'xdata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
+                    xlwrite(evalFile,{'ydata'},'summary',[ecell2{g+n+offset+summary_offset},'3']);
+                    xlwrite(evalFile,xd,'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
+                    xlwrite(evalFile,yd,'summary',[ecell2{g+n+offset+summary_offset},num2str(3+fileNum)]);
                 end
                 
+                summary_offset = summary_offset+1;
+
+                
             else
-                disp(['no event ',localevtnames{n},' in channel ',chnames{j}])
-                
+                disp(['no event ',localevtnames{n},' in channel ',chnames{j}])                
                 offset = offset-1;
-                
-                
             end
-            
+
         end
+        
         
     end
     
@@ -555,7 +627,7 @@ for i = 1:length(fl)
             
             if ~isnumeric(yd)
                 disp('non numeric anthro event')
-               
+                
             end
             
             if iscell(anthroevtnames)
@@ -570,14 +642,30 @@ for i = 1:length(fl)
                 xlswrite1(evalFile,{'ydata'},chname,[ecell2{k},'3']);
                 xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
                 xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]); % edit {yd}
+                
+                % extra summary sheet
+                xlswrite1(evalFile,{canthroevtnames},'summary',[ecell1{k+n+offset+summary_offset-1},'2']);
+                xlswrite1(evalFile,{'xdata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
+                xlswrite1(evalFile,{'ydata'},'summary',[ecell2{k+n+offset+summary_offset-1},'3']);
+                xlswrite1(evalFile,xd,'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
+                xlswrite1(evalFile,yd,'summary',[ecell2{k+n+offset+summary_offset-1},num2str(3+fileNum)]); % edit {yd}
+                
             else
                 xlwrite(evalFile,{canthroevtnames},chname,[ecell1{k},'2']);
                 xlwrite(evalFile,{'xdata'},chname,[ecell1{k},'3']);
                 xlwrite(evalFile,{'ydata'},chname,[ecell2{k},'3']);
                 xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
                 xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]); % edit {yd}
+                
+                %extra summary sheet
+                xlwrite(evalFile,{canthroevtnames},'summary',[ecell1{k+n+offset+summary_offset-1},'2']);
+                xlwrite(evalFile,{'xdata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
+                xlwrite(evalFile,{'ydata'},'summary',[ecell2{k+n+offset+summary_offset-1},'3']);
+                xlwrite(evalFile,xd,'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
+                xlwrite(evalFile,yd,'summary',[ecell2{k+n+offset+summary_offset-1},num2str(3+fileNum)]); % edit {yd}
+
             end
-            
+            summary_offset = summary_offset+1;
         end
         
     end

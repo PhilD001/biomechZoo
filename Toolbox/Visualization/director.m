@@ -58,6 +58,12 @@ function director(action,varargin)
 %
 % Updated by Philippe C. Dixon Dec 2017
 % - improved usability with 'close file' button
+%
+% Updated by Philippe C. Dixon April 2018
+% - Major improvements to GUI layout including: 
+% (1) selectable file tree to choose which markers/graph to display
+% (2) normalization of object positionning to improve resizing
+
 
 
 global producer;
@@ -65,72 +71,70 @@ global p;
 global f;
 global data;
 
+
 % default settings
 %
 xcol = [1 0 0]; % red color for x axis arrow
 ycol = [0 1 0]; % green color for y axis arrows
 zcol = [0 0 1]; % blue color for z axis arrows
+y_baseline = 0.03; % normalized offset from bottom of director for objects
+x_baseline = 0.18;
 
+button_col = [18/255 99/255 150/255];  % color from website
+panel_col =  [18/255 99/255 150/255]; %[0.90 0.90 0.90];   % gray
+lbl_col = 'w';                  % color for graph window text
+
+
+
+% Data graph embedded in director window
+%
+% bkg_col = 'w';         % background color for graph window
+%graph_legend = false;  % show a legend for the graph (boolean)
+
+units = 'normalized';
+ud = struct;                   % set up user data struct
+ud.mark = [];
+
+lbl = (-1000:100:1000);
+
+director_color = [0 0 0];       % color of director background
+xlim = [-1000 1000];
+ylim = [-1000 1000];
+zlim = [0 500];
+initial_camera_pos = [200 200 250]*5;
 
 if nargin ==0
-    action = 'space';
+    action = 'start director';
 end
 
-% disp(action)
+disp(action)
 
 switch action
     
-    case 'space'
+    case 'start director'
+        director('set space')
+        director('set ui')
         
-        if ~isempty(finddobj('figure'))
-            delete(findobj('type','figure','tag','space'));
+    case 'set space'
+        [~,phnd] = finddobj('figure');
+        if isempty(phnd)
+            phnd = figure('tag','space','color',[0 0 0],'name','director','menubar','none','numbertitle','off',...
+                'keypressfcn','dkeypress','buttondownfcn','director(''buttondown'')','doublebuffer','on',...
+                'units','normalized','resizefcn','director(''resize'')','position',[0.1 0.1 0.8 0.8]);
         end
         
-        fig = figure('tag','space','color',[0 0 0],'name','director',...
-            'menubar','none','numbertitle','off','keypressfcn','dkeypress',...
-            'buttondownfcn','director(''buttondown'')','doublebuffer','on','units','centimeters','resizefcn','director(''resize'')','position',[2 2 30 18]);
+        % create main panel (director space)
+        %
+        ax = axes('parent',phnd,'units',units,'position',[0 0 1 1],'dataaspectratio',[1 1 1],...
+            'color',director_color,'xcolor',[0 0 0],'ycolor',[0 0 0],'zcolor',[0 0 0],'xtick',[],...
+            'ytick',[],'ztick',[],'buttondownfcn','cameraman(''buttondown'');','view',[114 25],...
+            'visible','on','userdata',ud,'tag','space','cameraviewanglemode','manual','xlim',xlim,...
+            'ylim',ylim,'zlim',zlim,'xtickmode','auto','ytickmode','auto','xgrid','off',...
+            'ygrid','off','cameraposition',initial_camera_pos,'cameratarget',[0 0 0],'xtick',lbl,...
+            'ytick',lbl,'xticklabel',[],'yticklabel',[],'gridlinestyle','-','cameraviewangle',10);
         
-        ud.mark = [];
-        lbl = (-1000:100:1000);
-        
-        ax = axes('parent',fig,'units','normalized','position',[0 0 1 1],'dataaspectratio',[1 1 1],'color',[0 0 0],...
-            'xcolor',[0 0 0],'ycolor',[0 0 0],'zcolor',[0 0 0],'xtick',[],'ytick',[],'ztick',[],'buttondownfcn','cameraman(''buttondown'');',...
-            'view',[114 25],'visible','on','userdata',ud,'tag','space','cameraviewanglemode','manual','xlim',[-1000 1000],'ylim',[-1000 1000],'zlim',[0 500],...
-            'xtickmode','auto','ytickmode','auto','xgrid','off','ygrid','off','cameraposition',[200 200 250]*5,'cameratarget',[0 0 0],...
-            'xtick',lbl,'ytick',lbl,'xticklabel',[],'yticklabel',[],'gridlinestyle','-','cameraviewangle',10);
-        
-        light('position',get(ax,'cameraposition'),'buttondownfcn','cameraman(''buttondown'')','parent',ax,'tag','camera light','style','local');
-        cm = uicontextmenu('tag','main','callback','director(''contextmenu'')');
-        
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','load zoo','position',[0.1 0.7 3 .5],'string','Load File','callback','director(''open'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','load zoo','position',[0.1 0.1 3 .5],'string','Close File','callback','director(''close'')');  
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','clear all objects','position',[3.5 0.1 3 .5],'string','Delete Objects','callback','director(''clear all objects'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','delete graph','position',[3.5 0.7 3 0.5],'string','Delete Graph','callback','director(''delete graph'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','first position','position',[6.9 0.1 2 0.5],'string','First Frame','callback','director(''first position'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','play','position',[10 0.1 2 0.5],'string','Play','callback','director(''preview'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[.1 .1 .1],'foregroundcolor',[1 1 1],...
-            'tag','button stop','position',[10 .1 2 .5],'string','Stop','callback','director(''button stop'')','visible','off');
-        
-        uicontrol('style','text','units','centimeters','backgroundcolor',[0 0 0],'foregroundcolor',[1 1 1],...
-            'tag','frame','position',[24.75 .1 1.5 .7],'string','1','FontSize',14);
-        
-        % -----------------    uicontrol turned off ---------------
-        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.9 .9 .9],'foregroundcolor',[0 0 0],...
-            'tag','displacement','position',[1 1.5 1.2 .5],'string','1 cm','userdata',1,'callback','director(''units'')',...
-            'deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
-        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.8 .8 .8],'foregroundcolor',[0 0 0],...
-            'tag','angle','position',[4.6 .1 1.2 .5],'string','1 deg','userdata',1,'callback','director(''units'')',...
-            'deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
-        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.8 .8 .8],'foregroundcolor',[0 0 0],...
-            'tag','volume','position',[5.9 .1 1.2 .5],'string','1 cm3','userdata',1,'callback','director(''units'')',...
-            'deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
-        % ---------------------------------------------------------
+        light('position',get(ax,'cameraposition'),'buttondownfcn','cameraman(''buttondown'')',...
+            'parent',ax,'tag','camera light','style','local');
         
         xd = [lbl,lbl];
         xd(1:2:end) = lbl;
@@ -143,16 +147,24 @@ switch action
         
         nyd = [yd,fliplr(xd)];
         nxd = [xd,yd];
-        line('parent',ax,'xdata',nxd,'ydata',nyd,'zdata',zeros(size(nyd)),'color',[0 0 0],'buttondownfcn','cameraman(''buttondown'');','tag','camera grid');
         
-        ax2 = axes('unit','centimeters','position',[0 0 3 3],'cameraviewangle',40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],...
-            'visible','off','tag','orientation window');
-        [x,y,z] = arrow([0 0 0],[1 0 0],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',xcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','x');
-        [x,y,z] = arrow([0 0 0],[0 1 0],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',ycol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','y');
-        [x,y,z] = arrow([0 0 0],[0 0 1],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',zcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','z');
+        line('parent',ax,'xdata',nxd,'ydata',nyd,'zdata',zeros(size(nyd)),'color',[0 0 0],...
+            'buttondownfcn','cameraman(''buttondown'');','tag','camera grid');
+        
+        ax2 = axes('parent',phnd,'unit','normalized','position',[0.75 0.75 .25 .25],'cameraviewangle',...
+            40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],'visible','off','tag','orientation window');
+        
+        [x,y,z] = arrow([0 0 0],[1 0 0],10);
+        surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',xcol,'edgecolor','none','facelighting','gouraud',...
+            'tag','x','buttondownfcn','director(''orientation_buttondown'')');
+        
+        [x,y,z] = arrow([0 0 0],[0 1 0],10);
+        surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',ycol,'edgecolor','none','facelighting','gouraud',...
+            'tag','y','buttondownfcn','director(''orientation buttondown'')');
+        
+        [x,y,z] = arrow([0 0 0],[0 0 1],10);
+        surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',zcol,'edgecolor','none','facelighting','gouraud',...
+            'tag','z','buttondownfcn','director (''orientation buttondown'')');
         
         light('parent',ax2,'position',[3 0 0]);
         director('units load');
@@ -162,9 +174,65 @@ switch action
         producer.grips = struct;
         director('person','director');
         warning off;
-        director('resize')
-        
         set(findobj('type','uicontrol'),'units','normalized');
+        
+    case 'set ui'
+        
+        [~,phnd]  = finddobj('figure');
+        cm = uicontextmenu('tag','main','callback','director(''contextmenu'')');
+        
+        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
+            'tag','load zoo','position',[x_baseline y_baseline 0.05 0.05],'string','Load File','callback','director(''open'')');
+        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
+            'tag','load zoo','position',[x_baseline y_baseline 0.05 0.05],'string','Close File','callback','director(''close'')','visible','off');
+        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
+            'tag','first position','position',[x_baseline+0.12 y_baseline 0.08 0.05],'string','First Frame','callback','director(''first position'')','visible','off');
+        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
+            'tag','play','position',[x_baseline+0.06 y_baseline 0.05 0.05],'string','Play','callback','director(''preview'')','visible','off');
+        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
+            'tag','button stop','position',[x_baseline+0.06 y_baseline 0.05 0.05],'string','Stop','callback','director(''button stop'')','visible','off');
+        uicontrol('parent',phnd,'style','text','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
+            'tag','frame','position',[x_baseline+0.68 y_baseline 0.035 0.05],'string','1','FontSize',14);
+         
+        % -----------------    uicontrol turned off ---------------
+        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
+            'foregroundcolor',[0 0 0],'tag','displacement','position',[x_baseline+0.72 y_baseline 0.05 0.05],'string','5 cm','userdata',5,...
+            'callback','director(''units'')','deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
+        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
+            'foregroundcolor',[0 0 0],'tag','angle','position',[0.6 0.1 1.2 .5],'string','1 deg','userdata',1,...
+            'callback','director(''units'')','deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
+        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
+            'foregroundcolor',[0 0 0],'tag','volume','position',[0.9 0.1 1.2 .5],'string','1 cm3','userdata',1,...
+            'callback','director(''units'')','deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
+       
+        % -------------
+        
+        % view options panel
+        %
+        panel_hnd =  uipanel('parent',phnd,'Title','File info','FontSize',12,'Tag','spacer',...
+            'BackgroundColor',panel_col,'Position',[0 0.9 0.15 0.1]);
+        
+        uicontrol('parent',panel_hnd,'style','text','units','normalized','backgroundcolor',[1 1 1],'foregroundcolor',[0 0 0],...
+            'tag','file info','position',[0.02 0.3 0.9 0.5],'string','none','FontSize',12);
+       
+        uipanel('parent',phnd,'Title','','FontSize',12,'Tag','options panel',...
+            'BackgroundColor','white','Position',[0 0 0.15 0.9]);
+        
+%         uicontrol('parent',settings_hnd ,'style','pushbutton','units','normalized','backgroundcolor',[0.8 0.8 0.8],'foregroundcolor',[0 0 0],...
+%             'tag','data','position',[0.01 0.85 0.2 0.05],'string','data','callback','director(''data tree'')');
+        
+%         uicontrol('parent',settings_hnd ,'style','text','units','normalized','backgroundcolor',[1 1 1],'foregroundcolor',[0.1 0.1 0.1],...
+%             'position',[0.6 0.9 0.2 0.05],'string','Model');
+        
+%         uicontrol('parent',settings_hnd ,'style','text','units','normalized','backgroundcolor',[1 1 1],'foregroundcolor',[0.1 0.1 0.1],...
+%             'position',[0.8 0.9 0.2 0.05],'string','Graph');
+        
+%         uicontrol('parent',settings_hnd ,'style','checkbox','units','normalized','Position', [0.93 0.97 0.28 0.03],...
+%             'callback','director(''toggle settings'')','Value',1)
+%         
+        
+        
+    case 'update model'   % used by tabbed director version
         
     case 'save'
         
@@ -185,7 +253,7 @@ switch action
         ax = finddobj('axes');
         delete(findobj(ax,'type','patch'));
         delete(findobj(ax,'type','surface'));
-       % director('cleanup')
+        % director('cleanup')
         
     case 'delete graph'
         
@@ -208,103 +276,26 @@ switch action
         set(findobj('tag','open graph'),'Visible','off');
         set(findobj('tag','delete graph'),'Visible','on');
         
-        
     case 'close'
         
         % find existing director figure
         %
-        fig = findobj('type','figure','tag','space');
-        position = get(fig,'position');
+        fig = finddobj('figure');
         
-        % delete everything in existing director figure
-        %
-        hnd = allchild(fig);
-        delete(hnd)
+        patch_hnd = findobj(fig,'type','patch');
+        delete(patch_hnd)
         
-        % reset everything in figure
-        %
-        set(fig,'tag','space','color',[0 0 0],'name','director',...
-            'menubar','none','numbertitle','off','keypressfcn','dkeypress',...
-            'buttondownfcn','director(''buttondown'')','doublebuffer','on','units','centimeters','resizefcn','director(''resize'')','position',position);
+        set(findobj('tag','first position'),'visible','off')
+        set(findobj('tag','play'),'visible','off')
+        set(findobj('tag','load zoo','string','Load File'),'visible','on')
+        set(findobj('tag','load zoo','string','Close File'),'visible','off')
+        set(findobj('type','uicontrol','string',f),'string','none')
+        delete(findobj('style','slider'))
+        delete(findobj('style','listbox'))
+        delete(findobj('tag','data display'))
         
-        ud.mark = [];
-        lbl = (-1000:100:1000);
-        
-        ax = axes('parent',fig,'units','normalized','position',[0 0 1 1],'dataaspectratio',[1 1 1],'color',[0 0 0],...
-            'xcolor',[0 0 0],'ycolor',[0 0 0],'zcolor',[0 0 0],'xtick',[],'ytick',[],'ztick',[],'buttondownfcn','cameraman(''buttondown'');',...
-            'view',[114 25],'visible','on','userdata',ud,'tag','space','cameraviewanglemode','manual','xlim',[-1000 1000],'ylim',[-1000 1000],'zlim',[0 500],...
-            'xtickmode','auto','ytickmode','auto','xgrid','off','ygrid','off','cameraposition',[200 200 250]*5,'cameratarget',[0 0 0],...
-            'xtick',lbl,'ytick',lbl,'xticklabel',[],'yticklabel',[],'gridlinestyle','-','cameraviewangle',10);
-        
-        light('position',get(ax,'cameraposition'),'buttondownfcn','cameraman(''buttondown'')','parent',ax,'tag','camera light','style','local');
-        cm = uicontextmenu('tag','main','callback','director(''contextmenu'')');
-        
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','load zoo','position',[0.1 0.7 3 .5],'string','Load File','callback','director(''open'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','load zoo','position',[0.1 0.1 3 .5],'string','Close File','callback','director(''close'')');  
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','clear all objects','position',[3.5 0.1 3 .5],'string','Delete Objects','callback','director(''clear all objects'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','delete graph','position',[3.5 0.7 3 0.5],'string','Delete Graph','callback','director(''delete graph'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','first position','position',[6.9 0.1 2 0.5],'string','First Frame','callback','director(''first position'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[0.1 0.1 0.1],'foregroundcolor',[1 1 1],...
-            'tag','play','position',[10 0.1 2 0.5],'string','Play','callback','director(''preview'')');
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[.1 .1 .1],'foregroundcolor',[1 1 1],...
-            'tag','button stop','position',[10 .1 2 .5],'string','Stop','callback','director(''button stop'')','visible','off');
-        
-        uicontrol('style','text','units','centimeters','backgroundcolor',[0 0 0],'foregroundcolor',[1 1 1],...
-            'tag','frame','position',[24.75 .1 1.5 .7],'string','1','FontSize',14);
-        
-        % -----------------    uicontrol turned off ---------------
-        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.9 .9 .9],'foregroundcolor',[0 0 0],...
-            'tag','displacement','position',[1 1.5 1.2 .5],'string','1 cm','userdata',1,'callback','director(''units'')',...
-            'deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
-        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.8 .8 .8],'foregroundcolor',[0 0 0],...
-            'tag','angle','position',[4.6 .1 1.2 .5],'string','1 deg','userdata',1,'callback','director(''units'')',...
-            'deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
-        uicontrol('style','togglebutton','units','centimeters','backgroundcolor',[.8 .8 .8],'foregroundcolor',[0 0 0],...
-            'tag','volume','position',[5.9 .1 1.2 .5],'string','1 cm3','userdata',1,'callback','director(''units'')',...
-            'deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
-        % ---------------------------------------------------------
-        
-        xd = [lbl,lbl];
-        xd(1:2:end) = lbl;
-        xd(2:2:end) = lbl;
-        yd = xd;
-        yd(1:4:end) = max(lbl);
-        yd(2:4:end) = min(lbl);
-        yd(3:4:end) = min(lbl);
-        yd(4:4:end) = max(lbl);
-        
-        nyd = [yd,fliplr(xd)];
-        nxd = [xd,yd];
-        line('parent',ax,'xdata',nxd,'ydata',nyd,'zdata',zeros(size(nyd)),'color',[0 0 0],'buttondownfcn','cameraman(''buttondown'');','tag','camera grid');
-        
-        ax2 = axes('unit','centimeters','position',[0 0 3 3],'cameraviewangle',40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],...
-            'visible','off','tag','orientation window');
-        [x,y,z] = arrow([0 0 0],[1 0 0],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',xcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','x');
-        [x,y,z] = arrow([0 0 0],[0 1 0],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',ycol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','y');
-        [x,y,z] = arrow([0 0 0],[0 0 1],20);
-        surface('xdata',x,'ydata',y,'zdata',z,'facecolor',zcol,'edgecolor','none','buttondownfcn','director(''orientation buttondown'')','facelighting','gouraud','tag','z');
-        
-        light('parent',ax2,'position',[3 0 0]);
-        director('units load');
-        producer.mov = [];
-        producer.cut = 0;
-        producer.gravity = 1;
-        producer.grips = struct;
-        director('person','director');
-        warning off;
-        director('resize')
-        
-        set(findobj('type','uicontrol'),'units','normalized');
-                
     case 'open'
-        
+        [~,phnd] = finddobj('figure');
         director('clear all objects')
         director('load bones');       % loads the bone props
         
@@ -320,44 +311,52 @@ switch action
         delete(finddobj('graph'));
         
         set(findobj('tag','open graph'),'Visible','off');
-     
+        
         switch lower(ext)
             
             case {'.zoo','.c3d'}
                 
-                if isin(ext,'.zoo')
-                    % distributedata([p,f],'zoo');  % doesn't seem to be needed
-                    data = marker('load zoo',[p,f]);
-                else
-                    data = marker('load c3d',[p,f]);
-                end
-                
+                data = marker('load file',[p,f]);
+             
                 video_chns = data.zoosystem.Video.Channels;
-                all_chns = setdiff(fieldnames(data),'zoosystem');
+                %all_chns = setdiff(fieldnames(data),'zoosystem');
                 
                 % Attempt to limit marker list to 'true' markers
                 %
-                all = cell(size(all_chns));
+                %all = cell(size(all_chns));
                 
-                for i = 1:length(all_chns)
-                    
-                    if ~isin(all_chns{i},{'star'})
-                        all{i} = all_chns{i};
-                    end
-                    
-                end
+                %for i = 1:length(all_chns)
+                %    
+                %    if ~isin(all_chns{i},{'star'})
+                %         all{i} = all_chns{i};
+                %    end
+                %    
+                % end
                 
-                all(cellfun(@isempty,all)) = [];
-                all_chns = all;
-                uicontrol('style','slider','units','centimeters','position',[13 0.1 12 0.5],...
+                % all(cellfun(@isempty,all)) = [];
+                % all_chns = all;
+                
+                % update visibility of play buttons
+                %
+                set(findobj('tag','first position'),'visible','on')
+                set(findobj('tag','play'),'visible','on')
+                set(findobj('tag','load zoo','string','Close File'),'visible','on')
+                set(findobj('tag','load zoo','string','Load File'),'visible','off')
+                
+                
+                uicontrol('parent',phnd,'style','slider','units','normalized','position',[0.425 y_baseline 0.4 0.025],...
                     'Min',0,'Max',length(data.(video_chns{1}).line),'SliderStep',[1/length(data.(video_chns{1}).line) 10/length(data.(video_chns{1}).line)],'tag','slider','callback',...
-                    'director(''slider'')','backgroundcolor',[0.2 0.2 0.2],'foregroundcolor',[0.1 0.1 0.1]);
+                    'director(''slider'')','backgroundcolor',button_col,'foregroundcolor',[0.1 0.1 0.1]);
                 
-                set(findobj('type','uicontrol'),'units','normalized');
-                uicontrol('style','listbox','String',all_chns,'units','normalized','position',[0.01 0.67 0.12 0.3],'callback','director(''data display'')','ForeGroundColor','w','BackGroundColor','k','tag','data list')
-                ax = axes('units','normalized','position',[0.05 0.3 0.3 0.3],'tag','data display','Color','k','XColor','w','YColor','w');
-                set(get(ax,'XLabel'),'String','Frames');
-                set(get(ax,'YLabel'),'String','Degrees');
+                
+                panel_hnd = findobj('type','uipanel','Tag','options panel');
+
+                % Create UI tree
+                uitree_director(panel_hnd,data);
+                
+                % create graph display
+                ax = axes('parent',phnd,'units','normalized','position',[0.18 0.15 0.2 0.3],'tag','data display','Color',[0.8 0.8 0.8],'XColor',lbl_col,'YColor',lbl_col);
+
                 
             case '.bmp'
                 hnd = grips('image',[p,f]);
@@ -396,39 +395,23 @@ switch action
         if ~isempty(hnd)
             set(finddobj('current object'),'string',f);
         end
-        set(gcf,'name',f);
+        %set(gcf,'name',f);
         
         cameraman('new film');
-        director('first position');
+        %director('first position');
         mark('goto',1);
         
-    case 'data display'
+        % add name to spacer 
+        %
+        shnd = findobj('tag','file info');
+        set(shnd,'String',f)
         
-        ax = findobj('type','axes','tag','data display');
-        data_list = get(findobj('tag','data list'),'String');
-        ch = data_list{get(findobj('tag','data list'),'Value')};
-        delete(findobj('type','line','tag','x angle'));
-        delete(findobj('type','line','tag','y angle'));
-        delete(findobj('type','line','tag','z angle'));
-        
-        delete(findobj(ax,'type','line'));  % fix problem where lines of main window are removed
-%         delete(findobj('type','line'));
-%         delete(findobj('type','line'));
-        
-        [~,c] = size(data.(ch).line);
-        
-        if c==1
-            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,1),'color','r','tag','x angle');
-            lg = legend(ax,'1D');
-        else
-            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,1),'color',xcol,'tag','x angle');
-            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,2),'color',ycol,'tag','y angle');
-            line('parent',ax,'xdata',1:length(data.(ch).line),'ydata',data.(ch).line(:,3),'color',zcol,'tag','z angle');
-            lg = legend(ax,'X','Y','Z');
-        end
-        
-        set(lg,'TextColor',[1 1 1],'Position',[0.1459    0.6082    0.0899    0.0890],'tag','graph legend');
-        
+    case 'data display'        
+        %data_list = get(findobj('tag','data list'),'String');
+        %ch = data_list{get(findobj('tag','data list'),'Value')};
+      
+        display_director_graph(data,ch)
+      
     case 'resize'
         
         fig = finddobj('figure');
@@ -459,7 +442,7 @@ switch action
         bones = [path,'Cinema objects',s,'bones',s,'golembones'];
         openall(bones);
         
-        director('first position');
+        % director('first position');
         
     case 'multi open'
         
@@ -586,7 +569,9 @@ switch action
         
         set(findobj('type','uicontrol','tag','button stop'),'visible','on');
         
+        %stop_state = false;
         while producer.cut == 0
+            
             index = index+1;  % increase step length to speed up
             mark('next',flength,av_ratio);
             set(gcf,'name',['preview: frame ',num2str(index)]);
@@ -601,6 +586,14 @@ switch action
         
         set(finddobj('top menu'),'enable','on');
         set(gcf,'name','director');
+        
+    case 'preview cut'
+        %set(gcbo,'label','practice','callback','director(''preview'')');
+        producer.cut = 1;
+        
+    case 'button stop'
+        set(findobj('type','uicontrol','tag','button stop'),'visible','off');
+        producer.cut = 1;
         
     case 'slider'
         index = get(findobj('tag','slider'),'Value');
@@ -637,15 +630,7 @@ switch action
     case 'cut'
         set(gcbo,'label','action','callback','director(''action'')');
         producer.cut = 1;
-        
-    case 'preview cut'
-        set(gcbo,'label','practice','callback','director(''preview'')');
-        producer.cut = 1;
-       
-    case 'button stop'
-        set(findobj('type','uicontrol','tag','button stop'),'visible','off');
-        producer.cut = 1;
-        
+             
     case 'first position'
         cameraman('new film');
         mark('goto',1);

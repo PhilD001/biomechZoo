@@ -1,15 +1,14 @@
 function bmech_velocity(fld,ch,method)
 
 
-% BMECH_VELOCITY calculates velocity of a trial based on a given marker. Also displays
-% average velocity for a given trial
+% BMECH_VELOCITY(fld,ch,method) calculates velocity of a trial based on a given marker. 
+% Also displays average velocity for a given trial
 % 
 % ARGUMENTS
 %  fld         ...    folder to operate on
 %  ch          ...    name of marker (as string)
 %  method      ...    'normalize' to dimensionally normalize. Default no normalization 
-%
-%
+
 
 
 % Revision history: 
@@ -33,10 +32,6 @@ function bmech_velocity(fld,ch,method)
 % -dimensionless normalization option according to Hof AL. Scaling Gait Data to Body Size. 
 %  Gait and Posture 1996, 4(3): 222-3. 
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
 
 
@@ -67,7 +62,7 @@ fl = engine('path',fld,'extension','zoo');
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisplay(fl{i},'computing velocity'); 
-    data = velocity(data,ch,method);
+    data = velocity_data(data,ch,method);
     zsave(fl{i},data,['for channel ',ch]);
 end
 

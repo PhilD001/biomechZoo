@@ -3,9 +3,9 @@ function [version,date] = zooinfo
 % The biomechZoo biomechanics Toolbox Copyright (c) 2006-2018 (Main contributors)
 %
 % Main contributors:
-% Philippe C. Dixon (PhD), Harvard University. Cambridge, USA.
-% Yannick Michaud-Paquette (MSc), McGill University. Montreal, Canada.
-% JJ Loh (MSc), Medicus Corda. Montreal, Canada.
+% Philippe C. Dixon (PhD)
+% Yannick Michaud-Paquette (MSc)
+% JJ Loh (MSc)
 % 
 % Contact:
 % philippe.dixon@gmail.com 
@@ -31,6 +31,6 @@ function [version,date] = zooinfo
 
 help zooinfo
 
-version = '1.3.6';
-date = ' (January 2018)';
+version = '1.4.0';
+date = ' (August 2018)';
 disp(['  Latest version: ',num2str(version),date])

@@ -507,7 +507,7 @@ switch action
         bmech_explode(fld,ch)
         ensembler_msgbox(fld,'Channels exploded, retag ensembler axes with exploded axes')
         
-    case 'export'
+    case {'export','export figure'}
         prmt = findobj('tag','prompt');
         msg = findobj('tag','messagebox');
         
@@ -515,7 +515,7 @@ switch action
         set(msg,'string','','backgroundcolor',get(gcf,'color'));
         filename = exportfig;
         set(msg,'backgroundcolor',[0.5 0.5 0.5])
-        ensembler_msgbox(fld,['Figure exported to: ',concatEnsPrompt(filename)])
+        ensembler_msgbox(fld,['Figure exported to: ',concatPrompt(filename)])
         
     case 'export event data'
         ensembler_eventval(fld,settings)

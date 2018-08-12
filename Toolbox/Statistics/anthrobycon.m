@@ -93,32 +93,16 @@ for j = 1:length(subnames)
             
             disp(['collecting anthro info for subject ', subnames{j}])
             
-            if isfield(data.zoosystem.Anthro,'Age')
-                age(j) = data.zoosystem.Anthro.Age;
-            end
+            age(j) = getanthro(data,'Age');
+            height(j) = getanthro(data,'Height');
+            mass(j) = getanthro(data,'mass');
+            leg_length(j) = nanmean([getanthro(data,'LLegLength') getanthro(data,'RLegLength')]);      
+            sex{j} = getanthro(data,'Sex');
             
-            if isfield(data.zoosystem.Anthro,'Height')
-                height(j) = data.zoosystem.Anthro.Height/1000;
-            end
-            
-            if isfield(data.zoosystem.Anthro,'Bodymass')
-                mass(j) = data.zoosystem.Anthro.Bodymass;
-            end
-            
-            if isfield(data.zoosystem.Anthro,'LLegLength')
-                leg_length(j)= mean([data.zoosystem.Anthro.LLegLength data.zoosystem.Anthro.RLegLength]);
-            end
-            
-            if isfield(data.zoosystem.Anthro,'Sex')
-               sex{j} = data.zoosystem.Anthro.Sex;
-            end
-            
-            if isin(sex{j},'M')
+            if isin(sex{j},'M') || isin(sex{j},1)
                 Male = Male+1;
-            elseif isin(sex{j},'F')
+            elseif isin(sex{j},'F') || isin(sex{j},0)
                 Female = Female+1;
-            else
-                continue
             end
             
             count = 1;
@@ -132,8 +116,8 @@ end
 
 % add to struct for export
 r.samplesize = n;
-r.numgirls = Female;
-r.numboys = Male;
+r.numFemales = Female;
+r.numMales = Male;
 
 r.Age.mean = mean(age);
 r.Age.max = max(age);
@@ -166,7 +150,7 @@ if isin(display,'on')
     disp(['Group Statistics for group: ' name])
     disp(' ')
     disp(['number of subjects n= ',num2str(n)])
-    disp(['number of girls = ',num2str(Female),' number of boys = ',num2str(Male)])
+    disp(['number of females = ',num2str(Female),' number of males = ',num2str(Male)])
     disp(['mean age = ',num2str(mean(age)),' (', num2str(std(age)),')',' [',num2str(a_lo),',',num2str(a_hi), ']' ])
     disp(['mean height = ',num2str(mean(height)),' (', num2str(std(height)),')',' [',num2str(h_lo),',',num2str(h_hi), ']'])
     disp(['mean leg length = ',num2str(mean(leg_length)),' (', num2str(std(leg_length)),')',' [',num2str(l_lo),',',num2str(l_hi), ']'])

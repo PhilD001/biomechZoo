@@ -71,6 +71,8 @@ for i = 1:length(ax)
             r = r/2;
         end
         
+        
+        
         switch vartype
             
             case 'SD'

@@ -14,6 +14,9 @@ function [data,body] = setSegmentPar(dim,bone,data,SegmentPar,body)
 %
 % Updated by Philippe C. Dixon Nov 2017
 % - Corrected proximal joint for the L/R foot
+%
+% Updated by Philippe C. Dixon June 2018
+% - big fix for PiG data without SACR, but with RPSI and LPSI
 
 for i = 1:length(bone(:,1))
     
@@ -58,8 +61,12 @@ for i = 1:length(bone(:,1))
             com = SegmentPar.Radius.com;
             
         case 'Pelvis'
-            
-            pjoint = data.SACR.line; % garbage data
+           
+            if ~isfield(data,'SACR')
+                pjoint = (data.RPSI.line + data.LPSI.line)/2;
+            else
+                pjoint = data.SACR.line; % garbage data
+            end
             
             if isfield(data,'LTRO')
                 djoint = data.LTRO.line;  % garbage data

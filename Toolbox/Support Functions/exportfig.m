@@ -79,8 +79,11 @@ end
 
 % export to figure
 %
+set (gcf,'color',[1, 1, 1]) % force white background
 if isempty( findobj('tag','colormap'))
-    export_fig(filename{1}, '-pdf', '-transparent','-q101')  % painters used by default
+    %export_fig(filename{1}, '-pdf', '-transparent','-q101')  % painters used by default
+    export_fig(filename{1}, '-pdf')  % basic version no transparency 
+
     fig_path = [fld,filesep,filename{1},'.pdf'];
 
 else

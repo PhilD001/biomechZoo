@@ -1,7 +1,7 @@
 function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,mode,bonf)
 
-% [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode,bonf) performs statistical 
-% comparison of two groups taking into account parametric assumptions. 
+% [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode,bonf) performs statistical
+% comparison of two groups taking into account parametric assumptions.
 %
 % ARGUMENTS
 %  data1    ...  first data set.
@@ -9,7 +9,7 @@ function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,mode,bo
 %  type     ...  'paired' or 'unpaired' analysis
 %  alpha    ...  significance level. Default '0.05'
 %  thresh   ...  threshold for failure of parametric assumptions and use of
-%                nonparametric tests. Default '0.05' 
+%                nonparametric tests. Default '0.05'
 %  corr     ...  apply bonferroni correction based on n tests. default = 1
 %  mode      ... display information 'full'
 %
@@ -41,7 +41,7 @@ function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,mode,bo
 % Updated by Philippe C Dixon June 2015
 % - removed reliace on 'decimals2' function
 % - improved interface
-% - removed option to run 'right' or 'left' sided 
+% - removed option to run 'right' or 'left' sided
 %
 %
 % Part of the biomechZoo toolbox v1.3 Copyright (c) 2006-2016
@@ -69,23 +69,19 @@ switch nargin
     case 3
         alpha = 0.05;
         thresh = 0.01;
-        tail = 'both';
         mode = 'full';
         bonf = 1;
         
     case 4
         thresh = 0.01;
-        tail = 'both';
         mode = 'full';
-         bonf = 1;
-            
+        bonf = 1;
+        
     case 5
-        tail = 'both';
         mode = 'full';
         bonf = 1;
         
     case 6
-        mode = 'full';
         bonf = 1;
         
 end
@@ -110,7 +106,7 @@ end
 %
 data1 = makecolumn(data1);
 data2 = makecolumn(data2);
-
+data_all = [data1; data2];
 
 indx1 = find(~isnan(data1));
 indx2 = find(~isnan(data2));
@@ -118,19 +114,21 @@ indx2 = find(~isnan(data2));
 data1_nonans =data1(indx1);
 data2_nonans =data2(indx2);
 
+data_all_nonans = [data1_nonans; data2_nonans];
+
 xbar1 = nanmean(data1);
 xbar2 = nanmean(data2);
+xbar_all = nanmean(data_all);
 
 n1 = length(data1)-length(find(isnan(data1)));
 n2 = length(data2)-length(find(isnan(data2)));
-
 
 %---TEST FOR NORMALITY -------------------------------------------
 %
 [~,p_lil1] = lillietest(data1,alpha);   % NaNs treated as missing values and ignored
 [~,p_lil2] = lillietest(data2,alpha);   % NaNs treated as missing values and ignored
-
-if ~isin(type,'unpaired')
+[~,p_lil_all] = lillietest(data_all,alpha);
+if strcmp(type,'paired')
     [~,p_lil3] = lillietest(data1-data2,alpha);   % NaNs treated as missing values and ignored
 else
     p_lil3 = 1;
@@ -142,6 +140,11 @@ if p_lil1 <=thresh  || p_lil2 <=thresh || p_lil3 <= thresh
     normal = 'no';
 else
     normal = 'yes';
+end
+
+% overall group
+if p_lil_all <=thresh
+    disp('deviation from normality suspected for all data')
 end
 
 
@@ -210,7 +213,7 @@ switch type
         
     case 'unpaired'
         
-        if isin(normal,'yes') && ~isin(vartype,'unequal');
+        if isin(normal,'yes') && ~isin(vartype,'unequal')
             type = 'unpaired t-test';
             m = 'mean';
             es = 'Cohens d';
@@ -259,105 +262,116 @@ end
 
 [CIlo1,CIhi1] = bmech_CI(data1,'mean',alpha);
 [CIlo2,CIhi2] = bmech_CI(data2,'mean',alpha);
+[CIlo_all,CIhi_all] = bmech_CI(data_all,'mean',alpha);
 
-
-if isin(mode,'full')
+if strcmp(mode,'full')
     close all
     %--PLOT SUMMARY FIGURES
     
-        H = figure;
-        p = get(H,'Position');
-        set(H,'Position',[p(1)+100 p(2) 850 420])
+    H = figure;
+    p = get(H,'Position');
+    set(H,'Position',[p(1)+100 p(2) 850 420])
     
-        subplot(2,4,1)
-        qqplot(data1)
-        title(['QQ Plot Data1 (p = ',num2str(p_lil1),')'])
+    subplot(2,4,1)
+    qqplot(data1)
+    title(['QQ Plot Data1 (p = ',num2str(p_lil1),')'])
     
-        subplot(2,4,2)
-        qqplot(data2)
-        title(['QQ Plot Data2 (p = ',num2str(p_lil2),')'])
+    subplot(2,4,2)
+    qqplot(data2)
+    title(['QQ Plot Data2 (p = ',num2str(p_lil2),')'])
     
-        subplot(2,4,3)
-        hist(data1)
-        title('Histogram Data1')
+    subplot(2,4,3)
+    hist(data1)
+    title('Histogram Data1')
     
-        subplot(2,4,4)
-        hist(data2)
-        title('Histogram Data2')
+    subplot(2,4,4)
+    hist(data2)
+    title('Histogram Data2')
     
-        subplot(2,4,5)
-        bar([xbar1 xbar2],'grouped');
-        hold on
-        errorbar(1,xbar1,xbar1-CIlo1,CIhi1-xbar1)
-        errorbar(2,xbar2,xbar2-CIlo2,CIhi2-xbar2)
-        title(['Group summary (p = ',num2str(P),')'])
+    subplot(2,4,5)
+    bar([xbar1 xbar2],'grouped');
+    hold on
+    errorbar(1,xbar1,xbar1-CIlo1,CIhi1-xbar1)
+    errorbar(2,xbar2,xbar2-CIlo2,CIhi2-xbar2)
+    title(['Group summary (p = ',num2str(P),')'])
     
-        if strcmp(type,'paired')
-            subplot(2,4,6)
-            qqplot(data1-data2)
-            title(['QQ Plot Diff data1 (p = ',num2str(p_lil3),')'])
-        end
-    
-    % DISPLAY REPORT---
-    disp('**************** ANALYSIS RESULTS ******************** ')
-    disp(' ')
-    disp(['test performed: ',type])
-    disp(' ')
-    disp(['sample size (n) group 1 = ',num2str(n1)])
-    disp(['sample size (n) group 2 = ',num2str(n2)])
-    disp(' ')
-    disp('Parametric assumptions:')
-    disp(['Liliefors test dataset 1 p = ',num2str(p_lil1)])
-    disp(['Liliefors test dataset 2 p = ',num2str(p_lil2)])
-    disp(['Levene test  p = ',num2str(p_lev)])
-    disp(' ')
-    disp('significance results:')
-    disp(['t(',num2str(df),') = ',num2str( sprintf('%.3f',t)),' p = ',num2str(sprintf('%.3f',P*bonf))])
-    disp(['effect size  ',es,' = ',num2str(sprintf('%.3f',e))])
-    disp(' ')
-    disp('Summary info')
-   
-    if isin(type,'paired')
-        disp([m,' difference CI = ',num2str(md),' [',num2str(CIdiff(1)),',',num2str(CIdiff(2)),']'])
-        disp(['Group1: mean CI = ',num2str(xbar1),' [',num2str(CIlo1),',',num2str(CIhi1),']'])
-        disp(['Group2: mean CI = ',num2str(xbar2),' [',num2str(CIlo2),',',num2str(CIhi2),']'])
-    else
-        disp([m,' difference CI = ',num2str(sprintf('%.3f',md)),' (',num2str(sprintf('%.3f',CIdiff(1))),...
-              ', ',num2str(sprintf('%.3f',CIdiff(2))),')'])
-        
-        if p_lil1 <=thresh %|| p_lev < alpha
-            disp(['Group1: median CI = ',num2str(xbar1),' (',num2str(CIlo1),',',num2str(CIhi1),')'])
-        else
-            disp(['Group1: mean CI = ',num2str(xbar1),' [',num2str(CIlo1),',',num2str(CIhi1),']'])
-        end
-        
-        if p_lil2 <=thresh %|| p_lev < alpha
-            disp(['Group2: median CI = ',num2str(xbar2),' (',num2str(CIlo2),',',num2str(CIhi2),')'])
-        else
-            disp(['Group2: mean CI = ',num2str(xbar2),' [',num2str(CIlo2),',',num2str(CIhi2),']'])
-        end
-        
+    if strcmp(type,'paired')
+        subplot(2,4,6)
+        qqplot(data1-data2)
+        title(['QQ Plot Diff data1 (p = ',num2str(p_lil3),')'])
     end
+end
+
+% DISPLAY REPORT---
+disp('**************** ANALYSIS RESULTS ******************** ')
+disp(' ')
+disp(['test performed: ',type])
+disp(' ')
+disp(['sample size (n) group 1 = ',num2str(n1)])
+disp(['sample size (n) group 2 = ',num2str(n2)])
+disp(' ')
+disp('Parametric assumptions:')
+disp(['Liliefors test dataset 1 p = ',num2str(p_lil1)])
+disp(['Liliefors test dataset 2 p = ',num2str(p_lil2)])
+disp(['Levene test  p = ',num2str(p_lev)])
+disp(' ')
+disp('significance results:')
+disp(['t(',num2str(df),') = ',num2str( sprintf('%.3f',t)),' p = ',num2str(sprintf('%.3f',P*bonf))])
+disp(['effect size  ',es,' = ',num2str(sprintf('%.3f',e))])
+disp(' ')
+disp('Summary info')
+disp(' ')
+
+
+if p_lil_all <=thresh %|| p_lev < alpha
+    disp(['Combined groups: median CI = ',num2str(sprintf('%.3f',xbar_all)),' (',num2str(sprintf('%.3f',CIlo_all)),',',num2str(sprintf('%.3f',CIhi_all)),')'])
+else
+    disp(['Combined groups: mean CI = ',num2str(sprintf('%.3f',xbar_all)),' [',num2str(sprintf('%.3f',CIlo_all)),',',num2str(sprintf('%.3f',CIhi_all)),']'])
+end
+
+
+if strcmp(type,'paired t-test')
+    disp(['Group1: mean CI = ',num2str(xbar1),' [',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),']'])
+    disp(['Group2: mean CI = ',num2str(xbar2),' [',num2str(CIlo2),',',num2str(CIhi2),']'])
+    disp([m,' difference CI = ',num2str(md),' [',num2str(CIdiff(1)),',',num2str(CIdiff(2)),']'])
     
-    
-  
 else
     
-    disp(' ')
-    disp(['test run: ',type,'---------*'])
-    disp([' p = ',num2str(sprintf('%.3f',P))])
     
-    
-    if isin(type,'paired')
-        disp([m,' difference CI = ',num2str(sprintf('%.3f',md)),' [',num2str(sprintf('%.3f',CIdiff(1))),', ',...
-              num2str(sprintf('%.3f',CIdiff(2))),']'])
+    if p_lil1 <=thresh %|| p_lev < alpha
+        disp(['Group1: median CI = ',num2str(sprintf('%.3f',xbar1)),' (',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),')'])
     else
-        disp([m,' difference CI = ',num2str(sprintf('%.3f',md)),' (',num2str(sprintf('%.3f',CIdiff(1))),', ',...
-             num2str(sprintf('%.3f',CIdiff(2))),')'])
+        disp(['Group1: mean CI = ',num2str(sprintf('%.3f',xbar1)),' [',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),']'])
     end
-   
+    
+    if p_lil2 <=thresh %|| p_lev < alpha
+        disp(['Group2: median CI = ',num2str(sprintf('%.3f',xbar2)),' (',num2str(sprintf('%.3f',CIlo2)),',',num2str(sprintf('%.3f',CIhi2)),')'])
+    else
+        disp(['Group2: mean CI = ',num2str(sprintf('%.3f',xbar2)),' [',num2str(sprintf('%.3f',CIlo2)),',',num2str(sprintf('%.3f',CIhi2)),']'])
+    end
+    
+    disp([m,' difference CI = ',num2str(sprintf('%.3f',md)),' (',num2str(sprintf('%.3f',CIdiff(1))),...
+        ', ',num2str(sprintf('%.3f',CIdiff(2))),')'])
     
 end
+
+
+
+
+%     disp(' ')
+%     disp(['test run: ',type,'---------*'])
+%     disp([' p = ',num2str(sprintf('%.3f',P))])
+%
+%
+%     if isin(type,'paired')
+%         disp([m,' difference CI = ',num2str(sprintf('%.3f',md)),' [',num2str(sprintf('%.3f',CIdiff(1))),', ',...
+%               num2str(sprintf('%.3f',CIdiff(2))),']'])
+%     else
+%         disp([m,' difference CI = ',num2str(sprintf('%.3f',(md,2)),' (',num2str(sprintf('%.3f',CIdiff(1))),', ',...
+%              num2str(sprintf('%.3f',CIdiff(2))),')'])
+%     end
+%
+
 
 
 
