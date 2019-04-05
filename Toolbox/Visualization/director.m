@@ -63,8 +63,9 @@ function director(action,varargin)
 % - Major improvements to GUI layout including: 
 % (1) selectable file tree to choose which markers/graph to display
 % (2) normalization of object positionning to improve resizing
-
-
+%
+% Updated by Philippe C. Dixon April 2019
+% - added speed button
 
 global producer;
 global p;
@@ -83,8 +84,6 @@ x_baseline = 0.18;
 button_col = [18/255 99/255 150/255];  % color from website
 panel_col =  [18/255 99/255 150/255]; %[0.90 0.90 0.90];   % gray
 lbl_col = 'w';                  % color for graph window text
-
-
 
 % Data graph embedded in director window
 %
@@ -172,6 +171,7 @@ switch action
         producer.cut = 0;
         producer.gravity = 1;
         producer.grips = struct;
+        producer.speed = 2;
         director('person','director');
         warning off;
         set(findobj('type','uicontrol'),'units','normalized');
@@ -198,6 +198,11 @@ switch action
         uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
             'foregroundcolor',[0 0 0],'tag','displacement','position',[x_baseline+0.72 y_baseline 0.05 0.05],'string','5 cm','userdata',5,...
             'callback','director(''units'')','deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
+        
+        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
+            'foregroundcolor',[0 0 0],'tag','speed','position',[x_baseline+0.68 y_baseline+0.06 0.08 0.05],'string','speed = 2x','userdata',5,...
+            'callback','director(''units'')','deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
+        
         uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
             'foregroundcolor',[0 0 0],'tag','angle','position',[0.6 0.1 1.2 .5],'string','1 deg','userdata',1,...
             'callback','director(''units'')','deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
@@ -452,20 +457,30 @@ switch action
         end
         cd(fld)
         multiopen(fld)
+    
+    case 'speed'
+        [unt,all] = finddobj('speed');
+        set(all,'value',0,'backgroundcolor',[.8 .8 .8]);
+        set(gcbo,'value',1,'backgroundcolor',[.9 .9 .9]);
+        figure(gcf);
         
     case 'units'
         
         [unt,all] = finddobj('units');
-        set(all,'value',0,'backgroundcolor',[.8 .8 .8]);
+        set(all,'value',0,'backgroundcolor',button_col);
         set(gcbo,'value',1,'backgroundcolor',[.9 .9 .9]);
         figure(gcf);
         
     case 'change units'
         
         unt = get(gco,'string');
-        indx = findstr(unt,' ');
-        unt = unt(indx:end);
-        answer = inputdlg(unt,get(gco,'tag'));
+        if strfind(unt, 'speed')
+            untdlg = 'speed';
+        else
+            indx = findstr(unt,' ');
+            untdlg = unt(indx:end);
+        end
+        answer = inputdlg(untdlg, get(gco,'tag'));
         if isempty(answer)
             return
         elseif isempty(answer{1})
@@ -475,7 +490,13 @@ switch action
         if isempty(num)
             return
         end
-        set(gco,'userdata',num,'string',[num2str(num),unt]);
+        
+        if strfind(unt, 'speed')
+            set(gco,'userdata',num,'string',['speed = ', num2str(round(num)),'x']);
+            producer.speed = round(num);
+        else
+            set(gco,'userdata',num,'string',[num2str(num),unt]);
+        end
         
     case 'units delete'
         
@@ -569,19 +590,20 @@ switch action
         
         set(findobj('type','uicontrol','tag','button stop'),'visible','on');
         
-        %stop_state = false;
         while producer.cut == 0
-            
-            index = index+1;  % increase step length to speed up
+            index = index + producer.speed;  % increase step length to speed up
             mark('next',flength,av_ratio);
-            set(gcf,'name',['preview: frame ',num2str(index)]);
-            set(hnd,'string',num2str(index));
-            set(findobj('type','uicontrol','tag','slider'),'Value',index);
             if index >= flength
                 producer.cut = 1;
+                set(hnd,'string',num2str(flength));
+                set(gcf,'name',['preview: frame ',num2str(flength)]);
                 set(findobj('tag','button stop'),'visible','off');
+            else
+                set(hnd,'string',num2str(index));
+                set(gcf,'name',['preview: frame ',num2str(index)]);
+                set(findobj('type','uicontrol','tag','slider'),'Value',index);
             end
-            pause(0.01)  % needed to allow button stop to stop animation
+            pause(0.015)  % needed to allow button stop to stop animation
         end
         
         set(finddobj('top menu'),'enable','on');

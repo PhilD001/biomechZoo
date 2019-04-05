@@ -18,4 +18,4 @@ function [data,rKW,lKW,rAW,lAW] = jointwidthPiG_data(data,markerDiam)
 % - This method is only used when anthropometric information is missing
 %   from anthro branch
 
-error('not yet coded')
+error('not implemented')

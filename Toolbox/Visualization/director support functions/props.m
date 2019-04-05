@@ -156,7 +156,7 @@ switch action
         indx = listdlg('liststring',get(mrk,'tag'),'name','choose puck markers');
         
         [xyz,ort] = pucktrajectory(mrk(indx),240);
-        [tp,hnd] = currentobject;
+        [~,hnd] = currentobject;
         hud = get(hnd,'userdata');
         hud.dis = xyz;
         hud.ort = ort;
@@ -265,8 +265,7 @@ switch action
         set(trg,'userdata',ud);
         
     case 'save'
-        
-        [tp,hnd] = currentobject;
+        [~,hnd] = currentobject;
         vr = get(hnd,'vertices');
         fc = get(hnd,'faces');
         ud = get(hnd,'userdata');
@@ -341,7 +340,6 @@ switch action
         end
          
     case 'load with markers'
-        
         [f,p] = uigetfile('*.prop');
         if f == 0
             return
@@ -1465,7 +1463,6 @@ x(isnan(x)) = 0 ;
 y(isnan(y)) = 0 ;  
 z(isnan(z)) = 0 ;  
 
-
 x = DecimateAnalog(x,data.zoosystem.AVR);     % downsample
 y = DecimateAnalog(y,data.zoosystem.AVR);     % if required
 z = DecimateAnalog(z,data.zoosystem.AVR);
@@ -1533,6 +1530,7 @@ if isfield(pud,'fz')
     if max(pud.fz) > 900  % adult
         pud.coeff = 0.05;
     end
+       
    
 %     indx = myfindstr(lower(ch),'mx',pud.id);
 %     if isempty(indx)

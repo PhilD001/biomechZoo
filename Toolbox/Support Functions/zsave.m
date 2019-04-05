@@ -32,6 +32,10 @@ function zsave(fl,data,message)
 %
 % Updated by Philippe C. Dixon Feb 2017
 % - Speed tests conducted showed that v6 are faster than v7
+%
+% Updated by Philippe C. Dixon August 2018
+% - zsave can be called from outside a batch process function
+
 
 % version type for file save
 %
@@ -41,8 +45,11 @@ version = '-v6';                                 % v6 permit faster writing than
 % determine which function called zsave
 %
 ST = dbstack(1);
-process = ST.name;
-
+if isempty(ST)
+    process = 'process';
+else
+    process = ST.name;
+end
 
 % Add additional processing info
 %

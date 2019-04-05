@@ -10,17 +10,14 @@ frm = finddobj('frame','number');
 switch action
     
     case 'next'
-        
         frm = frm+1;
         direction = 'forward';
         
     case 'prev'
-        
         frm = frm-1;
         direction = 'backward';
         
     case 'goto'
-        
         nfrm = varargin{1};
         if nfrm > frm
             direction = 'forward';
@@ -32,7 +29,6 @@ switch action
         frm = nfrm;
         
     case 'refresh'
-        
         direction = 'still';
 end
 
@@ -58,7 +54,7 @@ if ~isempty(as)
     graph_mark(frm,varargin)
 end
 
-pause(0.01)  % needed to allow button stop to stop animation
+pause(0.000001)  % needed to allow button stop to stop animation
 
 
 

@@ -84,7 +84,7 @@ function data = kinematics_data(data,settings)
 % Updated by Philippe C. Dixn Dec 2017
 % - Bug fix for axis flipping for large ROM movement at the hip and knee
 %   based on 'atan2' approach from pyCGM (see pyCGM.py --> getangle). For
-%   more info see: Schwartz and Dixon "The Effect of Subject Measurement Error on 
+%   more info see: Schwartz and Dixon "The Effect of Subject Measurement Error on
 %   Joint Kinematics in the Conventional Gait Model: Insights From the Open-source \
 %   pyCGM tool using High Performance Computing Methods". Plos One, In
 %   press. Update for ankle and pelvis should be considered
@@ -121,9 +121,9 @@ end
 
 
 %----0 : MAKE BONES ----------------------------------------------------------------------
-% 
+%
 % - Uncommenting next line allows bones to be calculated from scratch
-% data = makebones_data(data);                  
+% data = makebones_data(data);
 
 
 %----1 : GET BONES -----------------------------------------------------------------------
@@ -134,7 +134,9 @@ end
 [bone,jnt,data,oxbone] = getbones_data(data);
 
 if isempty(bone)
-    error('no PiG virtual markers found')
+    error('no PiG virtual bone markers found ... computing virtual markers')
+    %data = makebones_data(data);
+    %[bone, jnt, data, oxbone] = getbones_data(data);
 end
 
 
@@ -209,6 +211,9 @@ KIN = refsystem(KIN);
 %
 if settings.comp == true
     ERR=checkvicon(KIN,data);
+    if isempty(fieldnames(ERR))
+        ERR = [];
+    end
 else
     ERR = [];
 end
@@ -360,7 +365,7 @@ switch bone
         abd = -1*dot(lat_prox,long_dist,2);
         [flx,tw] = checkflip_pyCGM(abd,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist);
         abd = asind(abd);
-          
+        
     case 'Tibia'   % Ankle PG angles
         [floatax,ant_prox,~,lat_prox,lat_dist,~,long_dist] = makeaxPiG(pax,dax);
         
@@ -492,13 +497,13 @@ flx = zeros(size(abd));
 tw  = zeros(size(abd));
 
 for i = 1:length(abd)
-
+    
     if (-pi/2 < abd(i)) &&  ( abd(i) < pi/2)
         flx(i) = atan2(dot(long_dist(i,:),ant_prox(i,:)), dot(long_dist(i,:),long_prox(i,:)));
-        tw(i)  = atan2(dot(lat_dist(i,:), lat_prox(i,:)), dot(ant_dist(i,:),  lat_prox(i,:)));        
+        tw(i)  = atan2(dot(lat_dist(i,:), lat_prox(i,:)), dot(ant_dist(i,:),  lat_prox(i,:)));
     else
         flx(i) = atan2(-1*dot(long_dist(i,:),ant_prox(i,:)), dot(long_dist(i,:),long_prox(i,:)));
-        tw(i)  = atan2(-1*dot(lat_dist(i,:), lat_prox(i,:)), dot(ant_dist(i,:),  lat_prox(i,:)));        
+        tw(i)  = atan2(-1*dot(lat_dist(i,:), lat_prox(i,:)), dot(ant_dist(i,:),  lat_prox(i,:)));
     end
     
 end
@@ -964,6 +969,13 @@ ch = fieldnames(ERR);
 
 function graphresults(data,gsettings)
 
+% check if Vicon PiG kinematics are present
+if isfield(data, 'RHipAngles')
+    vicon = true;
+else
+    vicon = false;
+end
+
 vcol = gsettings.vcol;                              % color for vicon PiG
 zcol = gsettings.zcol;                              % color for zoo version of PiG
 
@@ -990,8 +1002,10 @@ for i = 1:length(sides)
     end
     
     subplot(3,8,1+offset);
-    plot(data.([s,'PelvisAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
-    hold on
+    if isfield(data, [s,'PelvisAngles'])
+        plot(data.([s,'PelvisAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+        hold on
+    end
     plot(data.([side,'PelvisAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     title([s,'Pelvis'],'FontSize',FontSize,'FontName',FontName)
     if i==1
@@ -1001,8 +1015,10 @@ for i = 1:length(sides)
     set(gca,'tag','RPelvisAnglesSagittal')
     
     subplot(3,8,9+offset);
-    plot(data.([s,'PelvisAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
-    hold on
+    if isfield(data, [s,'PelvisAngles'])
+        plot(data.([s,'PelvisAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+        hold on
+    end
     plot(data.([side,'PelvisAngle_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     if i==1
         ylabel({'Coronal','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
@@ -1011,8 +1027,10 @@ for i = 1:length(sides)
     set(gca,'tag','RPelvisAnglesCoronal')
     
     subplot(3,8,17+offset);
-    plot(data.([s,'PelvisAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
-    hold on
+    if isfield(data, [s,'PelvisAngles'])
+        plot(data.([s,'PelvisAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+        hold on
+    end
     plot(data.([side,'PelvisAngle_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     if i==1
         ylabel({'Transverse','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
@@ -1021,68 +1039,86 @@ for i = 1:length(sides)
     set(gca,'tag','RPelvisAnglesTransverse')
     
     subplot(3,8,2+offset);
-    plot(data.([s,'HipAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
-    hold on
+    if isfield(data, [s,'HipAngles'])
+        plot(data.([s,'HipAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+        hold on
+    end
     plot(data.([side,'HipAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     title([s,'Hip'],'FontSize',FontSize,'FontName',FontName)
     axis('square')
     set(gca,'tag','HipAnglesSagittal')
     
     subplot(3,8,3+offset);
-    plot(data.([s,'KneeAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'KneeAngles'])
+        plot(data.([s,'KneeAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'KneeAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     title([s,'Knee'],'FontSize',FontSize,'FontName',FontName)
     axis('square')
     set(gca,'tag','KneeAnglesSagittal')
     
     subplot(3,8,4+offset);
-    plot(data.([s,'AnkleAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'AnkleAngles'])
+        plot(data.([s,'AnkleAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'AnkleAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     title([s,'Ankle'],'FontSize',FontSize,'FontName',FontName)
     axis('square')
     set(gca,'tag','AnkleAnglesSagittal')
     
     subplot(3,8,10+offset);
-    plot(data.([s,'HipAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'HipAngles'])
+        plot(data.([s,'HipAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'HipAngle_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
     set(gca,'tag','HipAnglesCoronal')
     
     subplot(3,8,11+offset);
-    plot(data.([s,'KneeAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'KneeAngles'])
+        plot(data.([s,'KneeAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'KneeAngle_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
     set(gca,'tag','KneeAnglesCoronal')
     
     
     subplot(3,8,12+offset);
-    plot(data.([s,'AnkleAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'AnkleAngles'])
+        plot(data.([s,'AnkleAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'AnkleAngle_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
     xlim([0 dlength])
     
     subplot(3,8,18+offset);
-    plot(data.([s,'HipAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'HipAngles'])
+        plot(data.([s,'HipAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'HipAngle_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
     set(gca,'tag','HipAnglesTransverse')
     
     subplot(3,8,19+offset);
-    plot(data.([s,'KneeAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'KneeAngles'])
+        plot(data.([s,'KneeAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'KneeAngle_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
     set(gca,'tag','KneeAnglesTransverse')
     
     subplot(3,8,20+offset);
-    plot(data.([s,'AnkleAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
-    hold on
+    if isfield(data, [s,'AnkleAngles'])
+        plot(data.([s,'AnkleAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth)
+        hold on
+    end
     plot(data.([side,'AnkleAngle_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
     axis('square')
     xlim([0 dlength])
@@ -1194,7 +1230,11 @@ if ismember('RThoraxAngles',fieldnames(data)) ||...
         end
         
         if i==2
-            legend('Vicon','BiomechZoo')
+            if vicon
+                legend('Vicon','biomechZoo')
+            else
+                legend('biomechZoo')
+            end
         end
         
         ax = findobj('type','axes');

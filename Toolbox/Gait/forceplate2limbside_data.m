@@ -22,7 +22,13 @@ sides = {'Right','Left'};            % new force channel prefix
 prec = 10;                           % if disagreement btw kinematics and GRF>prec, invalid FP
 
 if nargin==1
-    ch = 'ForceFz';
+    if isfield(data, 'ForceFz1')
+        ch = 'ForceFz';
+    elseif isfield(data, 'Fz1')
+        ch = 'Fz';
+    else
+        error('unknown force channel heck data.zoosystem.OtherMetaInfo.Parameter.ANALOG.LABELS.data')
+    end
     thresh = 20;
 end
 

@@ -90,6 +90,10 @@ function evalFile = eventval(varargin)
 % Updated by Philippe C. Dixon March 2018
 % - added 'summary' sheet with all events from all channels grouped
 % - not verified with global events
+%
+% Updated by Philippe C. Dixon Nov 2018
+% - increased length of cells for writing to excel (see ecell1, ecell2) to 
+%   avoid error. Permanent fix still needed
 
 % tic  % start calculation timer
 
@@ -143,6 +147,10 @@ if strcmp(excelserver,'on') && ~strcmp(ext,'.xls')
     disp('when using excel server, extension must be .xls')
     disp(['changing extension type for eventval from ',ext, ' to .xls'])
     ext = '.xls';
+elseif strcmp(excelserver,'off') && ~strcmp(ext,'.xls')
+    disp('when excel server not used, extension must be .xls')
+    disp(['changing extension type for eventval from ',ext, ' to .xls'])
+    ext = '.xlsx';  
 end
 
 if strcmp(excelserver,'on') && isin(computer,'MACI')
@@ -161,12 +169,17 @@ conditions = strrep(conditions,'\',filesep);
 % Set up path for eventval spreadsheet
 %
 r = strfind(fld,'Data');
+indx = strfind(fld,filesep);
+
+
 
 if isempty(r) && ~isempty(strfind(fld,'example data (processed)'));
-    indx = strfind(fld,filesep);
     pth = [fld(1:indx(end)),'Statistics'];
+elseif isempty(r)
+    warning('study data should be stored in a subfolder with name ''Data''')
+    pth = [fld,filesep, 'Statistics'];    % stats folder
 else
-    pth = [fld(1:r-1),'Statistics'];    % stats folder
+   pth = [fld(1:r-1),'Statistics'];    % stats folder
 end
 
 if ~exist(pth,'dir')
@@ -315,15 +328,23 @@ end
 % == EXTRACT DATA FROM CHANNELS AT REQUIRED EVENTS =========================================
 %
 
-% List of cells for excel
-%
-ecell1 = {'D','F','H','J','L','N','P','R','T','V','X','Z','AB','AD','AF','AH','AJ','AL','AN',...
-    'AP','AR','AT','AV','AX','AZ','BB','BD','BF','BH','BJ','BL','BN','BP','BR','BT','BV',...
-    'BX','BZ','CB','CD','CF','CH','CJ','CL','CN','CP','CR','CT','CV','CX','CZ'};
-ecell2 = {'E','G','I','K','M','O','Q','S','U','W','Y','AA','AC','AE','AG','AI','AK','AM','AO',...
-    'AQ','AS','AU','AW','AY','BA','BC','BE','BG','BI','BK','BM','BO','BQ','BS','BU','BW',...
-    'BY','CA','CC','CE','CG','CI','CK','CM','CO','CQ','CS','CU','CW','CY'};
+% build large cell array for excel
+ecell1 = {'D','F','H','J','L','N','P','R','T','V','X','Z'};
+alpha1 = {'B','D','F','H','J','L','N','P','R','T','V','X','Z'};
+ecell2 = {'E','G','I','K','M','O','Q','S','U','W','Y'};
+alpha2 = {'A','C','E','G','I','K','M','O','Q','S','U','W','Y'};
+alpha = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',...
+    'P','Q','R','S','T','U','V','W','X','Y','Z'};
 
+tmp1 = [];
+tmp2 = [];
+for i = 1:length(alpha)
+    tmp1 = [tmp1, strcat(alpha{i}, alpha1)];
+    tmp2 = [tmp2, strcat(alpha{i}, alpha2)];
+end
+ecell1 = [ecell1, tmp1];
+ecell2 = [ecell2, tmp2];
+    
 for i = 1:length(fl)
     batchdisp(fl{i},'Extracting data to spreadsheet')
     

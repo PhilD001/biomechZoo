@@ -1,4 +1,4 @@
-function [globalOr,orient] = getFPGlobalOrigin(data)
+function [globalOr, orient] = getFPGlobalOrigin(data)
 
 % GetFPGlobalOrigin extracts the coordinates of the centre of each force
 % plate in GCS
@@ -22,6 +22,11 @@ function [globalOr,orient] = getFPGlobalOrigin(data)
 %
 globalOr = struct;
 nplates = data.zoosystem.Analog.FPlates.NUMUSED;
+
+if nplates == 0
+    error('no force plates detected')
+end
+    
 
 for i = 1:nplates
     C1 = makerow(data.zoosystem.Analog.FPlates.CORNERS(1:2,1,i));

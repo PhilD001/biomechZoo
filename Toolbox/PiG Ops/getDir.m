@@ -79,9 +79,14 @@ else
         company = 'unknown';
     end
     
-    
-    if isempty(strfind(company,'AnalysisCorp'))
-        static = data.zoosystem.OtherMetaInfo.Parameter.SUBJECTS.IS_STATIC.data;
+    if strfind(company, 'Qualisys')
+        static = '';
+    elseif isempty(strfind(company,'AnalysisCorp'))
+        if isfield(data.zoosystem.OtherMetaInfo.Parameter.SUBJECTS.IS_STATIC, 'data')
+            static = data.zoosystem.OtherMetaInfo.Parameter.SUBJECTS.IS_STATIC.data;
+        else
+            static = '';
+        end
     else
         if isfield(data.zoosystem.CompInfo,'TrialType')
             trialType = lower(data.zoosystem.CompInfo.TrialType);

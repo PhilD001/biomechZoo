@@ -30,9 +30,12 @@ function delfile(fl)
 %   Test: 835 excel files
 %         deleted in 001.293 sec using java
 %         deleted in 177.187 sec using 'delfile'
+% 
+% Updated by Philippe C. Dixon Oct 2018
 
 
 tic                         % start timer
+fclose('all')    % force close anything that might remain open
 if ~iscell(fl)
     fl = {fl};
 end
