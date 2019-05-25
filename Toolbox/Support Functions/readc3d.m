@@ -52,7 +52,10 @@ function data =readc3d(fname)
 %
 % Updated by Philippe C. Dixon December 2017
 % - bug fix for c3d files without 'ANALOG' field in parameter info
-
+%
+% Updated by Philippe C. Dixn May 2019
+% - invalid fields that cannot be fixed are displayed and skipped via try 
+%   and catch statement
 
 % -------------------------------------------
 
@@ -117,7 +120,6 @@ while 1
     numchar = fread(fid,1,'int8');                  %number of characters in the group name
     id = fread(fid,1,'int8');                       %group/parameter id
     gname = char(fread(fid,abs(numchar),'uint8')'); %group/parameter name
-
     index = ftell(fid);                             %this is the starting point for the offset
     nextgroup = fread(fid,1,'int16');               %nextgroup = offset to the next group/parameter
     if numchar < 0                                 %a negative character length means the group is locked
@@ -134,7 +136,15 @@ while 1
         dnum = fread(fid,1,'uint8');                %number of characters of the desctription
         desc = char(fread(fid,dnum,'uint8')');      %description of the group/parameter
         fld.description = desc;
-        P.(gname)=fld;                              %add the field to the variable P
+        
+        try 
+            P.(gname)=fld;
+        catch
+            disp(['skipping invalid field found:' gname])
+            continue
+        end
+        
+                                      %add the field to the variable P
     else %it is a parameter
         dtype = fread(fid,1,'int8');                %what type of data -1 = char 1 = byte  2 = 16 bit integer 3 = 32 bit floating point
         numdim = fread(fid,1,'uint8');              %number of dimensions (0 to 7 dimensions)
@@ -316,7 +326,7 @@ fld = fieldnames(g);
 r = g;
 for i = 1:length(fld)
     d = getfield(g,fld{i});
-    if abs(info.id) == abs(d.id);
+    if abs(info.id) == abs(d.id)
         r = setfield(g,makevalidfield(fld{i}),setfield(d,makevalidfield(name),info));
         break
     end

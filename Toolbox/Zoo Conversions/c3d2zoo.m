@@ -249,7 +249,7 @@ pch = fieldnames(r.Parameter.POINT);
 
 %       data.zoosystem.Units.Forces = makerow(r.Parameter.POINT.FORCE_UNITS.data);
 
-
+Units = struct;
 for j = 1:length(pch)
     
     if strfind(pch{j},'UNITS')
@@ -367,7 +367,11 @@ if isfield(r.Parameter,'EVENT')
         if ~isempty(r.Parameter.EVENT.TIMES.data)
             
             times = r.Parameter.EVENT.TIMES.data(2,:);
-            sides = r.Parameter.EVENT.CONTEXTS.data;
+            if isfield(r.Parameter.EVENT, 'CONTEXTS')
+                sides = r.Parameter.EVENT.CONTEXTS.data;
+            else
+                sides = 'empty';
+            end
             type =  r.Parameter.EVENT.LABELS.data;
             
             [~,cols] = size(sides);

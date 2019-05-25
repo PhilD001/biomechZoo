@@ -45,7 +45,8 @@ end
 if ~isempty(strfind(ch,' '))
     ch = strrep(ch,' ','_');
     ch = makevalidfield(ch);
-    
+elseif ch == ""
+    ch = 'empty';
 elseif ~isempty(strfind(ch,'-'))
     ch = strrep(ch,'-','');
     ch = makevalidfield(ch);
