@@ -92,10 +92,9 @@ function evalFile = eventval(varargin)
 % - not verified with global events
 %
 % Updated by Philippe C. Dixon Nov 2018
-% - increased length of cells for writing to excel (see ecell1, ecell2) to 
+% - increased length of cells for writing to excel (see ecell1, ecell2) to
 %   avoid error. Permanent fix still needed
 
-% tic  % start calculation timer
 
 % == SETTINGS ==============================================================================
 %
@@ -150,7 +149,7 @@ if strcmp(excelserver,'on') && ~strcmp(ext,'.xls')
 elseif strcmp(excelserver,'off') && ~strcmp(ext,'.xls')
     disp('when excel server not used, extension must be .xls')
     disp(['changing extension type for eventval from ',ext, ' to .xls'])
-    ext = '.xlsx';  
+    ext = '.xlsx';
 end
 
 if strcmp(excelserver,'on') && isin(computer,'MACI')
@@ -179,7 +178,7 @@ elseif isempty(r)
     warning('study data should be stored in a subfolder with name ''Data''')
     pth = [fld,filesep, 'Statistics'];    % stats folder
 else
-   pth = [fld(1:r-1),'Statistics'];    % stats folder
+    pth = [fld(1:r-1),'Statistics'];    % stats folder
 end
 
 if ~exist(pth,'dir')
@@ -203,6 +202,8 @@ if exist(evalFile,'file')
     end
     
 end
+
+tic  % start calculation timer
 
 
 % Load excel server or java path
@@ -342,9 +343,10 @@ for i = 1:length(alpha)
     tmp1 = [tmp1, strcat(alpha{i}, alpha1)];
     tmp2 = [tmp2, strcat(alpha{i}, alpha2)];
 end
+
 ecell1 = [ecell1, tmp1];
 ecell2 = [ecell2, tmp2];
-    
+
 for i = 1:length(fl)
     batchdisp(fl{i},'Extracting data to spreadsheet')
     
@@ -396,25 +398,21 @@ for i = 1:length(fl)
     %
     if i==1
         process = data.zoosystem.Processing;
+        info = {'Summary info related to data';
+            ' ';
+            'folder processed: ';
+            fld;
+            'date processed: ';
+            date;
+            'missing events tagged as 999';
+            'Processing steps'};
         
         if strcmp(excelserver,'on')
-            xlswrite1(evalFile,{'Summary info related to data'},'info','A1');
-            xlswrite1(evalFile,{'folder processed: '},'info','A3');
-            xlswrite1(evalFile,{fld},'info','A4');
-            xlswrite1(evalFile,{'date processed: '},'info','A6');
-            xlswrite1(evalFile,{date},'info','A7');
-            xlswrite1(evalFile,{'missing events tagged as 999'},'info','A9');
-            xlswrite1(evalFile,{'Processing steps'},'info','A11');
-            xlswrite1(evalFile,process,'info','A12');
+            xlswrite1(evalFile,info,'info','A1');
+            xlswrite1(evalFile,info,'info','A9');
         else
-            xlwrite(evalFile,{'Summary info related to data'},'info','A1');
-            xlwrite(evalFile,{'folder processed: '},'info','A3');
-            xlwrite(evalFile,{fld},'info','A4');
-            xlwrite(evalFile,{'date processed: '},'info','A6');
-            xlwrite(evalFile,{date},'info','A7');
-            xlwrite(evalFile,{'missing events tagged as 999'},'info','A9');
-            xlwrite(evalFile,{'Processing steps'},'info','A11');
-            xlwrite(evalFile,process,'info','A12');
+            xlwrite(evalFile,info,'info','A1');
+            xlwrite(evalFile,process,'info','A9');
         end
     end
     
@@ -518,35 +516,27 @@ for i = 1:length(fl)
             
             if strcmp(excelserver,'on')
                 xlswrite1(evalFile,{globalevtnames(g)},chname,[ecell1{g},'2']);
-                xlswrite1(evalFile,{'xdata'},chname,[ecell1{g},'3']);
-                xlswrite1(evalFile,{'ydata'},chname,[ecell2{g},'3']);
-                xlswrite1(evalFile,xd,chname,[ecell1{g},num2str(3+fileNum)]);
-                xlswrite1(evalFile,yd,chname,[ecell2{g},num2str(3+fileNum)]);
+                xlswrite1(evalFile,{'xdata', 'ydata'},chname,[ecell1{g},'3']);
+                xlswrite1(evalFile,[xd,yd], chname,[ecell1{g},num2str(3+fileNum)]);
                 
                 % summary sheet
                 xlswrite1(evalFile,{globalevtnames(g)},'summary',[ecell1{g},'2']);
-                xlswrite1(evalFile,{'xdata'},'summary',[ecell1{g},'3']);
-                xlswrite1(evalFile,{'ydata'},'summary',[ecell2{g},'3']);
-                xlswrite1(evalFile,xd,'summary',[ecell1{g},num2str(3+fileNum)]);
-                xlswrite1(evalFile,yd,'summary',[ecell2{g},num2str(3+fileNum)]);
+                xlswrite1(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g},'3']);
+                xlswrite1(evalFile,[xd, yd],'summary',[ecell1{g},num2str(3+fileNum)]);
                 
                 
             else
                 xlwrite(evalFile,{globalevtnames(g)},chname,[ecell1{g},'2']);
-                xlwrite(evalFile,{'xdata'},chname,[ecell1{g},'3']);
-                xlwrite(evalFile,{'ydata'},chname,[ecell2{g},'3']);
-                xlwrite(evalFile,xd,chname,[ecell1{g},num2str(3+fileNum)]);
-                xlwrite(evalFile,yd,chname,[ecell2{g},num2str(3+fileNum)]);
+                xlwrite(evalFile,{'xdata', 'ydata'},chname,[ecell1{g},'3']);
+                xlwrite(evalFile,[xd, yd],chname,[ecell1{g},num2str(3+fileNum)]);
                 
                 % summary sheet
                 xlwrite(evalFile,{globalevtnames(g)},'summary',[ecell1{g},'2']);
-                xlwrite(evalFile,{'xdata'},'summary',[ecell1{g},'3']);
-                xlwrite(evalFile,{'ydata'},'summary',[ecell2{g},'3']);
-                xlwrite(evalFile,xd,'summary',[ecell1{g},num2str(3+fileNum)]);
-                xlwrite(evalFile,yd,'summary',[ecell2{g},num2str(3+fileNum)]);
+                xlwrite(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g},'3']);
+                xlwrite(evalFile,[xd, yd],'summary',[ecell1{g},num2str(3+fileNum)]);
                 
             end
-            summary_offset = summary_offset+1; 
+            summary_offset = summary_offset+1;
             
         end
         
@@ -571,40 +561,34 @@ for i = 1:length(fl)
                 
                 if strcmp(excelserver,'on')
                     xlswrite1(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
-                    xlswrite1(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
-                    xlswrite1(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
-                    xlswrite1(evalFile,xd,chname,[ecell1{n+offset},num2str(3+fileNum)]);
-                    xlswrite1(evalFile,yd,chname,[ecell2{n+offset},num2str(3+fileNum)]);
+                    xlswrite1(evalFile,{'xdata' 'ydata'},chname,[ecell1{n+offset},'3']);
+                    xlswrite1(evalFile,[xd, yd],chname,[ecell1{n+offset},num2str(3+fileNum)]);
                     
                     %extra summary sheet
                     xlswrite1(evalFile,{[chname,'_',localevtnames{n}]},'summary',[ecell1{g+n+offset},'2']);
-                    xlswrite1(evalFile,{'xdata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
-                    xlswrite1(evalFile,{'ydata'},'summary',[ecell2{g+n+offset+summary_offset},'3']);
-                    xlswrite1(evalFile,xd,'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
-                    xlswrite1(evalFile,yd,'summary',[ecell2{g+n+offset+summary_offset},num2str(3+fileNum)]);
-                else
+                    xlswrite1(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
+                    xlswrite1(evalFile,[xd,yd], 'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
+                else   
                     xlwrite(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
-                    xlwrite(evalFile,{'xdata'},chname,[ecell1{n+offset},'3']);
-                    xlwrite(evalFile,{'ydata'},chname,[ecell2{n+offset},'3']);
-                    xlwrite(evalFile,xd,chname,[ecell1{n+offset},num2str(3+fileNum)]);
-                    xlwrite(evalFile,yd,chname,[ecell2{n+offset},num2str(3+fileNum)]);
+                    xlwrite(evalFile,{'xdata', 'ydata'},chname,[ecell1{n+offset},'3']);
+                    xlwrite(evalFile,[xd, yd],chname,[ecell1{n+offset},num2str(3+fileNum)]);
                     
                     % extra summary sheet
                     xlwrite(evalFile,{[chname,'_',localevtnames{n}]},'summary',[ecell1{g+n+offset+summary_offset},'2']);
-                    xlwrite(evalFile,{'xdata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
-                    xlwrite(evalFile,{'ydata'},'summary',[ecell2{g+n+offset+summary_offset},'3']);
-                    xlwrite(evalFile,xd,'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
-                    xlwrite(evalFile,yd,'summary',[ecell2{g+n+offset+summary_offset},num2str(3+fileNum)]);
+                    xlwrite(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
+                    xlwrite(evalFile,[xd, yd],'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
+                    
+                    
                 end
                 
                 summary_offset = summary_offset+1;
-
+                
                 
             else
-                disp(['no event ',localevtnames{n},' in channel ',chnames{j}])                
+                disp(['no event ',localevtnames{n},' in channel ',chnames{j}])
                 offset = offset-1;
             end
-
+            
         end
         
         
@@ -659,32 +643,24 @@ for i = 1:length(fl)
             
             if strcmp(excelserver,'on')
                 xlswrite1(evalFile,{canthroevtnames},chname,[ecell1{k},'2']);
-                xlswrite1(evalFile,{'xdata'},chname,[ecell1{k},'3']);
-                xlswrite1(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlswrite1(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
-                xlswrite1(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]); % edit {yd}
+                xlswrite1(evalFile,{'xdata', 'ydata'},chname,[ecell1{k},'3']);
+                xlswrite1(evalFile,[xd,yd], chname,[ecell1{k},num2str(3+fileNum)]);
                 
                 % extra summary sheet
                 xlswrite1(evalFile,{canthroevtnames},'summary',[ecell1{k+n+offset+summary_offset-1},'2']);
-                xlswrite1(evalFile,{'xdata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
-                xlswrite1(evalFile,{'ydata'},'summary',[ecell2{k+n+offset+summary_offset-1},'3']);
-                xlswrite1(evalFile,xd,'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
-                xlswrite1(evalFile,yd,'summary',[ecell2{k+n+offset+summary_offset-1},num2str(3+fileNum)]); % edit {yd}
+                xlswrite1(evalFile,{'xdata', 'ydata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
+                xlswrite1(evalFile,[xd,yd],'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
                 
             else
                 xlwrite(evalFile,{canthroevtnames},chname,[ecell1{k},'2']);
-                xlwrite(evalFile,{'xdata'},chname,[ecell1{k},'3']);
-                xlwrite(evalFile,{'ydata'},chname,[ecell2{k},'3']);
-                xlwrite(evalFile,xd,chname,[ecell1{k},num2str(3+fileNum)]);
-                xlwrite(evalFile,yd,chname,[ecell2{k},num2str(3+fileNum)]); % edit {yd}
+                xlwrite(evalFile,{'xdata', 'ydata'},chname,[ecell1{k},'3']);
+                xlwrite(evalFile,[xd, yd],chname,[ecell1{k},num2str(3+fileNum)]);
                 
                 %extra summary sheet
                 xlwrite(evalFile,{canthroevtnames},'summary',[ecell1{k+n+offset+summary_offset-1},'2']);
-                xlwrite(evalFile,{'xdata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
-                xlwrite(evalFile,{'ydata'},'summary',[ecell2{k+n+offset+summary_offset-1},'3']);
-                xlwrite(evalFile,xd,'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
-                xlwrite(evalFile,yd,'summary',[ecell2{k+n+offset+summary_offset-1},num2str(3+fileNum)]); % edit {yd}
-
+                xlwrite(evalFile,{'xdata', 'ydata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
+                xlwrite(evalFile,[xd,yd], 'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
+                
             end
             summary_offset = summary_offset+1;
         end
@@ -704,5 +680,5 @@ if strcmp(excelserver,'on')
     clear Excel
 end
 
-
+disp(['eventval completed in ', num2str(toc), ' seconds'])
 
