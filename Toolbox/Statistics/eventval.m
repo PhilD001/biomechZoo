@@ -149,13 +149,14 @@ if strcmp(excelserver,'on') && ~strcmp(ext,'.xls')
 elseif strcmp(excelserver,'off') && ~strcmp(ext,'.xls')
     disp('when excel server not used, extension must be .xls')
     disp(['changing extension type for eventval from ',ext, ' to .xls'])
-    ext = '.xlsx';
+    ext = '.xls';
 end
 
-if strcmp(excelserver,'on') && isin(computer,'MACI')
+if contains(computer,'MACI')
     disp('Full excel server functionality not available on Mac platforms')
-    disp('switching to java...')
+    disp('using java...')
     excelserver = 'off';
+    ext = '.xls';
 end
 
 conditions = strrep(conditions,'/',filesep);
@@ -409,7 +410,7 @@ for i = 1:length(fl)
         
         if strcmp(excelserver,'on')
             xlswrite1(evalFile,info,'info','A1');
-            xlswrite1(evalFile,info,'info','A9');
+            xlswrite1(evalFile,process,'info','A9');
         else
             xlwrite(evalFile,info,'info','A1');
             xlwrite(evalFile,process,'info','A9');
@@ -426,7 +427,10 @@ for i = 1:length(fl)
         error(['subject ',subject, ' not in list of subjects'])
     end
     
-    summary_offset = 1;
+    global_offset = 1;
+    local_offset = 1;
+    anthro_offset = 1;
+    sheet_header = {'SUBJECT', 'CONDITION', 'TRIAL', '', '', 'EVENT'};
     for j = 1:length(chnames)               % set the basic structure of spreadsheet
         initialpos = 0;
         chname = chnames{j};
@@ -436,57 +440,26 @@ for i = 1:length(fl)
             chname = chname(1:31);
         end
         
+        sheet_info = {subject, con, fname};
+        
         if strcmp(excelserver,'on')
-            
-            % additional 'summary' sheet
             if j==1
-                xlswrite1(evalFile,{'SUBJECT'},'summary','A1');
-                xlswrite1(evalFile,{'CONDITION'},'summary','B1');
-                xlswrite1(evalFile,{'TRIAL'},'summary','C1');
-                xlswrite1(evalFile,{'EVENT'},'summary','F1');
-                
-                xlswrite1(evalFile,{fname},'summary',['C',num2str(initialpos+3+fileNum)]);
-                xlswrite1(evalFile,{subject},'summary',['A',num2str(initialpos+3+fileNum)]);
-                xlswrite1(evalFile,{con},'summary',['B',num2str(initialpos+3+fileNum)]);
-            end
-            
-            
-            xlswrite1(evalFile,{'SUBJECT'},chname,'A1');
-            xlswrite1(evalFile,{'CONDITION'},chname,'B1');
-            xlswrite1(evalFile,{'TRIAL'},chname,'C1');
-            xlswrite1(evalFile,{'EVENT'},chname,'F1');
-            
-            xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
-            xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
-            xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
-            
-            
-            
+                xlswrite1(evalFile,sheet_header,'summary','A1');
+                xlswrite1(evalFile,sheet_info,'summary',['A',num2str(initialpos+3+fileNum)]);
+            end  
         else
             
-            % extra 'summary' sheet
+            % 'summary' sheets
             if j==1
-                xlwrite(evalFile,{'SUBJECT'},'summary','A1');
-                xlwrite(evalFile,{'CONDITION'},'summary','B1');
-                xlwrite(evalFile,{'TRIAL'},'summary','C1');
-                xlwrite(evalFile,{'EVENT'},'summary','F1');
+                xlwrite(evalFile,sheet_header,'anthro','A1');                
+                xlwrite(evalFile,sheet_info,'anthro',['A',num2str(initialpos+3+fileNum)]);
+  
+                xlwrite(evalFile,sheet_header,'global','A1');
+                xlwrite(evalFile,sheet_info,'global',['A',num2str(initialpos+3+fileNum)]);
                 
-                xlwrite(evalFile,{fname},'summary',['C',num2str(initialpos+3+fileNum)]);
-                xlwrite(evalFile,{subject},'summary',['A',num2str(initialpos+3+fileNum)]);
-                xlwrite(evalFile,{con},'summary',['B',num2str(initialpos+3+fileNum)]);
-            end
-            
-            
-            xlwrite(evalFile,{'SUBJECT'},chname,'A1');
-            xlwrite(evalFile,{'CONDITION'},chname,'B1');
-            xlwrite(evalFile,{'TRIAL'},chname,'C1');
-            xlwrite(evalFile,{'EVENT'},chname,'F1');
-            
-            xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
-            xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
-            xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
-            
-            
+                xlwrite(evalFile,sheet_header,'local','A1');
+                xlwrite(evalFile,sheet_info,'local',['A',num2str(initialpos+3+fileNum)]);
+            end           
         end
         
         % write global events
@@ -514,29 +487,22 @@ for i = 1:length(fl)
                 disp(' ')
             end
             
+            block = {[chname, '_', globalevtnames{g}], ''; 
+                     'xdata', 'ydata'};
+            
             if strcmp(excelserver,'on')
-                xlswrite1(evalFile,{globalevtnames(g)},chname,[ecell1{g},'2']);
-                xlswrite1(evalFile,{'xdata', 'ydata'},chname,[ecell1{g},'3']);
-                xlswrite1(evalFile,[xd,yd], chname,[ecell1{g},num2str(3+fileNum)]);
-                
-                % summary sheet
-                xlswrite1(evalFile,{globalevtnames(g)},'summary',[ecell1{g},'2']);
-                xlswrite1(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g},'3']);
-                xlswrite1(evalFile,[xd, yd],'summary',[ecell1{g},num2str(3+fileNum)]);
-                
-                
+                if i == 1
+                    xlswrite1(evalFile,block,'global',[ecell1{g},'2']);
+                end
+                xlswrite1(evalFile,[xd, yd],'global',[ecell1{g},num2str(3+fileNum)]);     
             else
-                xlwrite(evalFile,{globalevtnames(g)},chname,[ecell1{g},'2']);
-                xlwrite(evalFile,{'xdata', 'ydata'},chname,[ecell1{g},'3']);
-                xlwrite(evalFile,[xd, yd],chname,[ecell1{g},num2str(3+fileNum)]);
-                
-                % summary sheet
-                xlwrite(evalFile,{globalevtnames(g)},'summary',[ecell1{g},'2']);
-                xlwrite(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g},'3']);
-                xlwrite(evalFile,[xd, yd],'summary',[ecell1{g},num2str(3+fileNum)]);
+                if i == 1
+                    xlwrite(evalFile,block,'global',[ecell1{global_offset},'2']);
+                end
+                xlwrite(evalFile,[xd, yd],'global',[ecell1{global_offset},num2str(3+fileNum)]);
                 
             end
-            summary_offset = summary_offset+1;
+            global_offset = global_offset+1;
             
         end
         
@@ -547,7 +513,6 @@ for i = 1:length(fl)
         % Write local events
         %
         offset = length(globalevtnames);
-        
         for n = 1:length(localevtnames)            %LOCAL EVENTS: All channels should have this event
             
             if isfield(data.(chnames{j}).event,localevtnames{n})
@@ -559,64 +524,33 @@ for i = 1:length(fl)
                     yd =999;
                 end
                 
-                if strcmp(excelserver,'on')
-                    xlswrite1(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
-                    xlswrite1(evalFile,{'xdata' 'ydata'},chname,[ecell1{n+offset},'3']);
-                    xlswrite1(evalFile,[xd, yd],chname,[ecell1{n+offset},num2str(3+fileNum)]);
-                    
-                    %extra summary sheet
-                    xlswrite1(evalFile,{[chname,'_',localevtnames{n}]},'summary',[ecell1{g+n+offset},'2']);
-                    xlswrite1(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
-                    xlswrite1(evalFile,[xd,yd], 'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
-                else   
-                    xlwrite(evalFile,{localevtnames{n}},chname,[ecell1{n+offset},'2']);
-                    xlwrite(evalFile,{'xdata', 'ydata'},chname,[ecell1{n+offset},'3']);
-                    xlwrite(evalFile,[xd, yd],chname,[ecell1{n+offset},num2str(3+fileNum)]);
-                    
-                    % extra summary sheet
-                    xlwrite(evalFile,{[chname,'_',localevtnames{n}]},'summary',[ecell1{g+n+offset+summary_offset},'2']);
-                    xlwrite(evalFile,{'xdata', 'ydata'},'summary',[ecell1{g+n+offset+summary_offset},'3']);
-                    xlwrite(evalFile,[xd, yd],'summary',[ecell1{g+n+offset+summary_offset},num2str(3+fileNum)]);
-                    
-                    
-                end
+                block = {[chname, '_', localevtnames{n}], ''; 
+                     'xdata', 'ydata'};
                 
-                summary_offset = summary_offset+1;
+                 if strcmp(excelserver,'on')
+                     if i == 1
+                         xlswrite1(evalFile,block,'local',[ecell1{local_offset},'2']);
+                     end
+                     xlswrite1(evalFile,[xd,yd], 'local',[ecell1{local_offset},num2str(3+fileNum)]);
+                 else
+                     if i == 1
+                         xlwrite(evalFile,block,'local',[ecell1{local_offset},'2']);
+                     end
+                     xlwrite(evalFile,[xd, yd],'local',[ecell1{local_offset},num2str(3+fileNum)]);
+                 end
                 
+                local_offset = local_offset+1;
                 
             else
                 disp(['no event ',localevtnames{n},' in channel ',chnames{j}])
                 offset = offset-1;
-            end
-            
+            end 
         end
-        
-        
     end
     
     % Write Anthro data
     %
     if ~isempty(anthroevtnames)
-        initialpos = 0;
-        chname = 'Anthro';
-        
-        if strcmp(excelserver,'on')
-            xlswrite1(evalFile,{'SUBJECT'},chname,'A1');
-            xlswrite1(evalFile,{'CONDITION'},chname,'B1');
-            xlswrite1(evalFile,{'TRIAL'},chname,'C1');
-            xlswrite1(evalFile,{'EVENT'},chname,'F1');
-            xlswrite1(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
-            xlswrite1(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
-            xlswrite1(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
-        else
-            xlwrite(evalFile,{'SUBJECT'},chname,'A1');
-            xlwrite(evalFile,{'CONDITION'},chname,'B1');
-            xlwrite(evalFile,{'TRIAL'},chname,'C1');
-            xlwrite(evalFile,{'EVENT'},chname,'F1');
-            xlwrite(evalFile,{fname},chname,['C',num2str(initialpos+3+fileNum)]);
-            xlwrite(evalFile,{subject},chname,['A',num2str(initialpos+3+fileNum)]);
-            xlwrite(evalFile,{con},chname,['B',num2str(initialpos+3+fileNum)]);
-        end
         
         for k = 1:length(anthroevtnames)
             
@@ -632,7 +566,6 @@ for i = 1:length(fl)
             
             if ~isnumeric(yd)
                 disp('non numeric anthro event')
-                
             end
             
             if iscell(anthroevtnames)
@@ -641,34 +574,27 @@ for i = 1:length(fl)
                 canthroevtnames = anthroevtnames(k);
             end
             
+            block = {canthroevtnames, '';
+                     'xdata', 'ydata'};
             if strcmp(excelserver,'on')
-                xlswrite1(evalFile,{canthroevtnames},chname,[ecell1{k},'2']);
-                xlswrite1(evalFile,{'xdata', 'ydata'},chname,[ecell1{k},'3']);
-                xlswrite1(evalFile,[xd,yd], chname,[ecell1{k},num2str(3+fileNum)]);
-                
-                % extra summary sheet
-                xlswrite1(evalFile,{canthroevtnames},'summary',[ecell1{k+n+offset+summary_offset-1},'2']);
-                xlswrite1(evalFile,{'xdata', 'ydata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
-                xlswrite1(evalFile,[xd,yd],'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
+                if i == 1
+                xlswrite1(evalFile,block,'anthro',[ecell1{anthro_offset},'2']);
+                end
+                xlswrite1(evalFile,[xd,yd],'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
                 
             else
-                xlwrite(evalFile,{canthroevtnames},chname,[ecell1{k},'2']);
-                xlwrite(evalFile,{'xdata', 'ydata'},chname,[ecell1{k},'3']);
-                xlwrite(evalFile,[xd, yd],chname,[ecell1{k},num2str(3+fileNum)]);
-                
-                %extra summary sheet
-                xlwrite(evalFile,{canthroevtnames},'summary',[ecell1{k+n+offset+summary_offset-1},'2']);
-                xlwrite(evalFile,{'xdata', 'ydata'},'summary',[ecell1{k+n+offset+summary_offset-1},'3']);
-                xlwrite(evalFile,[xd,yd], 'summary',[ecell1{k+n+offset+summary_offset-1},num2str(3+fileNum)]);
+                if i == 1
+                    xlwrite(evalFile, block,'anthro',[ecell1{anthro_offset},'2']);
+                end
+                xlwrite(evalFile,[xd,yd], 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
                 
             end
-            summary_offset = summary_offset+1;
+            anthro_offset = anthro_offset+1;
         end
         
     end
     
 end
-
 
 
 % == CLOSE EXCEL SERVER (if open) ==========================================================
