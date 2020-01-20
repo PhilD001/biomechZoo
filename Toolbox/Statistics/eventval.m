@@ -94,7 +94,10 @@ function evalFile = eventval(varargin)
 % Updated by Philippe C. Dixon Nov 2018
 % - increased length of cells for writing to excel (see ecell1, ecell2) to
 %   avoid error. Permanent fix still needed
-
+%
+% Updated by Philippe C. Dixon Jan 2020
+% - reduced the number of calls to excel to speed up processing
+% - merged all events by type into three sheets (anthro, global, local)
 
 % == SETTINGS ==============================================================================
 %
