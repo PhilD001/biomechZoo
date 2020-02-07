@@ -28,6 +28,10 @@ function bmech_kinematics(fld,settings)
 %
 % Updated by Philippe C. Dixon Jan 2018
 % - Fixed bug for missing empty subname in 'data.zoosystem.Header.SubName'
+%
+% Updated by Philippe C. Dixon Feb 2020
+% - removed fixed for problematic subject name field. Subject name is
+%   correctly handled in c3d2zoo
 
 % Set defaults/error check
 
@@ -50,16 +54,11 @@ subname_prev = [];
 for i = 1:length(flDyn)
     
     data = zload(flDyn{i});                                               % load dyn trial
-    subname = deblank(data.zoosystem.Header.SubName);                     % ID subject
-    
-    if isempty(subname)
-        [~,subname] = fileparts(data.zoosystem.SourceFile);
-        subname = subname(1:end-2);
-    end
+    subname = data.zoosystem.Header.SubName;                              % ID subject
 
     if ~strcmp(subname_prev,subname)                                      % load static
         flStat = engine('path',fld,'extension','zoo',...                  % associated with
-            'search path',[subname,filesep,settings.static]);            % dyn trial
+            'search path',[subname,filesep,settings.static]);             % dyn trial
         if isempty(flStat)
             error(['no static trials for: ',subname])
         elseif length(flStat)>1
@@ -68,7 +67,6 @@ for i = 1:length(flDyn)
         [~,flStatFile] = fileparts(flStat{1});
         disp(' ')
         disp(['processing static trial ',flStatFile,' for subject ',subname])                     % compute quants
-        disp(' ')
         sdata = zload(flStat{1});
         subname_prev = subname;
           

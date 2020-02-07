@@ -44,16 +44,8 @@ AVR = data.zoosystem.AVR;                              % Analog/Video rate
 % Get info from metadata
 %
 nForcePlates = data.zoosystem.Analog.FPlates.NUMUSED;
+units = data.zoosystem.Units.FORCE_UNITS;
 
-if isfield(data.zoosystem.Units,'Force')
-    units = data.zoosystem.Units.Force;
-elseif isfield(data.zoosystem.Units,'Forces')
-    units = data.zoosystem.Units.Forces;
-else
-    error('unknown Force units in data.zoosystem.Units')
-end
-
-    
 if strcmp(units,'N/kg')
     m = getanthro(data,'Bodymass');
 else
@@ -70,10 +62,6 @@ for j = 1:nForcePlates
     ref = peakSign(yd);
     yd = ref*yd;
     r = find(yd>thresh,1,'first');
-    
-%     if ~isempty(r) && yd(r+20) < yd(r)
-%         error('incorrect FS event idenfitied, increase dectection threshold')
-%     end
     
     if isempty(r)
         r = inf;
@@ -93,15 +81,6 @@ for i = 1:length(sides)
     
     % get and check for kinematic data
     FS = ZeniEventDetect(data,side(1),'FS',thresh);
-%     if isnan(FS)
-%         data.zoosystem.Analog.FPlates.LIMBSIDES.(side) = 'invalid';
-%         continue
-%     end
-%     
-%     if sum(isinf(FPstk))==nForcePlates
-%         data.zoosystem.Analog.FPlates.LIMBSIDES.(side) = 'invalid';
-%         continue
-%     end
     
     % associate event with correct limb side
     Diffs = ones(nForcePlates,length(FS));    % rows are FPs, columns are events

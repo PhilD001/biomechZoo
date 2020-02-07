@@ -187,37 +187,42 @@ function Header = setHeader(r)
 
 Header = struct;
 
-Header.SubName =  makerow(deblank(r.Parameter.SUBJECTS.NAMES.data));
+if isfield(r.Parameter,'SUBJECTS')
+    Header.SubName =  deblank(makerow(r.Parameter.SUBJECTS.NAMES.data));
+else
+    Header.SubName = '';
+end
 Header.Date = '';
 Header.Time = '';
 Header.Description = '';  % this remains empty
 
 
-function Units = setUnits(r)
+function Units = setUnits(r,data)
 
 pch = fieldnames(r.Parameter.POINT);
 
- %       data.zoosystem.Units.Forces = makerow(r.Parameter.POINT.FORCE_UNITS.data);
-
-
+Units = struct;
 for j = 1:length(pch)
     
     if strfind(pch{j},'UNITS')
-        
-        if strfind(pch{j},'_')
-            type = strrep(pch{j},'_UNITS','');
-            type = lower(type);
-            type(1) = upper(type(1));
-        else
-            type= 'Markers';
-        end
-        
-        Units.(type) = makerow(r.Parameter.POINT.(pch{j}).data);
+        Units.(pch{j}) = makerow(r.Parameter.POINT.(pch{j}).data);
     end
 end
 
-if isfield(Units,'Power')
-    Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS
+if isfield(Units,'POWER_UNITS')
+    Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS is W/kg not W
+end
+
+ach = data.zoosystem.Analog.Channels;
+check = true;
+count = 1;
+while check && count < length(ach)
+    if strfind(ach{count},'Voltage')
+        Units.EMG = 'Voltage';
+        check = false;
+    else
+        count = count+1;
+    end
 end
 
 % add force plate units usually Newtons
