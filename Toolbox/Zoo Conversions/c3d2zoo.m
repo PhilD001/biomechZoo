@@ -67,6 +67,8 @@ function data = c3d2zoo(fld,del)
 % Updated by Philippe C. Dixon Dec 2017
 % - bug fix for c3d files without 'SUBJECT' field in parameter info
 % - bug fix for c3d files without 'ANALOG' field in parameter info
+%
+% Updated by Philippe C. Dixon 
 
 % SET DEFAULTS / ERROR CHECK -----------------------------------------------------------------
 %
@@ -233,8 +235,8 @@ function Header = setHeader(r)
 
 Header = struct;
 
-if isfield(r.Parameter,'SUBJETS')
-    Header.SubName =  makerow(deblank(r.Parameter.SUBJECTS.NAMES.data));
+if isfield(r.Parameter,'SUBJECTS')
+    Header.SubName =  deblank(makerow(r.Parameter.SUBJECTS.NAMES.data));
 else
     Header.SubName = '';
 end
@@ -247,27 +249,16 @@ function Units = setUnits(r,data)
 
 pch = fieldnames(r.Parameter.POINT);
 
-%       data.zoosystem.Units.Forces = makerow(r.Parameter.POINT.FORCE_UNITS.data);
-
 Units = struct;
 for j = 1:length(pch)
     
     if strfind(pch{j},'UNITS')
-        
-        if strfind(pch{j},'_')
-            type = strrep(pch{j},'_UNITS','');
-            type = lower(type);
-            type(1) = upper(type(1));
-        else
-            type= 'Markers';
-        end
-        
-        Units.(type) = makerow(r.Parameter.POINT.(pch{j}).data);
+        Units.(pch{j}) = makerow(r.Parameter.POINT.(pch{j}).data);
     end
 end
 
-if isfield(Units,'Power')
-    Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS
+if isfield(Units,'POWER_UNITS')
+    Units.Power = 'W/kg'; % Vicon is lying r.Parameter.POINT.POWER_UNITS is W/kg not W
 end
 
 ach = data.zoosystem.Analog.Channels;

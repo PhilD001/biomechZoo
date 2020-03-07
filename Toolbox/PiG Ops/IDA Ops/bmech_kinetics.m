@@ -44,20 +44,19 @@ end
 
 % Get static and dynamic trials
 %
-fl_all = engine('path',fld,'extension','zoo');
-fl_static = engine('path',fld,'extension','zoo','search path',settings.static);
-fl = setdiff(fl_all,fl_static);
+fl = engine('path',fld,'extension','zoo');
+flStat = engine('path',fld,'extension','zoo','search path',settings.static);
+flDyn = setdiff(fl,flStat);
 
-
-for i = 1:length(fl)
-    data = zload(fl{i});                                               % load dyn trial
-    batchdisp(fl{i},'computing lower-limb kinetics')     
+for i = 1:length(flDyn)
+    data = zload(flDyn{i});                                               % load dyn trial
+    batchdisp(flDyn{i},'computing lower-limb kinetics')     
     data = kinetics_data(data,settings,filt); 
-    zsave(fl{i},data);
+    zsave(flDyn{i},data);
 end
 
-for i = 1:length(fl_static)
-    batchdisp(fl_static{i},'skipping static trial')
+for i = 1:length(flStat)
+    batchdisp(flStat{i},'skipping static trial')
 end
 
 

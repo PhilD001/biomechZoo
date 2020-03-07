@@ -40,8 +40,7 @@ end
 
 % find gait direction in lab
 %
-[data,dir] = getDir(data);
-data.zoosystem.CompInfo.WalkDirection = dir;
+[data,~] = getDir(data);
 
 
 % Process GRF data
