@@ -737,6 +737,9 @@ end
 % end
 
 
+% MAKE BONES FOR OFM
+
+
 function comparePiGangles(data,segment,mO,mA,mL,mP)
 
 switch segment
@@ -750,7 +753,7 @@ switch segment
     case 'Left Tibia'
         seg = 'LTI';
         
-    case 'Left Foot';
+    case 'Left Foot'
         seg = 'LFO';
         
     case 'Right Femur'
@@ -759,7 +762,7 @@ switch segment
     case 'Right Tibia'
         seg = 'RTI';
         
-    case 'Right Foot';
+    case 'Right Foot'
         seg = 'RFO';
 end
 
