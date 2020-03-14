@@ -6,7 +6,7 @@ function indx = ZeniEventDetect(data,side,evt,delta)
 % ARGUMENTS
 %  data     ...   zoo data to be operated on
 %  side     ...   leg (left 'L' right 'R')
-%  evt      ...   name of event. 'FS' or 'FO'
+%  evt      ...   name of event. e.g. 'FS', 'FO', 'Left_FootStrike1'
 %  delta    ...   threshold for event detection. See 'peakdet.m'. Default 10
 %
 % RETURNS
