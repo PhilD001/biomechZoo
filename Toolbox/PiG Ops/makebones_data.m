@@ -799,6 +799,61 @@ data = addchannel_data(data,'LHDF1',LHDF1,'video');
 data = addchannel_data(data,'LHDF2',LHDF2,'video');
 data = addchannel_data(data,'LHDF3',LHDF3,'video');
 
+% OFM Right Tibia --------------------------------------------------------------
+
+RKNE = data.RKNE.line;
+RHFB = data.RHFB.line;
+RTUB = data.RTUB.line;
+RTIB = data.RTIB.line;
+RSHN = data.RSHN.line;
+RANK = data.RANK.line;
+RMMA = data.RMMA.line;
+
+segment = 'RightTibiaOFM';
+boneLength = magnitude(RAJC-RFEO);
+boneLength = nanmean(boneLength);
+
+O = pointonline(RMMA,RANK,0.5);
+P = RTIP-RTIO;                            % PiG axis moved to OFM origin
+Ltemp = RANK-RTIB;
+A = cross(Ltemp,P);
+L = cross(P,A);
+
+[RAJC,RTIB1,RTIB2,RTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+data = addchannel_data(data,'RAJC',RAJC,'video');
+data = addchannel_data(data,'RTIB1',RTIB1,'video');
+data = addchannel_data(data,'RTIB2',RTIB2,'video');
+data = addchannel_data(data,'RTIB3',RTIB3,'video');
+
+% OFM Left Tibia ---------------------------------------------------------------
+
+LKNE = data.LKNE.line;
+LHFB = data.LHFB.line;
+LTUB = data.LTUB.line;
+LTIB = data.LTIB.line;
+LSHN = data.LSHN.line;
+LANK = data.LANK.line;
+LMMA = data.LMMA.line;
+
+segment = 'LeftTibiaOFM';
+boneLength = magnitude(LAJC-LFEO);
+boneLength = nanmean(boneLength);
+
+O = pointonline(LMMA,LANK,0.5);
+P = LTIP-LTIO;                            % PiG axis moved to OFM origin
+Ltemp = -(LANK-LTIB);
+A = cross(Ltemp,P);
+L = (cross(P,A));
+
+
+[LAJC,LTIB1,LTIB2,LTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+data = addchannel_data(data,'LAJC',LAJC,'video');
+data = addchannel_data(data,'LTIB1',LTIB1,'video');
+data = addchannel_data(data,'LTIB2',LTIB2,'video');
+data = addchannel_data(data,'LTIB3',LTIB3,'video');
+
 %-------------------------------------------------------------------------------
 function [O,A,L,P] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test)
 
