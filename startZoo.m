@@ -71,7 +71,6 @@ end
 sub(cellfun(@isempty,sub)) = [];
 
 
-
 % b) load all other subfolders
 for i = 1:length(sub)
     csub = sub{i};
@@ -93,7 +92,7 @@ end
 % c) load the help files (if available)
 %
 root_fld = zoo_fld(1:indx(end-2));
-fl = engine('fld',root_fld,'search file','samplestudy_process','extension','.m');
+fl = engine('fld',[root_fld, 'biomechZoo-help'],'search file','samplestudy_process','extension','.m');
 
 if ~isempty(fl)
     
