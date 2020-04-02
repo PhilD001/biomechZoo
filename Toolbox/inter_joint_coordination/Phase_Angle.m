@@ -16,10 +16,11 @@ if nargin == 3
     X=hilbert(cdata);
 
     % 3) Phase Angle
-    PA_data=zeros(1,L);
-        for i=1:L
-        PA_data(i)=atan2(imag(X(i)),real(X(i)));
-        end
+    % PA_data=zeros(1,L);
+    PA_data = zeros(size(angle));
+    for i=1:L
+        PA_data(i+event1)=atan2(imag(X(i)),real(X(i)));
+    end
     PA_data=rad2deg(PA_data);
 else
     data=angle;
@@ -33,9 +34,9 @@ else
 
     % 3) Phase Angle
     PA_data=zeros(1,L);
-        for i=1:L
+    for i=1:L
         PA_data(i)=atan2(imag(X(i)),real(X(i)));
-        end
+    end
     PA_data=rad2deg(PA_data);
 end
 

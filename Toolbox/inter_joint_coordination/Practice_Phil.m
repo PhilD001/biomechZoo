@@ -1,4 +1,19 @@
+
+function Practice_Phil
+
 %% This is set up to use Hip and Knee data
+
+%% Step 0: Load data
+%
+fld = fileparts(which('Practice_Phil'));          % get root Zoosystem folder
+hip = load([fld, filesep, 'left_hip_data.mat']);
+knee = load([fld, filesep, 'left_knee_data.mat']);
+left_hip_stk = hip.left_hip_stk;
+left_knee_stk = knee.left_knee_stk;
+
+figure; hold on
+plot(left_hip_stk')
+title('LHipAngles_x')
 
 %% Step 1: Determine Phase Angles
 
