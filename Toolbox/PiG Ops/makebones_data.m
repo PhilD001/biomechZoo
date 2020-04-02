@@ -566,6 +566,159 @@ if strcmpi(type,'static')
         data = addchannel_data(data,'RF3L',L3,'video');
         data = addchannel_data(data,'RF3P',P3,'video');
     end
+
+    %==============OFM ForeFoot Axes===============================================%
+    % For the ForeFoot, the virtual markers change to:
+    % 0 is origin;
+    % 1 is proximal (up);
+    % 2 is lateral (medial for right, lateral for left);
+    % 3 is anterior (forward);
+
+    RP1M = data.RP1M.line;
+    RP5M = data.RP5M.line;
+    RD1M = data.RD1M.line;
+    RD5M = data.RD1M.line;
+
+    % This sets up the calculation of the point the long
+    % axis runs through which I have called longaxis:
+    a = point_to_plane((pointonline(RP1M,RP5M,0.75)),RD1M,RD5M,RP5M);
+    b = point_to_plane((pointonline(RP1M,RD1M,0.5)),RD1M,RD5M,RP5M);
+    c = point_to_plane((pointonline(RD1M,RTOE,0.5)),RD1M,RD5M,RP5M);
+    d = pointonline(RD5M,RP5M,0.5);
+
+    starts = [a(1) a(2) a(3); b(1) b(2) b(3)];
+    ends = [c(1) c(2) c(3); d(1) d(2) d(3)];
+
+    longaxis = lineIntersect3D(starts,ends);
+
+    O = point_to_plane(RTOE,RD1M,RD5M,RP5M); % ForeFoot Origin
+    P = RTOE - O;                            % Points up
+    A = -(longaxis - O);                     % Points forward
+    L = cross(P,A);                          % Points medial
+
+    [RFOF0,RFOF3,RFOF2,RFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RFOF0',RFOF0,'video');
+    data = addchannel_data(data,'RFOF1',RFOF1,'video');
+    data = addchannel_data(data,'RFOF2',RFOF2,'video');
+    data = addchannel_data(data,'RFOF3',RFOF3,'video');
+
+
+    % OFM Left ForeFoot ------------------------------------------------------------
+
+    LP1M = data.LP1M.line;
+    LP5M = data.LP5M.line;
+    LD1M = data.LD1M.line;
+    LD5M = data.LD5M.line;
+
+    a = point_to_plane((pointonline(LP1M,LP5M,0.75)),LD1M,LD5M,LP5M);
+    b = point_to_plane((pointonline(LP1M,LD1M,0.5)),LD1M,LD5M,LP5M);
+    c = point_to_plane((pointonline(LD1M,LTOE,0.5)),LD1M,LD5M,LP5M);
+    d = pointonline(LD5M,LP5M,0.5);
+
+    starts = [a(1) a(2) a(3); b(1) b(2) b(3)];
+    ends = [c(1) c(2) c(3); d(1) d(2) d(3)];
+
+    longaxis = lineIntersect3D(starts,ends);
+
+    O = point_to_plane(LTOE,LD1M,LD5M,LP5M);  % ForeFoot Origin
+    P = LTOE - O;                             % Points up
+    A = -(longaxis - O);                      % Points forward
+    L = -(cross(P,A));                        % Points lateral
+
+    [LFOF0,LFOF3,LFOF2,LFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LFOF0',LFOF0,'video');
+    data = addchannel_data(data,'LFOF1',LFOF1,'video');
+    data = addchannel_data(data,'LFOF2',LFOF2,'video');
+    data = addchannel_data(data,'LFOF3',LFOF3,'video');
+
+    % OFM Right HindFoot -----------------------------------------------------------
+if isfield(data,'RPCA') && isfield(data,'RHEE') && isfield(data,'RMMA') && isfield(data,'RANK')
+    RPCA = data.RPCA.line;
+    RHEE = data.RHEE.line;
+    RMMA = data.RMMA.line;
+    RANK = data.RANK.line;
+
+    midmal = pointonline(RMMA,RANK,0.5);                  % midpoint of malleoli
+
+    O = RHEE-(RPCA-RHEE);
+    Atemp = midmal-RPCA;
+    A = [Atemp(:,1),Atemp(:,2),zeros(size(Atemp,1),1)];   % This makes vector parallel to floor
+    L = -cross(A,(RPCA-O));                               % Medial for right side
+    P = cross(A,L);
+
+    [RHDF0,RHDF3,RHDF2,RHDF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RHDF0',RHDF0,'video');
+    data = addchannel_data(data,'RHDF1',RHDF1,'video');
+    data = addchannel_data(data,'RHDF2',RHDF2,'video');
+    data = addchannel_data(data,'RHDF3',RHDF3,'video');
+end
+
+% OFM Left HindFoot ------------------------------------------------------------
+if isfield(data,'LPCA') && isfield(data,'LHEE') && isfield(data,'LMMA') && isfield(data,'LANK')
+    LPCA = data.LPCA.line;
+    LHEE = data.LHEE.line;
+    LMMA = data.LMMA.line;
+    LANK = data.LANK.line;
+
+    midmal = pointonline(LMMA,LANK,0.5);              % midpoint of malleoli
+
+    O = LHEE-(LPCA-LHEE);
+    Atemp = midmal-LPCA;
+    A = [Atemp(:,1),Atemp(:,2),zeros(size(Atemp,1),1)];   % This makes vector parallel to floor
+    L = cross(A,(LPCA-O));                            % Lateral for left side
+    P = cross(A,L);
+
+    [LHDF0,LHDF3,LHDF2,LHDF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LHDF0',LHDF0,'video');
+    data = addchannel_data(data,'LHDF1',LHDF1,'video');
+    data = addchannel_data(data,'LHDF2',LHDF2,'video');
+    data = addchannel_data(data,'LHDF3',LHDF3,'video');
+end
+
+% OFM Right Tibia --------------------------------------------------------------
+if isfield(data,'RMMA') && isfield(data,'RANK') && isfield(data,'RTIB')
+    RTIB = data.RTIB.line;
+    RANK = data.RANK.line;
+    RMMA = data.RMMA.line;
+
+    O = pointonline(RMMA,RANK,0.5);
+    P = RTIP-RTIO;                            % PiG axis moved to OFM origin
+    Ltemp = RANK-RTIB;
+    A = cross(Ltemp,P);
+    L = cross(P,A);
+
+    [RAJC,RTIB1,RTIB2,RTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RAJC',RAJC,'video');
+    data = addchannel_data(data,'RTIB1',RTIB1,'video');
+    data = addchannel_data(data,'RTIB2',RTIB2,'video');
+    data = addchannel_data(data,'RTIB3',RTIB3,'video');
+end
+
+% OFM Left Tibia ---------------------------------------------------------------
+if isfield(data,'LMMA') && isfield(data,'LANK') && isfield(data,'LTIB')
+    LTIB = data.LTIB.line;
+    LANK = data.LANK.line;
+    LMMA = data.LMMA.line;
+
+    O = pointonline(LMMA,LANK,0.5);
+    P = LTIP-LTIO;                            % PiG axis moved to OFM origin
+    Ltemp = -(LANK-LTIB);
+    A = cross(Ltemp,P);
+    L = (cross(P,A));
+
+
+    [LAJC,LTIB1,LTIB2,LTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LAJC',LAJC,'video');
+    data = addchannel_data(data,'LTIB1',LTIB1,'video');
+    data = addchannel_data(data,'LTIB2',LTIB2,'video');
+    data = addchannel_data(data,'LTIB3',LTIB3,'video');
+end
 end
 
 % Compute Right  Toe 'bone'
@@ -664,195 +817,6 @@ end
 %
 %
 % end
-
-
-
-%==============OFM ForeFoot Axes===============================================%
-% For the ForeFoot, the virtual markers change to:
-% 0 is origin;
-% 1 is proximal (up);
-% 2 is lateral (medial for right, lateral for left);
-% 3 is anterior (forward);
-
-RP1M = data.RP1M.line;
-RP5M = data.RP5M.line;
-RD1M = data.RD1M.line;
-RD5M = data.RD1M.line;
-
-segment = 'RightForeFoot';
-boneLength = magnitude(point_to_plane(RTOE,RD1M,RD5M,RP5M)- RP5M);
-boneLength = nanmean(boneLength);
-
-% This sets up the calculation of the point the long
-% axis runs through which I have called longaxis:
-a = point_to_plane((pointonline(RP1M,RP5M,0.75)),RD1M,RD5M,RP5M);
-b = point_to_plane((pointonline(RP1M,RD1M,0.5)),RD1M,RD5M,RP5M);
-c = point_to_plane((pointonline(RD1M,RTOE,0.5)),RD1M,RD5M,RP5M);
-d = pointonline(RD5M,RP5M,0.5);
-
-starts = [a(1) a(2) a(3); b(1) b(2) b(3)];
-ends = [c(1) c(2) c(3); d(1) d(2) d(3)];
-
-longaxis = lineIntersect3D(starts,ends);
-
-O = point_to_plane(RTOE,RD1M,RD5M,RP5M); % ForeFoot Origin
-P = RTOE - O;                            % Points up
-A = -(longaxis - O);                     % Points forward
-L = cross(P,A);                          % Points medial
-
-[RFOF0,RFOF3,RFOF2,RFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-
-data = addchannel_data(data,'RFOF0',RFOF0,'video');
-data = addchannel_data(data,'RFOF1',RFOF1,'video');
-data = addchannel_data(data,'RFOF2',RFOF2,'video');
-data = addchannel_data(data,'RFOF3',RFOF3,'video');
-
-
-% OFM Left ForeFoot ------------------------------------------------------------
-
-LP1M = data.LP1M.line;
-LP5M = data.LP5M.line;
-LD1M = data.LD1M.line;
-LD5M = data.LD5M.line;
-
-segment = 'LeftForeFoot';
-boneLength = magnitude(point_to_plane(LTOE,LD1M,LD5M,LP5M)- LP5M);
-boneLength = nanmean(boneLength);
-
-a = point_to_plane((pointonline(LP1M,LP5M,0.75)),LD1M,LD5M,LP5M);
-b = point_to_plane((pointonline(LP1M,LD1M,0.5)),LD1M,LD5M,LP5M);
-c = point_to_plane((pointonline(LD1M,LTOE,0.5)),LD1M,LD5M,LP5M);
-d = pointonline(LD5M,LP5M,0.5);
-
-starts = [a(1) a(2) a(3); b(1) b(2) b(3)];
-ends = [c(1) c(2) c(3); d(1) d(2) d(3)];
-
-longaxis = lineIntersect3D(starts,ends);
-
-O = point_to_plane(LTOE,LD1M,LD5M,LP5M);  % ForeFoot Origin
-P = LTOE - O;                             % Points up
-A = -(longaxis - O);                      % Points forward
-L = -(cross(P,A));                        % Points lateral
-
-[LFOF0,LFOF3,LFOF2,LFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-
-data = addchannel_data(data,'LFOF0',LFOF0,'video');
-data = addchannel_data(data,'LFOF1',LFOF1,'video');
-data = addchannel_data(data,'LFOF2',LFOF2,'video');
-data = addchannel_data(data,'LFOF3',LFOF3,'video');
-
-% OFM Right HindFoot -----------------------------------------------------------
-
-RCPG = data.RCPG.line;
-RPCA = data.RPCA.line;
-RHEE = data.RHEE.line;
-RSTL = data.RSTL.line;
-RLCA = data.RLCA.line;
-RMMA = data.RMMA.line;
-RANK = data.RANK.line;
-
-segment = 'RightHindFoot';
-boneLength = magnitude(RMMA-RHEE);
-boneLength = nanmean(boneLength);
-
-midmal = pointonline(RMMA,RANK,0.5);      % midpoint of malleoli
-
-O = RHEE - (RPCA-RHEE);
-Atemp = midmal - RPCA;
-A = [Atemp(1),Atemp(2),0];                % This makes vector parallel to floor
-L = -cross(A,(RPCA-O));                   % Medial for right side
-P = cross(A,L);
-
-[RHDF0,RHDF3,RHDF2,RHDF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-
-data = addchannel_data(data,'RHDF0',RHDF0,'video');
-data = addchannel_data(data,'RHDF1',RHDF1,'video');
-data = addchannel_data(data,'RHDF2',RHDF2,'video');
-data = addchannel_data(data,'RHDF3',RHDF3,'video');
-
-% OFM Left HindFoot ------------------------------------------------------------
-
-LCPG = data.LCPG.line;
-LPCA = data.LPCA.line;
-LHEE = data.LHEE.line;
-LSTL = data.LSTL.line;
-LLCA = data.LLCA.line;
-LMMA = data.LMMA.line;
-LANK = data.LANK.line;
-
-segment = 'LeftHindFoot';
-boneLength = magnitude(LMMA-LHEE);
-boneLength = nanmean(boneLength);
-
-midmal = pointonline(LMMA,LANK,0.5);      % midpoint of malleoli
-
-O = LHEE - (LPCA-LHEE);
-Atemp = midmal - LPCA;
-A = [Atemp(1),Atemp(2),0];                % This makes vector parallel to floor
-L = cross(A,(LPCA-O));                    % Lateral for left side
-P = cross(A,L);
-
-[LHDF0,LHDF3,LHDF2,LHDF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-
-data = addchannel_data(data,'LHDF0',LHDF0,'video');
-data = addchannel_data(data,'LHDF1',LHDF1,'video');
-data = addchannel_data(data,'LHDF2',LHDF2,'video');
-data = addchannel_data(data,'LHDF3',LHDF3,'video');
-
-% OFM Right Tibia --------------------------------------------------------------
-
-RKNE = data.RKNE.line;
-RHFB = data.RHFB.line;
-RTUB = data.RTUB.line;
-RTIB = data.RTIB.line;
-RSHN = data.RSHN.line;
-RANK = data.RANK.line;
-RMMA = data.RMMA.line;
-
-segment = 'RightTibiaOFM';
-boneLength = magnitude(RAJC-RFEO);
-boneLength = nanmean(boneLength);
-
-O = pointonline(RMMA,RANK,0.5);
-P = RTIP-RTIO;                            % PiG axis moved to OFM origin
-Ltemp = RANK-RTIB;
-A = cross(Ltemp,P);
-L = cross(P,A);
-
-[RAJC,RTIB1,RTIB2,RTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-
-data = addchannel_data(data,'RAJC',RAJC,'video');
-data = addchannel_data(data,'RTIB1',RTIB1,'video');
-data = addchannel_data(data,'RTIB2',RTIB2,'video');
-data = addchannel_data(data,'RTIB3',RTIB3,'video');
-
-% OFM Left Tibia ---------------------------------------------------------------
-
-LKNE = data.LKNE.line;
-LHFB = data.LHFB.line;
-LTUB = data.LTUB.line;
-LTIB = data.LTIB.line;
-LSHN = data.LSHN.line;
-LANK = data.LANK.line;
-LMMA = data.LMMA.line;
-
-segment = 'LeftTibiaOFM';
-boneLength = magnitude(LAJC-LFEO);
-boneLength = nanmean(boneLength);
-
-O = pointonline(LMMA,LANK,0.5);
-P = LTIP-LTIO;                            % PiG axis moved to OFM origin
-Ltemp = -(LANK-LTIB);
-A = cross(Ltemp,P);
-L = (cross(P,A));
-
-
-[LAJC,LTIB1,LTIB2,LTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-
-data = addchannel_data(data,'LAJC',LAJC,'video');
-data = addchannel_data(data,'LTIB1',LTIB1,'video');
-data = addchannel_data(data,'LTIB2',LTIB2,'video');
-data = addchannel_data(data,'LTIB3',LTIB3,'video');
 
 %-------------------------------------------------------------------------------
 function [O,A,L,P] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test)
