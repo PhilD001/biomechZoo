@@ -567,33 +567,36 @@ if strcmpi(type,'static')
         data = addchannel_data(data,'RF3P',P3,'video');
     end
 
-    %==============OFM ForeFoot Axes===============================================%
-    % For the ForeFoot, the virtual markers change to:
-    % 0 is origin;
-    % 1 is proximal (up);
-    % 2 is lateral (medial for right, lateral for left);
-    % 3 is anterior (forward);
+%=========================OFM AXES=============================================%
+% ------OFM Right ForeFoot -----------------------------------------------------
+% For the ForeFoot, the virtual markers change to:
+% 0 is origin;
+% 1 is proximal (up);
+% 2 is lateral (medial for right, lateral for left);
+% 3 is anterior (forward);
 
+if isfield(data,'RP1M') && isfield(data,'RP5M') && isfield(data,'RD1M') && isfield(data,'RD5M')
     RP1M = data.RP1M.line;
     RP5M = data.RP5M.line;
     RD1M = data.RD1M.line;
-    RD5M = data.RD1M.line;
+    RD5M = data.RD5M.line;
+
+    projTOE = point_to_plane(RTOE,RD1M,RD5M,RP5M);
 
     % This sets up the calculation of the point the long
     % axis runs through which I have called longaxis:
-    a = point_to_plane((pointonline(RP1M,RP5M,0.75)),RD1M,RD5M,RP5M);
-    b = point_to_plane((pointonline(RP1M,RD1M,0.5)),RD1M,RD5M,RP5M);
-    c = point_to_plane((pointonline(RD1M,RTOE,0.5)),RD1M,RD5M,RP5M);
-    d = pointonline(RD5M,RP5M,0.5);
+    a1 = point_to_plane((pointonline(RP1M,RP5M,0.75)),RD1M,RD5M,RP5M); %start line 1
+    b1 = point_to_plane((pointonline(RP1M,RD1M,0.5)),RD1M,RD5M,RP5M);  %start line 2
+    a2 = point_to_plane((pointonline(RD1M,RTOE,0.5)),RD1M,RD5M,RP5M);  %end line 1
+    b2 = pointonline(RD5M,RP5M,0.5);                                   %end line 2
 
-    starts = [a(1) a(2) a(3); b(1) b(2) b(3)];
-    ends = [c(1) c(2) c(3); d(1) d(2) d(3)];
+    for i = 1:length(a1)
+        longaxis(i,:) = lineIntersect3D([a1(i,:);b1(i,:)],[a2(i,:);b2(i,:)]);
+    end
 
-    longaxis = lineIntersect3D(starts,ends);
-
-    O = point_to_plane(RTOE,RD1M,RD5M,RP5M); % ForeFoot Origin
-    P = RTOE - O;                            % Points up
-    A = -(longaxis - O);                     % Points forward
+    O = projTOE;                             % ForeFoot Origin
+    P = RTOE-O;                              % Points up
+    A = -(longaxis-O);                       % Points forward
     L = cross(P,A);                          % Points medial
 
     [RFOF0,RFOF3,RFOF2,RFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
@@ -602,28 +605,30 @@ if strcmpi(type,'static')
     data = addchannel_data(data,'RFOF1',RFOF1,'video');
     data = addchannel_data(data,'RFOF2',RFOF2,'video');
     data = addchannel_data(data,'RFOF3',RFOF3,'video');
+end
 
-
-    % OFM Left ForeFoot ------------------------------------------------------------
-
+% ------ OFM Left ForeFoot ----------------------------------------------------
+if isfield(data,'LP1M') && isfield(data,'LP5M') && isfield(data,'LD1M') && isfield(data,'LD5M')
     LP1M = data.LP1M.line;
     LP5M = data.LP5M.line;
     LD1M = data.LD1M.line;
     LD5M = data.LD5M.line;
+    projTOE = point_to_plane(LTOE,LD1M,LD5M,LP5M);
 
-    a = point_to_plane((pointonline(LP1M,LP5M,0.75)),LD1M,LD5M,LP5M);
-    b = point_to_plane((pointonline(LP1M,LD1M,0.5)),LD1M,LD5M,LP5M);
-    c = point_to_plane((pointonline(LD1M,LTOE,0.5)),LD1M,LD5M,LP5M);
-    d = pointonline(LD5M,LP5M,0.5);
+    % This sets up the calculation of the point the long
+    % axis runs through which I have called longaxis:
+    a1 = point_to_plane((pointonline(LP1M,LP5M,0.75)),LD1M,LD5M,LP5M); %start line 1
+    b1 = point_to_plane((pointonline(LP1M,LD1M,0.5)),LD1M,LD5M,LP5M);  %start line 2
+    a2 = point_to_plane((pointonline(LD1M,LTOE,0.5)),LD1M,LD5M,LP5M);  %end line 1
+    b2 = pointonline(LD5M,LP5M,0.5);                                   %end line 2
+    
+    for i = 1:length(a1)
+        longaxis(i,:) = lineIntersect3D([a1(i,:);b1(i,:)],[a2(i,:);b2(i,:)]);
+    end
 
-    starts = [a(1) a(2) a(3); b(1) b(2) b(3)];
-    ends = [c(1) c(2) c(3); d(1) d(2) d(3)];
-
-    longaxis = lineIntersect3D(starts,ends);
-
-    O = point_to_plane(LTOE,LD1M,LD5M,LP5M);  % ForeFoot Origin
-    P = LTOE - O;                             % Points up
-    A = -(longaxis - O);                      % Points forward
+    O = projTOE;  % ForeFoot Origin
+    P = LTOE-O;                             % Points up
+    A = -(longaxis-O);                      % Points forward
     L = -(cross(P,A));                        % Points lateral
 
     [LFOF0,LFOF3,LFOF2,LFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
@@ -632,8 +637,9 @@ if strcmpi(type,'static')
     data = addchannel_data(data,'LFOF1',LFOF1,'video');
     data = addchannel_data(data,'LFOF2',LFOF2,'video');
     data = addchannel_data(data,'LFOF3',LFOF3,'video');
+end
 
-    % OFM Right HindFoot -----------------------------------------------------------
+% OFM Right HindFoot -----------------------------------------------------------
 if isfield(data,'RPCA') && isfield(data,'RHEE') && isfield(data,'RMMA') && isfield(data,'RANK')
     RPCA = data.RPCA.line;
     RHEE = data.RHEE.line;
