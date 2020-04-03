@@ -621,7 +621,7 @@ if isfield(data,'LP1M') && isfield(data,'LP5M') && isfield(data,'LD1M') && isfie
     b1 = point_to_plane((pointonline(LP1M,LD1M,0.5)),LD1M,LD5M,LP5M);  %start line 2
     a2 = point_to_plane((pointonline(LD1M,LTOE,0.5)),LD1M,LD5M,LP5M);  %end line 1
     b2 = pointonline(LD5M,LP5M,0.5);                                   %end line 2
-    
+
     for i = 1:length(a1)
         longaxis(i,:) = lineIntersect3D([a1(i,:);b1(i,:)],[a2(i,:);b2(i,:)]);
     end
@@ -724,6 +724,43 @@ if isfield(data,'LMMA') && isfield(data,'LANK') && isfield(data,'LTIB')
     data = addchannel_data(data,'LTIB1',LTIB1,'video');
     data = addchannel_data(data,'LTIB2',LTIB2,'video');
     data = addchannel_data(data,'LTIB3',LTIB3,'video');
+end
+
+%----OFM Right Hallux------------------------------------------------------
+if isfield(data,'RHLX')
+    RHLX = data.RHLX.line;
+
+    O = RHLX;
+    A = O - RD1M;
+    Ltemp = RFOF2-RFOF0;
+    P = cross(A,Ltemp);
+    L = cross(P,A);
+
+    [RHLX0,RHLX3,RHLX2,RHLX1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RHLX0',RHLX0,'video');
+    data = addchannel_data(data,'RHLX1',RHLX1,'video');
+    data = addchannel_data(data,'RHLX2',RHLX2,'video');
+    data = addchannel_data(data,'RHLX3',RHLX3,'video');
+end
+
+%----OFM Left Hallux------------------------------------------------------
+if isfield(data,'LHLX')
+    LHLX = data.LHLX.line;
+
+    O = LHLX;
+    A = O - LD1M;
+    Ltemp = LFOF2-LFOF0;
+    P = cross(A,Ltemp);
+    L = cross(P,A);
+
+    [LHLX0,LHLX3,LHLX2,LHLX1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LHLX0',LHLX0,'video');
+    data = addchannel_data(data,'LHLX1',LHLX1,'video');
+    data = addchannel_data(data,'LHLX2',LHLX2,'video');
+    data = addchannel_data(data,'LHLX3',LHLX3,'video');
+
 end
 end
 
