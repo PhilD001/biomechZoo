@@ -135,7 +135,17 @@ for i = 1:length(ch)
         case 'staticend'          
             exd = length(yd);
             eyd = 0;
-            
+        
+        case 'first_FS'
+             exd_r = ZeniEventDetect(data, 'R', 'FS');
+             exd_l = ZeniEventDetect(data, 'L', 'FS');
+             
+             if exd_r(1) < exd_l(1)
+                exd = exd_r;
+             else
+                 exd = exd_l;
+             end
+         
             
         otherwise
             error(['event type: ',type,' does not exist'])
