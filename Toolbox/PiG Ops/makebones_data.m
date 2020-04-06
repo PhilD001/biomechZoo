@@ -1,7 +1,7 @@
 function data = makebones_data(data,type,foot_flat,test)
 
-% DATA = MAKEBONES_DATA(data,type,foot_flat,test) creates segment 'bones' for use in kinematic / 
-% kinetic modelling or for visualization in director. Bones are virtual markers representing 
+% DATA = MAKEBONES_DATA(data,type,foot_flat,test) creates segment 'bones' for use in kinematic /
+% kinetic modelling or for visualization in director. Bones are virtual markers representing
 % segment axes.
 %
 % ARGUMENTS
@@ -155,14 +155,14 @@ LAnkleJC = data.LAnkleJC.line;
 
 % Head coordinate system -----------------------------------------------------------------
 %
-% From PiG manual: 
-% - The head origin is defined as the midpoint between the LFHD and RFHD markers 
-%   (also denoted 'Front'). 
+% From PiG manual:
+% - The head origin is defined as the midpoint between the LFHD and RFHD markers
+%   (also denoted 'Front').
 % - The midpoint between the LBHD and RBHD markers ('Back') is also calculated, along with
-%   the 'Left' and 'Right' sides of the head from the LFHD and LBHD midpoint, and the RFHD 
+%   the 'Left' and 'Right' sides of the head from the LFHD and LBHD midpoint, and the RFHD
 %   and RBHD midpoint respectively.
-% - The predominant head axis, the X axis, is defined as the forward facing direction 
-%   (Front - Back). 
+% - The predominant head axis, the X axis, is defined as the forward facing direction
+%   (Front - Back).
 % - The secondary Y axis is the lateral axis from Right to Left (which is orthoganal as usual).
 %
 % * Outputs are not the same as Vicon
@@ -172,41 +172,41 @@ if isfield(data,'LFHD') && isfield(data,'RFHD') && isfield(data,'LBHD') && isfie
     RFHD = data.RFHD.line;
     LBHD = data.LBHD.line;
     RBHD = data.RBHD.line;
-    
+
     segment = 'Head';
     boneLength = magnitude(RFHD-LFHD);
     boneLength = nanmean(boneLength);
 
     O = (LFHD+RFHD)/2;                                                  % origin or 'front'
-    
+
     back  = (LBHD+RBHD)/2;
-    
+
     right = (RFHD+RBHD)/2;
     left = (LFHD+LBHD)/2;
-    
+
     A = makeunit(O-back);
     temp = makeunit(right-left);
     P = makeunit(cross(temp,A));
     L = makeunit(cross(P,A));
-    
+
     [HEDO,HEDA,HEDL,HEDP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-    
+
     data = addchannel_data(data,'HEDO',HEDO,'video');
     data = addchannel_data(data,'HEDA',HEDA,'video');
     data = addchannel_data(data,'HEDL',HEDL,'video');
     data = addchannel_data(data,'HEDP',HEDP,'video');
-    
+
 end
 
 % Thorax coordinate system
 %
-% From Vicon: 
+% From Vicon:
 % - The orientation of the thorax is defined before the origin. The Z axis, pointing
-%   downwards, is the predominant axis. This is defined as the direction from the midpoint 
-%   of the CLAV and C7 to the midpoint of STRN and T10. 
-% - A secondary direction pointing forwards is the midpoint of C7 and T10 to the midpoint 
+%   downwards, is the predominant axis. This is defined as the direction from the midpoint
+%   of the CLAV and C7 to the midpoint of STRN and T10.
+% - A secondary direction pointing forwards is the midpoint of C7 and T10 to the midpoint
 %   of CLAV and STRN. The resulting X axis points forwards, and the Y axis points rightwards.
-% - The thorax origin is then calculated from the CLAV marker, with an offset of half a 
+% - The thorax origin is then calculated from the CLAV marker, with an offset of half a
 %   marker diameter backwards along the X axis.
 %
 % * Good agreement with Vicon outputs
@@ -214,15 +214,15 @@ end
 if isfield(data,'CLAV') && isfield(data,'C7') && isfield(data,'T10') && isfield(data,'STRN')
     CLAV = data.CLAV.line;
     C7 = data.C7.line;
-    
+
     STRN = data.STRN.line;
     T10 = data.T10.line;
-    
+
     midClavC7 = (CLAV+C7)/2;
     midStrT10 = (STRN+T10)/2;
     midClavStrn = (CLAV+STRN)/2;
     midC7T10 = (C7+T10)/2;
-    
+
     segment = 'Thorax';
     boneLength = magnitude(STRN-CLAV);               % not important
     O = CLAV;                                        % marker width offset not done
@@ -230,14 +230,14 @@ if isfield(data,'CLAV') && isfield(data,'C7') && isfield(data,'T10') && isfield(
     temp = makeunit(midClavStrn-midC7T10);
     L = makeunit(cross(P,temp));
     A = makeunit(cross(L,P));
-    
+
     [TRXO,TRXA,TRXL,TRXP] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
-    
+
     data = addchannel_data(data,'TRXO',TRXO,'video');
     data = addchannel_data(data,'TRXA',TRXA,'video');
     data = addchannel_data(data,'TRXL',TRXL,'video');
     data = addchannel_data(data,'TRXP',TRXP,'video');
-    
+
 end
 
 % Pelvis coordinate system ---------------------------------------------------------------
@@ -387,23 +387,23 @@ data = addchannel_data(data,'LFOP',LFOP,'video');
 
 
 if strcmpi(type,'static')
-    
+
     % LF1_RAxis
     O = LTOE;
     P1 = makeunit(LAnkleJC-O);
     Ltemp = LTIL-LAnkleJC;
     A1 = makeunit(cross(Ltemp,P1));
     L1 = makeunit(cross(P1,A1));
-    
+
     A1 = A1+O;
     L1 = L1+O;
     P1 = P1+O;
-    
+
     data = addchannel_data(data,'LF1O',O,'video');
     data = addchannel_data(data,'LF1A',A1,'video');
     data = addchannel_data(data,'LF1L',L1,'video');
     data = addchannel_data(data,'LF1P',P1,'video');
-    
+
     if foot_flat == false
         % LF2_RAxis
         O = LTOE;
@@ -411,11 +411,11 @@ if strcmpi(type,'static')
         Ltemp = makeunit(LTIL-LAnkleJC);
         A2 = makeunit(cross(Ltemp,P2));                         %
         L2 = makeunit(cross(P2,A2));
-        
+
         A2 = A2+O;
         L2 = L2+O;
         P2 = P2+O;
-        
+
         data = addchannel_data(data,'LF2O',O,'video');
         data = addchannel_data(data,'LF2A',A2,'video');
         data = addchannel_data(data,'LF2L',L2,'video');
@@ -423,30 +423,30 @@ if strcmpi(type,'static')
     else
         % LF3_RAxis
         O = LTOE;
-        P3 = makeunit(LAnkleJC-O);                             
+        P3 = makeunit(LAnkleJC-O);
         hee2_toe = makeunit(LHEE-O);
         hee2_toe(:,3) = 0;
-        A = makeunit(cross(hee2_toe,P3));                         
+        A = makeunit(cross(hee2_toe,P3));
         B = makeunit(cross(A,hee2_toe));
         C = cross(B,A);
         P3 = makeunit(C);                    % L_axis_z
-        
+
         Ltemp = makeunit(LTIL-LAnkleJC);     %y_flex_L
         A3 = makeunit(cross(Ltemp,P3));      % L_axis_x
         L3 = makeunit(cross(P3,A3));
         P3 = cross(A3,L3);
-        
+
         A3 = A3+O;
         L3 = L3+O;
         P3 = P3+O;
-        
+
         data = addchannel_data(data,'LF3O',O,'video');
         data = addchannel_data(data,'LF3A',A3,'video');
         data = addchannel_data(data,'LF3L',L3,'video');
         data = addchannel_data(data,'LF3P',P3,'video');
     end
-    
-    
+
+
 end
 
 
@@ -461,12 +461,12 @@ end
 % truncFootVector = LTOE-LHEE;
 % footVector = truncFootVector/footRatio;
 % toeVector = footVector-truncFootVector;
-% 
+%
 % LTOO = LFOO + toeVector;
 % LTOA = LFOA + toeVector;
 % LTOL = LFOL + toeVector;
 % LTOP = LFOP + toeVector;
-% 
+%
 % data = addchannel_data(data,'LTOO',LTOO,'video');
 % data = addchannel_data(data,'LTOA',LTOA,'video');
 % data = addchannel_data(data,'LTOL',LTOL,'video');
@@ -508,23 +508,23 @@ data = addchannel_data(data,'RFOP',RFOP,'video');
 
 
 if strcmpi(type,'static')
-    
+
     % RF1_RAxis
     O = RTOE;
     P1 = makeunit(RAnkleJC-O);
     Ltemp = RTIL-RAnkleJC;
     A1 = makeunit(cross(Ltemp,P1));
     L1 = makeunit(cross(P1,A1));
-    
+
     A1 = A1+O;
     L1 = L1+O;
     P1 = P1+O;
-    
+
     data = addchannel_data(data,'RF1O',O,'video');
     data = addchannel_data(data,'RF1A',A1,'video');
     data = addchannel_data(data,'RF1L',L1,'video');
     data = addchannel_data(data,'RF1P',P1,'video');
-    
+
     if foot_flat == false
     % RF2_RAxis
     O = RTOE;
@@ -532,11 +532,11 @@ if strcmpi(type,'static')
     Ltemp = makeunit(RTIL-RAnkleJC);
     A2 = makeunit(cross(Ltemp,P2));                         %
     L2 = makeunit(cross(P2,A2));
-    
+
     A2 = A2+O;
     L2 = L2+O;
     P2 = P2+O;
-    
+
     data = addchannel_data(data,'RF2O',O,'video');
     data = addchannel_data(data,'RF2A',A2,'video');
     data = addchannel_data(data,'RF2L',L2,'video');
@@ -544,28 +544,224 @@ if strcmpi(type,'static')
     else
         % RF3_RAxis
         O = RTOE;
-        P3 = makeunit(RAnkleJC-O);                             
+        P3 = makeunit(RAnkleJC-O);
         hee2_toe = makeunit(RHEE-O);
         hee2_toe(:,3) = 0;
-        A = makeunit(cross(hee2_toe,P3));                         
+        A = makeunit(cross(hee2_toe,P3));
         B = makeunit(cross(A,hee2_toe));
         C = cross(B,A);
         P3 = makeunit(C);                    % L_axis_z
-        
+
         Rtemp = makeunit(RTIL-RAnkleJC);     %y_flex_L
         A3 = makeunit(cross(Rtemp,P3));      % L_axis_x
         L3 = makeunit(cross(P3,A3));
         P3 = cross(A3,L3);
-        
+
         A3 = A3+O;
         L3 = L3+O;
         P3 = P3+O;
-        
+
         data = addchannel_data(data,'RF3O',O,'video');
         data = addchannel_data(data,'RF3A',A3,'video');
         data = addchannel_data(data,'RF3L',L3,'video');
         data = addchannel_data(data,'RF3P',P3,'video');
     end
+
+%=========================OFM AXES=============================================%
+% ------OFM Right ForeFoot -----------------------------------------------------
+% For the ForeFoot, the virtual markers change to:
+% 0 is origin;
+% 1 is proximal (up);
+% 2 is lateral (medial for right, lateral for left);
+% 3 is anterior (forward);
+
+if isfield(data,'RP1M') && isfield(data,'RP5M') && isfield(data,'RD1M') && isfield(data,'RD5M')
+    RP1M = data.RP1M.line;
+    RP5M = data.RP5M.line;
+    RD1M = data.RD1M.line;
+    RD5M = data.RD5M.line;
+
+    projTOE = point_to_plane(RTOE,RD1M,RD5M,RP5M);
+
+    % This sets up the calculation of the point the long
+    % axis runs through which I have called longaxis:
+    a1 = point_to_plane((pointonline(RP1M,RP5M,0.75)),RD1M,RD5M,RP5M); %start line 1
+    b1 = point_to_plane((pointonline(RP1M,RD1M,0.5)),RD1M,RD5M,RP5M);  %start line 2
+    a2 = point_to_plane((pointonline(RD1M,RTOE,0.5)),RD1M,RD5M,RP5M);  %end line 1
+    b2 = pointonline(RD5M,RP5M,0.5);                                   %end line 2
+
+    for i = 1:length(a1)
+        longaxis(i,:) = lineIntersect3D([a1(i,:);b1(i,:)],[a2(i,:);b2(i,:)]);
+    end
+
+    O = projTOE;                             % ForeFoot Origin
+    P = RTOE-O;                              % Points up
+    A = -(longaxis-O);                       % Points forward
+    L = cross(P,A);                          % Points medial
+
+    [RFOF0,RFOF3,RFOF2,RFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RFOF0',RFOF0,'video');
+    data = addchannel_data(data,'RFOF1',RFOF1,'video');
+    data = addchannel_data(data,'RFOF2',RFOF2,'video');
+    data = addchannel_data(data,'RFOF3',RFOF3,'video');
+end
+
+% ------ OFM Left ForeFoot ----------------------------------------------------
+if isfield(data,'LP1M') && isfield(data,'LP5M') && isfield(data,'LD1M') && isfield(data,'LD5M')
+    LP1M = data.LP1M.line;
+    LP5M = data.LP5M.line;
+    LD1M = data.LD1M.line;
+    LD5M = data.LD5M.line;
+    projTOE = point_to_plane(LTOE,LD1M,LD5M,LP5M);
+
+    % This sets up the calculation of the point the long
+    % axis runs through which I have called longaxis:
+    a1 = point_to_plane((pointonline(LP1M,LP5M,0.75)),LD1M,LD5M,LP5M); %start line 1
+    b1 = point_to_plane((pointonline(LP1M,LD1M,0.5)),LD1M,LD5M,LP5M);  %start line 2
+    a2 = point_to_plane((pointonline(LD1M,LTOE,0.5)),LD1M,LD5M,LP5M);  %end line 1
+    b2 = pointonline(LD5M,LP5M,0.5);                                   %end line 2
+
+    for i = 1:length(a1)
+        longaxis(i,:) = lineIntersect3D([a1(i,:);b1(i,:)],[a2(i,:);b2(i,:)]);
+    end
+
+    O = projTOE;  % ForeFoot Origin
+    P = LTOE-O;                             % Points up
+    A = -(longaxis-O);                      % Points forward
+    L = -(cross(P,A));                        % Points lateral
+
+    [LFOF0,LFOF3,LFOF2,LFOF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LFOF0',LFOF0,'video');
+    data = addchannel_data(data,'LFOF1',LFOF1,'video');
+    data = addchannel_data(data,'LFOF2',LFOF2,'video');
+    data = addchannel_data(data,'LFOF3',LFOF3,'video');
+end
+
+% OFM Right HindFoot -----------------------------------------------------------
+if isfield(data,'RPCA') && isfield(data,'RHEE') && isfield(data,'RMMA') && isfield(data,'RANK')
+    RPCA = data.RPCA.line;
+    RHEE = data.RHEE.line;
+    RMMA = data.RMMA.line;
+    RANK = data.RANK.line;
+
+    midmal = pointonline(RMMA,RANK,0.5);                  % midpoint of malleoli
+
+    O = RHEE-(RPCA-RHEE);
+    Atemp = midmal-RPCA;
+    A = [Atemp(:,1),Atemp(:,2),zeros(size(Atemp,1),1)];   % This makes vector parallel to floor
+    L = -cross(A,(RPCA-O));                               % Medial for right side
+    P = cross(A,L);
+
+    [RHDF0,RHDF3,RHDF2,RHDF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RHDF0',RHDF0,'video');
+    data = addchannel_data(data,'RHDF1',RHDF1,'video');
+    data = addchannel_data(data,'RHDF2',RHDF2,'video');
+    data = addchannel_data(data,'RHDF3',RHDF3,'video');
+end
+
+% OFM Left HindFoot ------------------------------------------------------------
+if isfield(data,'LPCA') && isfield(data,'LHEE') && isfield(data,'LMMA') && isfield(data,'LANK')
+    LPCA = data.LPCA.line;
+    LHEE = data.LHEE.line;
+    LMMA = data.LMMA.line;
+    LANK = data.LANK.line;
+
+    midmal = pointonline(LMMA,LANK,0.5);              % midpoint of malleoli
+
+    O = LHEE-(LPCA-LHEE);
+    Atemp = midmal-LPCA;
+    A = [Atemp(:,1),Atemp(:,2),zeros(size(Atemp,1),1)];   % This makes vector parallel to floor
+    L = cross(A,(LPCA-O));                            % Lateral for left side
+    P = cross(A,L);
+
+    [LHDF0,LHDF3,LHDF2,LHDF1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LHDF0',LHDF0,'video');
+    data = addchannel_data(data,'LHDF1',LHDF1,'video');
+    data = addchannel_data(data,'LHDF2',LHDF2,'video');
+    data = addchannel_data(data,'LHDF3',LHDF3,'video');
+end
+
+% OFM Right Tibia --------------------------------------------------------------
+if isfield(data,'RMMA') && isfield(data,'RANK') && isfield(data,'RTIB')
+    RTIB = data.RTIB.line;
+    RANK = data.RANK.line;
+    RMMA = data.RMMA.line;
+
+    O = pointonline(RMMA,RANK,0.5);
+    P = RTIP-RTIO;                            % PiG axis moved to OFM origin
+    Ltemp = RANK-RTIB;
+    A = cross(Ltemp,P);
+    L = cross(P,A);
+
+    [RAJC,RTIB1,RTIB2,RTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RAJC',RAJC,'video');
+    data = addchannel_data(data,'RTIB1',RTIB1,'video');
+    data = addchannel_data(data,'RTIB2',RTIB2,'video');
+    data = addchannel_data(data,'RTIB3',RTIB3,'video');
+end
+
+% OFM Left Tibia ---------------------------------------------------------------
+if isfield(data,'LMMA') && isfield(data,'LANK') && isfield(data,'LTIB')
+    LTIB = data.LTIB.line;
+    LANK = data.LANK.line;
+    LMMA = data.LMMA.line;
+
+    O = pointonline(LMMA,LANK,0.5);
+    P = LTIP-LTIO;                            % PiG axis moved to OFM origin
+    Ltemp = -(LANK-LTIB);
+    A = cross(Ltemp,P);
+    L = (cross(P,A));
+
+
+    [LAJC,LTIB1,LTIB2,LTIB3] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LAJC',LAJC,'video');
+    data = addchannel_data(data,'LTIB1',LTIB1,'video');
+    data = addchannel_data(data,'LTIB2',LTIB2,'video');
+    data = addchannel_data(data,'LTIB3',LTIB3,'video');
+end
+
+%----OFM Right Hallux------------------------------------------------------
+if isfield(data,'RHLX')
+    RHLX = data.RHLX.line;
+
+    O = RHLX;
+    A = O - RD1M;
+    Ltemp = RFOF2-RFOF0;
+    P = cross(A,Ltemp);
+    L = cross(P,A);
+
+    [RHLX0,RHLX3,RHLX2,RHLX1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'RHLX0',RHLX0,'video');
+    data = addchannel_data(data,'RHLX1',RHLX1,'video');
+    data = addchannel_data(data,'RHLX2',RHLX2,'video');
+    data = addchannel_data(data,'RHLX3',RHLX3,'video');
+end
+
+%----OFM Left Hallux------------------------------------------------------
+if isfield(data,'LHLX')
+    LHLX = data.LHLX.line;
+
+    O = LHLX;
+    A = O - LD1M;
+    Ltemp = LFOF2-LFOF0;
+    P = cross(A,Ltemp);
+    L = cross(P,A);
+
+    [LHLX0,LHLX3,LHLX2,LHLX1] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test);
+
+    data = addchannel_data(data,'LHLX0',LHLX0,'video');
+    data = addchannel_data(data,'LHLX1',LHLX1,'video');
+    data = addchannel_data(data,'LHLX2',LHLX2,'video');
+    data = addchannel_data(data,'LHLX3',LHLX3,'video');
+
+end
 end
 
 % Compute Right  Toe 'bone'
@@ -579,12 +775,12 @@ end
 % truncFootVector = RTOE-RHEE;
 % footVector = truncFootVector/footRatio;
 % toeVector = footVector-truncFootVector;
-% 
+%
 % RTOO = RFOO + toeVector;
 % RTOA = RFOA + toeVector;
 % RTOL = RFOL + toeVector;
 % RTOP = RFOP + toeVector;
-% 
+%
 % data = addchannel_data(data,'RTOO',RTOO,'video');
 % data = addchannel_data(data,'RTOA',RTOA,'video');
 % data = addchannel_data(data,'RTOL',RTOL,'video');
@@ -608,9 +804,9 @@ Lrot = zeros(size(L));
 
 
 for i = 1:length(A)
-    
+
     axis = [A(i,:); L(i,:); P(i,:)];
-    
+
     % rotate about y-axis
     roty = [cos(beta)*axis(1,1)+sin(beta)*axis(3,1),...
         cos(beta)*axis(1,2)+sin(beta)*axis(3,2),...
@@ -619,7 +815,7 @@ for i = 1:length(A)
         -1*sin(beta)*axis(1,1)+cos(beta)*axis(3,1),...
         -1*sin(beta)*axis(1,2)+cos(beta)*axis(3,2),...
         -1*sin(beta)*axis(1,3)+cos(beta)*axis(3,3)];
-    
+
     % rotate aboux x-axis
     rotyx = [roty(1,1),roty(1,2),roty(1,3);...
         cos(alpha)*roty(2,1)-sin(alpha)*roty(3,1),...
@@ -628,28 +824,28 @@ for i = 1:length(A)
         sin(alpha)*roty(2,1)+cos(alpha)*roty(3,1),...
         sin(alpha)*roty(2,2)+cos(alpha)*roty(3,2),...
         sin(alpha)*roty(2,3)+cos(alpha)*roty(3,3)];
-    
-    
+
+
     Arot(i,:) = rotyx(1,:);
     Lrot(i,:) = rotyx(2,:);
     Prot(i,:) = rotyx(3,:);
-    
-    
+
+
 end
 
 
 % function [At,Lt,Pt] = tibiaTorsion(A,L,P,torsion)
-% 
+%
 % torsion = deg2rad(torsion);
-% 
+%
 % At = zeros(size(A));
 % Lt = zeros(size(L));
 % Pt = zeros(size(P));
-% 
+%
 % for i = 1:length(At)
-%     
+%
 %     axis = [A(i,:); L(i,:); P(i,:)];
-%     
+%
 %     axisRot = [cos(torsion)*axis(1,1)-sin(torsion)*axis(2,1),...
 %         cos(torsion)*axis(1,2)-sin(torsion)*axis(2,2),...
 %         cos(torsion)*axis(1,3)-sin(torsion)*axis(2,3);...
@@ -657,15 +853,15 @@ end
 %         sin(torsion)*axis(1,2)+cos(torsion)*axis(2,2),...
 %         sin(torsion)*axis(1,3)+cos(torsion)*axis(2,3);
 %         axis(3,1),axis(3,2),axis(3,3)];
-%     
+%
 %     At(i,:) = axisRot(1,:);
 %     Lt(i,:) = axisRot(2,:);
 %     Pt(i,:) = axisRot(3,:);
-%     
-%     
+%
+%
 % end
 
-
+%-------------------------------------------------------------------------------
 function [O,A,L,P] = getGlobalCoord(data,O,A,L,P,segment,boneLength,test)
 
 % make unit vectors
@@ -697,10 +893,10 @@ end
 
 
 % function [O,A,L,P] = getLocalCoord(data,orig,proxJC,latMkr,disMkr,boneLength,segment,test)
-% 
+%
 % % This function computes local coordinate system for all segments except pelvis
-% 
-% 
+%
+%
 % % Create coordinate system
 % %
 % O = orig;
@@ -708,14 +904,14 @@ end
 % Ltemp = latMkr-disMkr;                    % temp lateral vector
 % A = cross(Ltemp,P);                       % unit anterior vector
 % L = cross(P,A);                           % unit lateral vector
-% 
+%
 % % make unit vectors
 % %
 % P = makeunit(P);
 % A = makeunit(A);
 % L = makeunit(L);
-% 
-% 
+%
+%
 % % Scale to length of bone
 % %
 % for i = 1:3
@@ -723,13 +919,13 @@ end
 %     L(:,i) = L(:,i).*boneLength;
 %     P(:,i) = P(:,i).*boneLength;
 % end
-% 
+%
 % % Move to global coordinate system
 % %
 % A = A + O;
 % L = L + O;
 % P = P + O;
-% 
+%
 % % Check results
 % if test ==1
 %     comparePiG(data,segment,O,A,L,P)
@@ -737,29 +933,32 @@ end
 % end
 
 
+% MAKE BONES FOR OFM
+
+
 function comparePiGangles(data,segment,mO,mA,mL,mP)
 
 switch segment
-    
+
     case 'Pelvis'
         seg = 'PEL';
-        
+
     case 'Left Femur'
         seg = 'LFE';
-        
+
     case 'Left Tibia'
         seg = 'LTI';
-        
-    case 'Left Foot';
+
+    case 'Left Foot'
         seg = 'LFO';
-        
+
     case 'Right Femur'
         seg = 'RFE';
-        
+
     case 'Right Tibia'
         seg = 'RTI';
-        
-    case 'Right Foot';
+
+    case 'Right Foot'
         seg = 'RFO';
 end
 
@@ -793,5 +992,3 @@ disp('angles between PiG and my vectors:')
 disp(['P vs p: ',num2str(nanmean(angle(p,mp)))])
 disp(['L vs l: ',num2str(nanmean(angle(l,ml)))])
 disp(['A vs a: ',num2str(nanmean(angle(a,ma)))])
-
-
