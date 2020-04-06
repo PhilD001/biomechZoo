@@ -1,13 +1,15 @@
 function bmech_phase_angle(fld, chns, evt1, evt2)
 
-% bmech_phase_angle(fld, evt1, evt2) computes phase angles between evt1 and
-% evt2 for channels
+% BMECH_PHASE_ANGLE(fld, evt1, evt2) computes phase angles between evt1 and evt2 for channels
 %
-
+% ARGUMENTS
+%  fld        ...  Folder to batch process (string). 
+%  chns       ...  Channels for which to compute phase angle. Channels must be 1 x n (exploded)
+%  event1     ...   start of section of interest for angle data
+%  event2     ...   end of section of interest for angle data
 
 
 % error checking
-
 if nargin < 3
     evt1 = [];
     evt2 = [];  
@@ -45,11 +47,11 @@ end
 for i = 1:length(chns)
     joint_angle = data.(chns{i}).line;
     if events
-        phase_angle = Phase_Angle(joint_angle, evt1_indx, evt2_indx);
+        pa = phase_angle(joint_angle, evt1_indx, evt2_indx);
     else
-        phase_angle = Phase_Angle(joint_angle);
+        pa = phase_angle(joint_angle);
     end
     
-    data = addchannel_data(data, [chns{i}, '_phase'], phase_angle, 'video');
+    data = addchannel_data(data, [chns{i}, '_phase'], pa, 'video');
     
 end

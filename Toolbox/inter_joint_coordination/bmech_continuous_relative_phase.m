@@ -1,5 +1,12 @@
 function bmech_continuous_relative_phase(fld, dist_phase_angle_ch, prox_phase_angle_ch)
 
+% BMECH_CONTINNUOUS_RELATIVE_PHASE(fld, dist_phase_angle_ch,
+% prox_phase_angle_ch) computes CRP between two angles
+%
+% ARGUMENTS
+%  fld                    ...  Folder to batch process (string). 
+%  dist_phase_angle_ch   ...   Phase angle channel for distal joint
+%  prox_phase_angle_ch   ...   Phase angle channel for proximal joint
 
 if nargin == 0
     fld = uigetfolder;
