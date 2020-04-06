@@ -32,4 +32,4 @@ prox_angle = data.(prox_phase_angle_ch).line;
 
 CRP_data = CRP(dist_angle,prox_angle);
 
-data = addchannel_data(data, [dist_phase_angle_ch, '_', prox_phase_angle_ch, '_crp'], CRP_data, 'video');
+data = addchannel_data(data, [prox_phase_angle_ch, '_', dist_phase_angle_ch, '_crp'], CRP_data, 'video');
