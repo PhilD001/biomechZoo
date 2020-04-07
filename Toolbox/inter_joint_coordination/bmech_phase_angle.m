@@ -32,8 +32,6 @@ function data = phase_angle_data(data, evt1, evt2, chns)
 
 if isempty(evt1)
     events = false;
-    evt1 = 32;
-    evt2 = 94;
 else
     events = true;
     evt1_indx = findfield(data, evt1);

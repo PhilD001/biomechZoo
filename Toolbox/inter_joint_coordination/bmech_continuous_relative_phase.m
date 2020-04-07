@@ -8,12 +8,6 @@ function bmech_continuous_relative_phase(fld, dist_phase_angle_ch, prox_phase_an
 %  dist_phase_angle_ch   ...   Phase angle channel for distal joint
 %  prox_phase_angle_ch   ...   Phase angle channel for proximal joint
 
-if nargin == 0
-    fld = uigetfolder;
-    dist_phase_angle_ch = 'RHipAngles_phase';
-    prox_phase_angle_ch = 'RKneeAngles_phase';
-end
-
 % Batch process
 cd(fld)
 fl = engine('path',fld,'extension','zoo');

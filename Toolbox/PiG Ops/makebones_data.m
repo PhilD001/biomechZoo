@@ -590,6 +590,7 @@ if isfield(data,'RP1M') && isfield(data,'RP5M') && isfield(data,'RD1M') && isfie
     a2 = point_to_plane((pointonline(RD1M,RTOE,0.5)),RD1M,RD5M,RP5M);  %end line 1
     b2 = pointonline(RD5M,RP5M,0.5);                                   %end line 2
 
+    longaxis = zeros(size(a1));
     for i = 1:length(a1)
         longaxis(i,:) = lineIntersect3D([a1(i,:);b1(i,:)],[a2(i,:);b2(i,:)]);
     end
