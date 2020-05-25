@@ -1,6 +1,6 @@
 function data = kinematicsRvdB_data(sdata,data,Pelvis,Thigh,Shank,Foot,sequence,test)
 
-% data = KINEMAT_DATA(sdata,data,Pelvis,Thigh,Shank,Foot,sequence,test) computes
+% data = KINEMATICSRVDB_DATA(sdata,data,Pelvis,Thigh,Shank,Foot,sequence,test) computes
 % lower-limb (ankle, knee, hip) joint kinematics
 %
 % ARGUMENTS

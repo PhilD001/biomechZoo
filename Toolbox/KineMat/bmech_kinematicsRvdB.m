@@ -23,7 +23,7 @@ function bmech_kinematicsRvdB(fld,Pelvis,Thigh,Shank,Foot,sequence)
 %   markers for kinematics, these will be computed by hipJointCentrePiG and
 %   jointCentrePiG. The latter requires the Symbolic Math Toolbox
 %
-% See also kinemat_data, cardan
+% See also cardan, kinematicsRvdB_data
 
 
 % Set defaults
