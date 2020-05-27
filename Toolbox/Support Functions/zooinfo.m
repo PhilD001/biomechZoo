@@ -1,4 +1,4 @@
-function [version,date] = zooinfo
+function [version,date] = zooinfo(verbose)
 
 % The biomechZoo biomechanics Toolbox Copyright (c) 2006-2018 (Main contributors)
 %
@@ -29,8 +29,15 @@ function [version,date] = zooinfo
 % Computer Methods and Programs in Biomedicine. 2017. 140:1-10.
 % DOI: http://dx.doi.org/10.1016/j.cmpb.2016.11.007
 
-help zooinfo
+if nargin == 0
+    verbose = true;
+end
 
 version = '1.4.3';
 date = ' (April 2020)';
-disp(['  Latest version: ',num2str(version),date])
+
+if verbose
+    help zooinfo
+    disp(['  Latest version: ',num2str(version),date])
+end
+

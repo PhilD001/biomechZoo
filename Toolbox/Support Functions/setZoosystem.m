@@ -13,7 +13,7 @@ function zoosystem = setZoosystem(fl)
 
 % Set defaults
 %
-ver = '1.3';                                                                
+ver = zooinfo(false);                                                                
 zch = {'Analog','Anthro','AVR','CompInfo','SourceFile','Units','Version','Video'};
 
 
