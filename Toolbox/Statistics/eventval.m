@@ -171,10 +171,8 @@ conditions = strrep(conditions,'\',filesep);
 
 % Set up path for eventval spreadsheet
 %
-r = strfind(fld,'Data');
+r = strfind(lower(fld),'data');
 indx = strfind(fld,filesep);
-
-
 
 if isempty(r) && ~isempty(strfind(fld,'example data (processed)'));
     pth = [fld(1:indx(end)),'Statistics'];
@@ -397,7 +395,6 @@ for i = 1:length(fl)
         continue
     end
     
-    
     % write additional meta-info
     %
     if i==1
@@ -517,7 +514,7 @@ for i = 1:length(fl)
         %
         offset = length(globalevtnames);
         for n = 1:length(localevtnames)            %LOCAL EVENTS: All channels should have this event
-            
+
             if isfield(data.(chnames{j}).event,localevtnames{n})
                 evt = data.(chnames{j}).event.(localevtnames{n});
                 xd = evt(1);

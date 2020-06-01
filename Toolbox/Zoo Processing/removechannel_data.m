@@ -48,7 +48,8 @@ for i = 1:length(ch)
         elseif ismember(ch{i},data.zoosystem.Analog.Channels)
             continue
         else
-            error(['missing section fieldname in zoosystem for ',ch{i}])
+            warning(['missing section fieldname in zoosystem for ',ch{i}])
+            data = rmfield(data,ch{i});
         end
     end
 end
