@@ -50,18 +50,15 @@ switch action
         loadz3d(varargin{1});
         props('refresh');
         
-    case {'load c3d','load zoo'}
+    case {'load c3d','load zoo', 'load file'}
         delete(finddobj('marker'));
         data = loadfile(varargin{1});
         props('refresh');
         varargout{1} = data;
-        
-        
-        
+         
     case 'goto'
         mark(varargin{1});
-        
-        
+              
 end
 
 function caliper(varargin)
@@ -110,7 +107,6 @@ r = patch('parent',ax,'tag',nm,'facecolor',ud.color,'edgecolor','none','buttondo
     'marker(''buttondown'')','vertices',ud.vertices,'faces',ud.faces,'userdata',ud,...
     'FaceLighting','gouraud','createfcn','marker(''createfcn'')','clipping','off');
 mark(finddobj('frame','number'));
-
 
 
 function data = loadfile(filename)
@@ -181,7 +177,6 @@ for i = 1:length(ch)
             v{i} = ch{i};
         end
     end
-    
 end
 
 v(cellfun(@isempty,v)) = [];
@@ -197,7 +192,6 @@ for i = 1:length(v)
     tg = v{i};
     createmarker(tg,1.5,dis,newcolor(i));
 end
-
 
 
 % Load foot props (modify feet to skates if subject is a skater)
