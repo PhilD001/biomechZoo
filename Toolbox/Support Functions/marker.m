@@ -231,6 +231,14 @@ if ~isempty(intersect(ch,{'PELO'})) && ~isempty(findobj(finddobj('props'),'tag',
     
 elseif ismember({'SACR'},ch)
     disp('Creating PiG bones')
+    if ~isfield(data.zoosystem.Anthro,'RAnkleWidth')
+        disp('Estimating knee and ankle joint centre for display purposes only')
+        data = addchannel_data(data,'RKneeJC',data.RKNE.line,'video');
+        data = addchannel_data(data,'LKneeJC',data.LKNE.line,'video');
+        data = addchannel_data(data,'RAnkleJC',data.RANK.line,'video');
+        data = addchannel_data(data,'LAnkleJC',data.LANK.line,'video');
+    end
+    
     data = makebones_data(data);
     
 elseif ismember('SACR_x',ch)  % data have been exploded

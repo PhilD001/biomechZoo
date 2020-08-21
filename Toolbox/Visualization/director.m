@@ -304,7 +304,7 @@ switch action
         director('clear all objects')
         director('load bones');       % loads the bone props
         
-        [f,p] = uigetfile({'*.zoo';'*.c3d'},'Pick a file');   % default is c3d or zoo file
+        [f,p] = uigetfile({'*.zoo;*.c3d'},'Pick a file');   % default is c3d or zoo file
         cd(p);
         
         if f == 0
