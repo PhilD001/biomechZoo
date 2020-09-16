@@ -218,15 +218,20 @@ function [data,isPiG] = getPiG(data,ch)
 
 isPiG = true;
 
+PiG_common = {'LASI', 'LKNE', 'LTHI', 'LTIB', 'LANK', 'LTOE',...
+             'RASI', 'RKNE' 'RTHI', 'RTIB', 'RANK', 'RTOE'};
+
+PiG_common_exp = explodelist(PiG_common);
+
 if ~isempty(intersect(ch,{'PELO'})) && ~isempty(findobj(finddobj('props'),'tag','Pelvis'))
     disp('PiG bones detected')
     
-elseif ismember({'SACR'},ch)
-    disp('Creating PiG bones')
+elseif length(intersect(PiG_common, ch)) == length(PiG_common)
+    disp('Creating PiG bones from existing PiG markers')
     data = makebones_data(data);
     
-elseif ismember('SACR_x',ch)  % data have been exploded
-    disp('Creating PiG bones from exploded data')
+elseif length(intersect(PiG_common_exp, ch)) == length(PiG_common_exp)
+    disp('Creating PiG bones from exploded data of existing Pig markers')
     
     for i = 1:length(ch)
         if length(ch{i})==6 && ~isempty(strfind(ch{i},'_x'))
@@ -293,39 +298,7 @@ else
     r = get(hnd,'string');
 end
 
-function [explode,ch_exp] = checkExplode(data)
-
-process = data.zoosystem.Processing;
-explode = false;
-for i = 1:length(process)
-    if strfind(process{i},'explode')
-        explode = true;
-    end
-end
-
-if explode
-    ch = data.zoosystem.Video.Channels;
-    ch_exp = cell(size(ch));
-    for i = 1:length(ch)
-        
-        if isempty(strfind(ch{i},'Angle'))
-            if ~isempty(strfind(ch{i},'_x'))
-                temp = ch{i};
-                ch_exp{i} = temp(1:end-2);
-            end
-        end
-    end
-    
-    ch_exp(cellfun(@isempty,ch_exp)) = [];
-    
-else
-    ch_exp = [];
-end
-
 function r = createmarker(nm,sz,pos,clr)
-
-
-
 
 [x,y,z] = sphere(15);
 x = (x*sz/2);
