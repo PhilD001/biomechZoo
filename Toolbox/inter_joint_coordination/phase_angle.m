@@ -1,52 +1,32 @@
-function [PA_data] = phase_angle(angle,event1,event2)
+function PA_data = Phase_Angle(r)
 
-% PHASE_ANGLE determines the phase angle for a single kinematic waveform using the Hilbert transform method. 
-% 
-% ARGUMENTS
-% angle   ...   1 x n angle data for a given joint
-% event1  ...   start of section of interest for angle data
-% event2  ...   end of section of interest for angle data
+% PA_data = PHASE_ANGLE(angle) determines the Phase Angle for a single kinematic waveform
+% using the Hilbert transform method.
 %
-% RETURN
-% PA_data ...   phase anle data
+% ARGUMENTS
+%   r : n x 1 array. Kinematic data represent angle (joint or segment)
+%
+% RETURNS
+%   PA_data : n x 1 array. Phase angle computed on input angle using the Hilbert transform
+%
+% NOTES
+% See Lamb and Stöckl "On the use of continuous relative phase: Review of current 
+% approaches and outline for a new standard". Clin Biomech 2014 
+% https://doi.org/10.1016/j.clinbiomech.2014.03.008
 
-% Created by Patrick Ippersiel March 2020
+%1) transform the signal such that it winds around the origin of the
+%complex plane (see eq 11 from Lamb and Stöckl
+cdata = r - min(r) - (max(r)-min(r))/2;
 
-if nargin == 3
-    data = angle;
-    L=length(data);
-    
-    %1) Centre data around 0
-    cdata = data - min(data) - (max(data)-min(data))/2;
+% 2) Hilbert transform
+X=hilbert(cdata);
 
-    % 2) Hilbert transform on the area of interest
-    X = zeros(1,L);
-    X(event1: event2) = hilbert(cdata(event1:event2));
-
-    % 3) Phase Angle
-    PA_data=zeros(1,L);
-    for i=event1:event2
-        PA_data(i)=atan2(imag(X(i)),real(X(i)));
-    end
-    PA_data=rad2deg(PA_data);
-else
-    data=angle;
-    L=length(data);
-    
-    %1) Centre data around 0
-    cdata = data - min(data) - (max(data)-min(data))/2;
-
-    % 2) Hilbert transform
-    X=hilbert(cdata);
-
-    % 3) Phase Angle
-    PA_data=zeros(1,L);
-    for i=1:L
-        PA_data(i)=atan2(imag(X(i)),real(X(i)));
-    end
-    PA_data=rad2deg(PA_data);
+% 3) Phase Angle
+PA_data=zeros(1,length(r));
+for i=1:length(r)
+    PA_data(i)=atan2(imag(X(i)),real(X(i)));
 end
+PA_data=rad2deg(PA_data)';
 
-PA_data = makecolumn(PA_data);
-
+end
 

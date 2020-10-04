@@ -398,8 +398,7 @@ for i = 1:length(fl)
     % write additional meta-info
     %
     if i==1
-        process = data.zoosystem.Processing;
-        info = {'Summary info related to data';
+         info = {'Summary info related to data';
             ' ';
             'folder processed: ';
             fld;
@@ -408,6 +407,12 @@ for i = 1:length(fl)
             'missing events tagged as 999';
             'Processing steps'};
         
+        if isfield(data.zoosystem, 'Processing')
+            process = data.zoosystem.Processing;
+        else
+            process = 'process information not available';
+        end
+       
         if strcmp(excelserver,'on')
             xlswrite1(evalFile,info,'info','A1');
             xlswrite1(evalFile,process,'info','A9');
@@ -415,6 +420,7 @@ for i = 1:length(fl)
             xlwrite(evalFile,info,'info','A1');
             xlwrite(evalFile,process,'info','A9');
         end
+      
     end
     
     % Check subject conditon and name
