@@ -1,4 +1,4 @@
-function PA_data = Phase_Angle(r)
+function PA_data = phase_angle(r)
 
 % PA_data = PHASE_ANGLE(angle) determines the Phase Angle for a single kinematic waveform
 % using the Hilbert transform method.
