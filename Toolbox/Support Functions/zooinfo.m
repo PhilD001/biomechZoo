@@ -1,13 +1,10 @@
 function [version,date] = zooinfo(verbose)
 
-% The biomechZoo biomechanics Toolbox Copyright (c) 2006-2018 (Main contributors)
+% The biomechZoo biomechanics Toolbox Copyright (c) 2006-2020 (Main contributors)
 %
-% Main contributors:
-% Philippe C. Dixon (PhD)
-% Yannick Michaud-Paquette (MSc)
-% JJ Loh (MSc)
-% 
-% Contact:
+% Main contributor:
+% Philippe C. Dixon, PhD
+
 % philippe.dixon@gmail.com 
 % 
 % Web:
@@ -33,8 +30,8 @@ if nargin == 0
     verbose = true;
 end
 
-version = '1.4.8';
-date = ' (October 7, 2020)';
+version = '1.4.9';
+date = ' (October 27, 2020)';
 
 if verbose
     help zooinfo

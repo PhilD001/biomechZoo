@@ -52,7 +52,10 @@ function eventval2mixedANOVA(varargin)
 % - Users should set the excel server to 'off'. Future versions may
 %   depreciate the excel server option as java seems to handle all
 %   situations/platforms
-
+%
+% Updated by Philippe C. Dixon October 2020
+% - bug fix for sub_con_stk 
+% - replaced isin function with contains
 
 % == SETTINGS ==============================================================================
 %
@@ -67,16 +70,15 @@ for i = 1:2:nargin
             eventvalFile = varargin{i+1};
             
         case 'excelserver'
-            excelserver = varargin{i+1};
-            
+            excelserver = varargin{i+1};   
     end
 end
 
 
-tic                                                           % start function timer
 
 % == LOAD DATA FROM eventval.m AND SET UP NEW SPREADSHEET ==================================
 %
+tic                                                           % start function timer
 if isempty(eventvalFile)
     [f,p] = uigetfile('*.xls','select eventval xls file');
     eventvalFile = [p,f];
@@ -87,7 +89,6 @@ else
     if isempty(strfind(p(end),filesep))
         p = [p,filesep];
     end
-    
 end
 cd(p)
 
@@ -141,12 +142,8 @@ else
 end
 
 
-
-
 % == GROUP DATA FOR SPREADSHEET ============================================================
 %
-
-
 % get all column names for excel from 'A' to  'Z'
 %
 cols1 = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',...
@@ -165,7 +162,6 @@ end
 
 % Extract data from 'info sheet'
 %
-
 if strcmp(excelserver,'on')
     xlswrite1(evalFile,info_txt,'info','A1');
     xlswrite1(evalFile,{'Original file'},'info','A3');
@@ -178,16 +174,11 @@ else
     xlwrite(evalFile,{date},'info','A7');
 end
 
-
-
-
 nch = {};
 acount = 0;
 for j = 1:length(ch)
     count = 1;
-    
-    %[num,txt,xlsdata] = xlsread([p,f],ch{j});
-    
+        
     num = estruct.num.(ch{j});
     txt = estruct.txt.(ch{j}) ;
     xlsdata = estruct.xlsdata.(ch{j});
@@ -206,6 +197,7 @@ for j = 1:length(ch)
     conditions = unique(txt(:,2));           % cell array of strings for con names for ch j
     subjects = unique(txt(:,1));             % cell array of strings for sub names for ch j
     
+    % extract within-subject factor (condiiton)
     if length(strfind(conditions{1},filesep)) >1
         cons = conditions;
     else
@@ -252,14 +244,16 @@ for j = 1:length(ch)
         for l = 1:length(cons)
             sub_con_stk = [];
             
+            % extract all data matching group grp and condition l,for all subjects
             for n = 1:length(txt)
                 r = txt(n,2);
-                if  isin(r{1},cons{l}) && isin(cons{l},grp)
+                if  contains(r{1},cons{l}) && contains(r{1},grp)
                     plate = xlsdata(n,:);
-                    sub_con_stk = [sub_con_stk;plate];             % all data for subject k, condition l
+                    sub_con_stk = [sub_con_stk;plate];             
                 end
             end
             
+            % extract from sub_con_stk only data for subject k
             if ~isempty(sub_con_stk)
                 sub_con_stk = intersect(sub_stk, sub_con_stk,'rows'); % note rows are sorted increasingly
             end
@@ -283,7 +277,7 @@ for j = 1:length(ch)
                 
                 disp(['writing data for ',ch{j},' ',subjects{k},' ',cons{l},' ',events{m}])
                 
-                name = [ch{j},events{m}];
+                name = [ch{j}, '_', events{m}];
                 
                 if length(name) >31
                     disp('name too long for xlswrite...shrinking name')
@@ -317,12 +311,9 @@ for j = 1:length(ch)
                     alldata.(name).data = temp;
                 end
                 alldata.(name).data(k,l) = mean_sub_con_evt(2);
-                
             end
         end
-        
         count = count +1;
-        
     end
     
     % == CREATE SUMMARY SHEET "ALL DATA" ========================================================
@@ -358,7 +349,6 @@ for j = 1:length(ch)
         
     end
     
-    
     % add information to the summary sheet called 'name'
     %
     names = fieldnames(alldata);
@@ -389,21 +379,8 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 % == END PROGRAM ===========================================================================
 %
-
 % Close excel server (if on)
 %
 if strcmp(excelserver,'on')
@@ -412,7 +389,6 @@ if strcmp(excelserver,'on')
     Excel.delete
     clear Excel
 end
-
 
 disp(' ')
 disp('****************************')

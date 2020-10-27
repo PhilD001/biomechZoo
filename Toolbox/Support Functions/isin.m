@@ -11,13 +11,16 @@ function r= isin(str,substr)
 % r   ...  logical 0 or 1 
 %
 %
-%
 % Updated Oct 2013
 % - imporved help function
 %
 % Updated February 2014
 % - can accept cell array of srings for multiple comparisons
+%
+% Updated Oct 2020
+% - added deprecation warning. 
 
+warning('this function may be deprecated in future biomechZoo versions, consider using contains')
 
 if iscell(substr)
     
