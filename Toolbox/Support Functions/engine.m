@@ -82,9 +82,6 @@ function fl = engine(varargin)
 % Aduts and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
-
-
-
 % Set arguments
 %
 pth = '';
@@ -121,7 +118,6 @@ if isempty(pth)
 end
 
 
-
 % Check for use of 2 'other' cases
 %
 [r,~] = size(other);
@@ -145,7 +141,7 @@ function fl =fldengine(pth,fld,src,other)
 
 s = filesep;    % determine slash direction based on computer type
 
-if ~strcmp(pth(end),s);
+if ~strcmp(pth(end),s)
     pth = [pth,s];
 end
 
@@ -157,7 +153,7 @@ else
     [~,p] = directory(pth);
     
     for i = 1:length(p)
-        if strcmp(p{i},fld);
+        if strcmp(p{i},fld)
             plate = srcengine([pth,p{i}],src,other);
         else
             plate = fldengine([pth,p{i}],fld,src,other);
@@ -171,10 +167,9 @@ function fl = srcengine(pth,src,other)
 
 s = filesep;
 
-if ~strcmp(pth(end),s);
+if ~strcmp(pth(end),s)
     pth = [pth,s];
 end
-
 
 fl = {};
 [f,p] = directory(pth);    %if pth is terminal folder f contains files p is empty
@@ -192,21 +187,13 @@ for i = 1:length(p)%this recursive step will occur downstream from the folder
     fl = [fl;plate];
 end
 
-
-
-
-if isin(computer, 'MACI') %searches for anymore weird '\' in mac intel
-    
+if contains(computer, 'MACI') %searches for anymore weird '\' in mac intel
     for i = 1:length(fl)
-        
         indx  = strfind(fl{i},'\');
-        
         if ~isempty(indx)
             fl{i} = [fl{i}(1:indx-1), fl{i}(indx+1:end)];
         end
-        
     end
-    
 end
 
 
@@ -217,21 +204,15 @@ if isempty(other)
     fl = concatfiles(pth,filename);
 else
     
-    
     switch other{1,1}
         
         case 'extension'
             fl = findextension(pth,filename,other{1,2});                 %filename can be a cell array of filenames
             
         case 'search file'
-            fl = searchfile(pth,filename,other{1,2});
-            
+            fl = searchfile(pth,filename,other{1,2}); 
     end
-    
 end
-
-
- 
 
 
 function r = concatfiles(pth,fls)
@@ -241,13 +222,11 @@ for i = 1:length(fls)
 end
 
 
-
-
 function r = findextension(pth,fl,ext)
 r = [];
 ext = strrep(ext,'.','');
 
-for i = 1:length(fl);
+for i = 1:length(fl)
     indx = max(findstr(fl{i},'.'));
     if isempty(indx)
         continue
@@ -260,16 +239,8 @@ end
 function r = searchfile(pth,fl,src)
 
 r = [];
-
-for i = 1:length(fl);
+for i = 1:length(fl)
     if ~isempty(findstr(fl{i},src))
         r = [r;{concatfile(pth,fl{i})}];
     end
 end
-
-
-
-
-
-
-

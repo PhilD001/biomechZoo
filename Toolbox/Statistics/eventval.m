@@ -98,6 +98,10 @@ function evalFile = eventval(varargin)
 % Updated by Philippe C. Dixon Jan 2020
 % - reduced the number of calls to excel to speed up processing
 % - merged all events by type into three sheets (anthro, global, local)
+%
+% Updated by Philippe C. Dixon October 2020
+% - replaced 'isin' with 'contains'
+
 
 % == SETTINGS ==============================================================================
 %
@@ -364,7 +368,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if isin(fl{i},subjects{count})
+        if contains(fl{i},subjects{count})
             subject = subjects{count};
             check = false;
         else
@@ -378,7 +382,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if isin(fl_temp,conditions{count})
+        if contains(fl_temp,conditions{count})
             con = conditions{count};
             check = false;
         else
