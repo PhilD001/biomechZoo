@@ -10,6 +10,7 @@ function evalFile = eventval(varargin)
 % 'ch'           ... list of channels as cell array of strings
 % 'localevts'    ... list of local events as cell array of strings
 % 'globalevts'   ... list of global events as cell array of strings
+% 'anthroevts'   ... list of anthro events as cell array of strings
 % 'ext'          ... Spreadsheet file type .xls, .xlsx, and .csv are possible.
 %                    Default is .xls
 % 'excelserver'  ... Choice to use excel server. Default 'off'
@@ -101,7 +102,7 @@ function evalFile = eventval(varargin)
 %
 % Updated by Philippe C. Dixon October 2020
 % - replaced 'isin' with 'contains'
-
+% - add comments regarding anthro input
 
 % == SETTINGS ==============================================================================
 %
@@ -210,7 +211,6 @@ if exist(evalFile,'file')
 end
 
 tic  % start calculation timer
-
 
 % Load excel server or java path
 %
