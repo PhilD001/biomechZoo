@@ -30,8 +30,8 @@ if nargin == 0
     verbose = true;
 end
 
-version = '1.4.11';
-date = ' (October 29, 2020)';
+version = '1.4.13';
+date = ' (November 2, 2020)';
 
 if verbose
     help zooinfo

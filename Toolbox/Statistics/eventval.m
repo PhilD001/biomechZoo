@@ -103,6 +103,9 @@ function evalFile = eventval(varargin)
 % Updated by Philippe C. Dixon October 2020
 % - replaced 'isin' with 'contains'
 % - add comments regarding anthro input
+%
+% Updated by Philippe C. Dixon November 2020
+% - improved support for non-numeric anthro events(e.g. 'M', 'F')
 
 % == SETTINGS ==============================================================================
 %
@@ -179,7 +182,7 @@ conditions = strrep(conditions,'\',filesep);
 r = strfind(lower(fld),'data');
 indx = strfind(fld,filesep);
 
-if isempty(r) && ~isempty(strfind(fld,'example data (processed)'));
+if isempty(r) && ~isempty(strfind(fld,'example data (processed)')) %#ok<STREMP>
     pth = [fld(1:indx(end)),'Statistics'];
 elseif isempty(r)
     warning('study data should be stored in a subfolder with name ''Data''')
@@ -192,7 +195,6 @@ if ~exist(pth,'dir')
     disp(['Creating folder for stats: ',pth])
     mkdir(pth)
 end
-
 
 
 % Check if file exists
@@ -402,7 +404,7 @@ for i = 1:length(fl)
     % write additional meta-info
     %
     if i==1
-         info = {'Summary info related to data';
+        info = {'Summary info related to data';
             ' ';
             'folder processed: ';
             fld;
@@ -416,7 +418,7 @@ for i = 1:length(fl)
         else
             process = 'process information not available';
         end
-       
+        
         if strcmp(excelserver,'on')
             xlswrite1(evalFile,info,'info','A1');
             xlswrite1(evalFile,process,'info','A9');
@@ -424,7 +426,7 @@ for i = 1:length(fl)
             xlwrite(evalFile,info,'info','A1');
             xlwrite(evalFile,process,'info','A9');
         end
-      
+        
     end
     
     % Check subject conditon and name
@@ -456,20 +458,20 @@ for i = 1:length(fl)
             if j==1
                 xlswrite1(evalFile,sheet_header,'summary','A1');
                 xlswrite1(evalFile,sheet_info,'summary',['A',num2str(initialpos+3+fileNum)]);
-            end  
+            end
         else
             
             % 'summary' sheets
             if j==1
-                xlwrite(evalFile,sheet_header,'anthro','A1');                
+                xlwrite(evalFile,sheet_header,'anthro','A1');
                 xlwrite(evalFile,sheet_info,'anthro',['A',num2str(initialpos+3+fileNum)]);
-  
+                
                 xlwrite(evalFile,sheet_header,'global','A1');
                 xlwrite(evalFile,sheet_info,'global',['A',num2str(initialpos+3+fileNum)]);
                 
                 xlwrite(evalFile,sheet_header,'local','A1');
                 xlwrite(evalFile,sheet_info,'local',['A',num2str(initialpos+3+fileNum)]);
-            end           
+            end
         end
         
         % write global events
@@ -497,14 +499,14 @@ for i = 1:length(fl)
                 disp(' ')
             end
             
-            block = {[chname, '_', globalevtnames{g}], ''; 
-                     'xdata', 'ydata'};
+            block = {[chname, '_', globalevtnames{g}], '';
+                'xdata', 'ydata'};
             
             if strcmp(excelserver,'on')
                 if i == 1
                     xlswrite1(evalFile,block,'global',[ecell1{g},'2']);
                 end
-                xlswrite1(evalFile,[xd, yd],'global',[ecell1{g},num2str(3+fileNum)]);     
+                xlswrite1(evalFile,[xd, yd],'global',[ecell1{g},num2str(3+fileNum)]);
             else
                 if i == 1
                     xlwrite(evalFile,block,'global',[ecell1{global_offset},'2']);
@@ -524,7 +526,7 @@ for i = 1:length(fl)
         %
         offset = length(globalevtnames);
         for n = 1:length(localevtnames)            %LOCAL EVENTS: All channels should have this event
-
+            
             if isfield(data.(chnames{j}).event,localevtnames{n})
                 evt = data.(chnames{j}).event.(localevtnames{n});
                 xd = evt(1);
@@ -534,27 +536,27 @@ for i = 1:length(fl)
                     yd =999;
                 end
                 
-                block = {[chname, '_', localevtnames{n}], ''; 
-                     'xdata', 'ydata'};
+                block = {[chname, '_', localevtnames{n}], '';
+                    'xdata', 'ydata'};
                 
-                 if strcmp(excelserver,'on')
-                     if i == 1
-                         xlswrite1(evalFile,block,'local',[ecell1{local_offset},'2']);
-                     end
-                     xlswrite1(evalFile,[xd,yd], 'local',[ecell1{local_offset},num2str(3+fileNum)]);
-                 else
-                     if i == 1
-                         xlwrite(evalFile,block,'local',[ecell1{local_offset},'2']);
-                     end
-                     xlwrite(evalFile,[xd, yd],'local',[ecell1{local_offset},num2str(3+fileNum)]);
-                 end
+                if strcmp(excelserver,'on')
+                    if i == 1
+                        xlswrite1(evalFile,block,'local',[ecell1{local_offset},'2']);
+                    end
+                    xlswrite1(evalFile,[xd,yd], 'local',[ecell1{local_offset},num2str(3+fileNum)]);
+                else
+                    if i == 1
+                        xlwrite(evalFile,block,'local',[ecell1{local_offset},'2']);
+                    end
+                    xlwrite(evalFile,[xd, yd],'local',[ecell1{local_offset},num2str(3+fileNum)]);
+                end
                 
                 local_offset = local_offset+1;
                 
             else
                 disp(['no event ',localevtnames{n},' in channel ',chnames{j}])
                 offset = offset-1;
-            end 
+            end
         end
     end
     
@@ -574,9 +576,7 @@ for i = 1:length(fl)
             xd = 1;
             yd = evt;
             
-            if ~isnumeric(yd)
-                disp('non numeric anthro event')
-            end
+            
             
             if iscell(anthroevtnames)
                 canthroevtnames = anthroevtnames{k};
@@ -585,19 +585,31 @@ for i = 1:length(fl)
             end
             
             block = {canthroevtnames, '';
-                     'xdata', 'ydata'};
+                'xdata', 'ydata'};
             if strcmp(excelserver,'on')
                 if i == 1
-                xlswrite1(evalFile,block,'anthro',[ecell1{anthro_offset},'2']);
+                    xlswrite1(evalFile,block,'anthro',[ecell1{anthro_offset},'2']);
                 end
-                xlswrite1(evalFile,[xd,yd],'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
                 
+                if ~isnumeric(yd)
+                    warning('non numeric anthro event, consider coding values...')
+                    xlswrite1(evalFile, xd, 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
+                    xlswrite1(evalFile,{yd}, 'anthro',[ecell2{anthro_offset},num2str(3+fileNum)]);
+                else
+                    xlswrite1(evalFile,[xd,yd],'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
+                end
             else
                 if i == 1
                     xlwrite(evalFile, block,'anthro',[ecell1{anthro_offset},'2']);
                 end
-                xlwrite(evalFile,[xd,yd], 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
                 
+                if ~isnumeric(yd)
+                    warning('non numeric anthro event, consider coding values...')
+                    xlwrite(evalFile, xd, 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
+                    xlwrite(evalFile,{yd}, 'anthro',[ecell2{anthro_offset},num2str(3+fileNum)]);
+                else
+                    xlwrite(evalFile,[xd,yd], 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
+                end
             end
             anthro_offset = anthro_offset+1;
         end
@@ -617,4 +629,4 @@ if strcmp(excelserver,'on')
 end
 
 disp(['eventval completed in ', num2str(toc), ' seconds'])
-
+disp(['events saved to ', evalFile])
