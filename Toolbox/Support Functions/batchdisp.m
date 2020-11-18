@@ -24,7 +24,7 @@ if nargin==1
 end
 
 
-if contains(type,'copying')
+if isin(type,'copying')
     eword = ' from: ';
 elseif isempty(fl)
     eword = '';

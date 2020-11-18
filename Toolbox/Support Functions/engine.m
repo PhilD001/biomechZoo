@@ -187,7 +187,7 @@ for i = 1:length(p)%this recursive step will occur downstream from the folder
     fl = [fl;plate];
 end
 
-if contains(computer, 'MACI') %searches for anymore weird '\' in mac intel
+if isin(computer, 'MACI') %searches for anymore weird '\' in mac intel
     for i = 1:length(fl)
         indx  = strfind(fl{i},'\');
         if ~isempty(indx)

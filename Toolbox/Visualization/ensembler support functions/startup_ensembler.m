@@ -51,7 +51,7 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','property editor on','callback','ensembler(''property editor on'')','separator','on');
     uimenu(mn,'label','property editor off','callback','ensembler(''property editor off'')');
     uimenu(mn,'label','resize','callback','ensembler(''resize'')');
-    uimenu(mn,'label','quickedit','callback','ensembler(''quickedit'')','separator','on');
+    %uimenu(mn,'label','quickedit','callback','ensembler(''quickedit'')','separator','on');
     
     % uimenu(mn,'label','datacursormode off','callback','ensembler(''datacursormode off'')','separator','on');
     

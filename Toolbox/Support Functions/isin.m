@@ -19,8 +19,9 @@ function r= isin(str,substr)
 %
 % Updated Oct 2020
 % - added deprecation warning. 
-
-warning('this function may be deprecated in future biomechZoo versions, consider using contains')
+%
+% Updated Nov 2020
+% - removed depreciation to maintain support for older versions 
 
 if iscell(substr)
     
