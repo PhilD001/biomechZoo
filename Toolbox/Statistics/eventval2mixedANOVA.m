@@ -247,7 +247,7 @@ for j = 1:length(ch)
             % extract all data matching group grp and condition l,for all subjects
             for n = 1:length(txt)
                 r = txt(n,2);
-                if  contains(r{1},cons{l}) && contains(r{1},grp)
+                if  isin(r{1},cons{l}) && isin(r{1},grp)
                     plate = xlsdata(n,:);
                     sub_con_stk = [sub_con_stk;plate];             
                 end

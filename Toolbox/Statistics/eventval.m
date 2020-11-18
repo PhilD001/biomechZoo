@@ -163,7 +163,7 @@ elseif strcmp(excelserver,'off') && ~strcmp(ext,'.xls')
     ext = '.xls';
 end
 
-if contains(computer,'MACI')
+if isin(computer,'MACI')
     disp('Full excel server functionality not available on Mac platforms')
     disp('using java...')
     excelserver = 'off';
@@ -370,7 +370,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if contains(fl{i},subjects{count})
+        if isin(fl{i},subjects{count})
             subject = subjects{count};
             check = false;
         else
@@ -384,7 +384,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if contains(fl_temp,conditions{count})
+        if isin(fl_temp,conditions{count})
             con = conditions{count};
             check = false;
         else
@@ -448,7 +448,7 @@ for i = 1:length(fl)
         chname = chnames{j};
         
         if length(chname)>31
-            disp(['channel ',chname ,'contains too manu characters: ','reducing'])
+            disp(['channel ',chname ,'isin too manu characters: ','reducing'])
             chname = chname(1:31);
         end
         
