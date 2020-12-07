@@ -14,6 +14,7 @@ function evalFile = eventval(varargin)
 % 'ext'          ... Spreadsheet file type .xls, .xlsx, and .csv are possible.
 %                    Default is .xls
 % 'excelserver'  ... Choice to use excel server. Default 'off'
+% 'eventvalfilename ... Custom name for eventval spreadsheet. Default 'eventval'
 %
 % RETURNS
 % evalFile       ... Path leading to exported spreadsheet
@@ -106,6 +107,11 @@ function evalFile = eventval(varargin)
 %
 % Updated by Philippe C. Dixon November 2020
 % - improved support for non-numeric anthro events(e.g. 'M', 'F')
+%
+% Updated by Philippe C. Dixon November 25, 2020
+% - optimized code based on input from Vaibhav Shaw. Runs 2.5 times faster
+%   on sample data set
+
 
 % == SETTINGS ==============================================================================
 %
@@ -117,6 +123,7 @@ anthroevts = {'none'};                         % no manual selection window appe
 ext = '.xls';                                  % default extension for eventval spreadsheet
 s = filesep;                                   % slash direction based on platform
 excelserver = 'off';                           % users with excel can speed up process
+evalfilename = 'eventval';
 
 for i = 1:2:nargin
     
@@ -139,6 +146,8 @@ for i = 1:2:nargin
             ext = varargin{i+1};
         case 'excelserver'
             excelserver = varargin{i+1};
+        case 'eventvalfilename'
+            evalfilename = varargin{i+1};
     end
 end
 
@@ -199,7 +208,7 @@ end
 
 % Check if file exists
 %
-evalFile=[pth,s,'eventval',ext];    % name of eventval file
+evalFile=[pth,s,evalfilename,ext];    % name of eventval file
 
 if exist(evalFile,'file')
     [~,evalFileShort] = fileparts(evalFile);
@@ -213,36 +222,6 @@ if exist(evalFile,'file')
 end
 
 tic  % start calculation timer
-
-% Load excel server or java path
-%
-if strcmp(excelserver,'on')
-    disp('loading excel server')
-    Excel = actxserver ('Excel.Application');
-    ExcelWorkbook = Excel.workbooks.Add;
-    ExcelWorkbook.SaveAs(evalFile,1);
-    ExcelWorkbook.Close(false);
-    invoke(Excel.Workbooks,'Open',evalFile);
-    
-else
-    disp('Adding Java paths');
-    r = which('xlwrite.m');
-    p = fileparts(r);
-    jfl = engine('path',p,'search path','poi_library','extension','.jar');
-    
-    if length(jfl)~=6
-        batchdisp('','missing java files')
-    end
-    
-    javaaddpath(jfl{1});    % for loop seems to fail on some platforms
-    javaaddpath(jfl{2});
-    javaaddpath(jfl{3});
-    javaaddpath(jfl{4});
-    javaaddpath(jfl{5});
-    javaaddpath(jfl{6});
-    
-end
-
 
 % Load zoo files
 %
@@ -337,28 +316,16 @@ end
 % == EXTRACT DATA FROM CHANNELS AT REQUIRED EVENTS =========================================
 %
 
-% build large cell array for excel
-ecell1 = {'D','F','H','J','L','N','P','R','T','V','X','Z'};
-alpha1 = {'B','D','F','H','J','L','N','P','R','T','V','X','Z'};
-ecell2 = {'E','G','I','K','M','O','Q','S','U','W','Y'};
-alpha2 = {'A','C','E','G','I','K','M','O','Q','S','U','W','Y'};
-alpha = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',...
-    'P','Q','R','S','T','U','V','W','X','Y','Z'};
 
-tmp1 = [];
-tmp2 = [];
-for i = 1:length(alpha)
-    tmp1 = [tmp1, strcat(alpha{i}, alpha1)];
-    tmp2 = [tmp2, strcat(alpha{i}, alpha2)];
-end
-
-ecell1 = [ecell1, tmp1];
-ecell2 = [ecell2, tmp2];
-
+Global_Block=[];
+Local_Block=[];
+Anthro_Block=[];
+sheet_info = [];
+Grun=1;
+Arun=1;
+Lrun=1;
 for i = 1:length(fl)
     batchdisp(fl{i},'Extracting data to spreadsheet')
-    
-    fileNum = i;
     
     % Load zoo file and extract filename
     %
@@ -370,7 +337,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if isin(fl{i},subjects{count})
+        if contains(fl{i},subjects{count})
             subject = subjects{count};
             check = false;
         else
@@ -384,7 +351,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if isin(fl_temp,conditions{count})
+        if contains(fl_temp,conditions{count})
             con = conditions{count};
             check = false;
         else
@@ -418,15 +385,6 @@ for i = 1:length(fl)
         else
             process = 'process information not available';
         end
-        
-        if strcmp(excelserver,'on')
-            xlswrite1(evalFile,info,'info','A1');
-            xlswrite1(evalFile,process,'info','A9');
-        else
-            xlwrite(evalFile,info,'info','A1');
-            xlwrite(evalFile,process,'info','A9');
-        end
-        
     end
     
     % Check subject conditon and name
@@ -443,35 +401,18 @@ for i = 1:length(fl)
     local_offset = 1;
     anthro_offset = 1;
     sheet_header = {'SUBJECT', 'CONDITION', 'TRIAL', '', '', 'EVENT'};
+    
     for j = 1:length(chnames)               % set the basic structure of spreadsheet
-        initialpos = 0;
+        
         chname = chnames{j};
         
         if length(chname)>31
-            disp(['channel ',chname ,'isin too manu characters: ','reducing'])
+            disp(['channel ',chname ,'contains too many characters: ','reducing'])
             chname = chname(1:31);
         end
         
-        sheet_info = {subject, con, fname};
-        
-        if strcmp(excelserver,'on')
-            if j==1
-                xlswrite1(evalFile,sheet_header,'summary','A1');
-                xlswrite1(evalFile,sheet_info,'summary',['A',num2str(initialpos+3+fileNum)]);
-            end
-        else
-            
-            % 'summary' sheets
-            if j==1
-                xlwrite(evalFile,sheet_header,'anthro','A1');
-                xlwrite(evalFile,sheet_info,'anthro',['A',num2str(initialpos+3+fileNum)]);
-                
-                xlwrite(evalFile,sheet_header,'global','A1');
-                xlwrite(evalFile,sheet_info,'global',['A',num2str(initialpos+3+fileNum)]);
-                
-                xlwrite(evalFile,sheet_header,'local','A1');
-                xlwrite(evalFile,sheet_info,'local',['A',num2str(initialpos+3+fileNum)]);
-            end
+        if j==1
+            sheet_info = [sheet_info;{subject, con, fname}];
         end
         
         % write global events
@@ -499,23 +440,20 @@ for i = 1:length(fl)
                 disp(' ')
             end
             
-            block = {[chname, '_', globalevtnames{g}], '';
-                'xdata', 'ydata'};
-            
-            if strcmp(excelserver,'on')
-                if i == 1
-                    xlswrite1(evalFile,block,'global',[ecell1{g},'2']);
-                end
-                xlswrite1(evalFile,[xd, yd],'global',[ecell1{g},num2str(3+fileNum)]);
-            else
-                if i == 1
-                    xlwrite(evalFile,block,'global',[ecell1{global_offset},'2']);
-                end
-                xlwrite(evalFile,[xd, yd],'global',[ecell1{global_offset},num2str(3+fileNum)]);
-                
+            if i == 1
+                global_block = {[chname, '_', globalevtnames{g}], ''; 'xdata', 'ydata'};
+                Global_Block=[Global_Block,global_block];
             end
-            global_offset = global_offset+1;
             
+            global_offset = global_offset+1;
+            if ~isempty(xd)
+                Global.(cell2mat({chname, '_', globalevtnames{g}}))(Grun,:)=[xd,yd];
+                if j==length(chnames)
+                    if g ==length(globalevtnames)
+                        Grun=Grun+1;
+                    end
+                end
+            end
         end
         
         if isempty(g)
@@ -525,6 +463,7 @@ for i = 1:length(fl)
         % Write local events
         %
         offset = length(globalevtnames);
+        
         for n = 1:length(localevtnames)            %LOCAL EVENTS: All channels should have this event
             
             if isfield(data.(chnames{j}).event,localevtnames{n})
@@ -536,26 +475,29 @@ for i = 1:length(fl)
                     yd =999;
                 end
                 
-                block = {[chname, '_', localevtnames{n}], '';
-                    'xdata', 'ydata'};
-                
-                if strcmp(excelserver,'on')
-                    if i == 1
-                        xlswrite1(evalFile,block,'local',[ecell1{local_offset},'2']);
-                    end
-                    xlswrite1(evalFile,[xd,yd], 'local',[ecell1{local_offset},num2str(3+fileNum)]);
-                else
-                    if i == 1
-                        xlwrite(evalFile,block,'local',[ecell1{local_offset},'2']);
-                    end
-                    xlwrite(evalFile,[xd, yd],'local',[ecell1{local_offset},num2str(3+fileNum)]);
+                if i == 1
+                    local_block = {[chname, '_', localevtnames{n}], ''; 'xdata', 'ydata'};
+                    Local_Block=[Local_Block,local_block];
                 end
                 
+                if ~isempty(yd)
+                    Local.(cell2mat({chname, '_', localevtnames{n}}))(Lrun,:)=[xd,yd];
+                    if j==length(chnames)
+                        if n==length(localevtnames)
+                            Lrun=Lrun+1;
+                        end
+                    end
+                end
                 local_offset = local_offset+1;
                 
             else
                 disp(['no event ',localevtnames{n},' in channel ',chnames{j}])
                 offset = offset-1;
+                if j==length(chnames)
+                    if n==length(localevtnames)
+                        Lrun=Lrun+1;
+                    end
+                end
             end
         end
     end
@@ -576,57 +518,82 @@ for i = 1:length(fl)
             xd = 1;
             yd = evt;
             
-            
-            
             if iscell(anthroevtnames)
                 canthroevtnames = anthroevtnames{k};
             else
                 canthroevtnames = anthroevtnames(k);
             end
             
-            block = {canthroevtnames, '';
-                'xdata', 'ydata'};
-            if strcmp(excelserver,'on')
-                if i == 1
-                    xlswrite1(evalFile,block,'anthro',[ecell1{anthro_offset},'2']);
-                end
-                
-                if ~isnumeric(yd)
-                    warning('non numeric anthro event, consider coding values...')
-                    xlswrite1(evalFile, xd, 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
-                    xlswrite1(evalFile,{yd}, 'anthro',[ecell2{anthro_offset},num2str(3+fileNum)]);
-                else
-                    xlswrite1(evalFile,[xd,yd],'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
-                end
-            else
-                if i == 1
-                    xlwrite(evalFile, block,'anthro',[ecell1{anthro_offset},'2']);
-                end
-                
-                if ~isnumeric(yd)
-                    warning('non numeric anthro event, consider coding values...')
-                    xlwrite(evalFile, xd, 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
-                    xlwrite(evalFile,{yd}, 'anthro',[ecell2{anthro_offset},num2str(3+fileNum)]);
-                else
-                    xlwrite(evalFile,[xd,yd], 'anthro',[ecell1{anthro_offset},num2str(3+fileNum)]);
+            if i == 1
+                anthro_block = {canthroevtnames, ''; 'xdata', 'ydata'};
+                Anthro_Block=[Anthro_Block,anthro_block];
+            end
+            
+            if ~isempty(yd)
+                anthro.(canthroevtnames)(Arun,:)=[xd,yd];
+                if k==length(anthroevtnames)
+                    Arun=Arun+1;
                 end
             end
             anthro_offset = anthro_offset+1;
         end
-        
     end
-    
 end
 
 
-% == CLOSE EXCEL SERVER (if open) ==========================================================
-%
-if strcmp(excelserver,'on')
-    invoke(Excel.ActiveWorkbook,'Save');
-    Excel.Quit
-    Excel.delete
-    clear Excel
+% write basic info
+xls_write(evalFile,info,'info','A1', excelserver)
+xls_write(evalFile,process,'info','A9', excelserver)
+
+% write anthro events if they exist
+if~isempty(anthroevtnames)
+    anthroall = table2array(struct2table(anthro));
+    xls_write(evalFile,sheet_header,'anthro','A1', excelserver)
+    xls_write(evalFile,sheet_info,'anthro','A4', excelserver)
+    xls_write(evalFile,Anthro_Block,'anthro','D2', excelserver)
+    xls_write(evalFile,anthroall,'anthro','D4', excelserver)
 end
+
+% write global events if they exist
+if~isempty(globalevtnames)
+    globalall = table2array(struct2table(Global));
+    xls_write(evalFile,sheet_header,'global','A1', excelserver)
+    xls_write(evalFile,sheet_info,'global','A4', excelserver)
+    xls_write(evalFile,Global_Block,'global','D2', excelserver)
+    xls_write(evalFile,globalall,'global','D4', excelserver)
+end
+
+% write local events if they exist
+if~isempty(localevtnames)
+    localall = table2array(struct2table(Local));
+    xls_write(evalFile,sheet_header,'local','A1', excelserver)
+    xls_write(evalFile,sheet_info,'local','A4', excelserver)
+    xls_write(evalFile,Local_Block,'local','D2', excelserver)
+    xls_write(evalFile,localall,'local','D4', excelserver)
+end
+
 
 disp(['eventval completed in ', num2str(toc), ' seconds'])
 disp(['events saved to ', evalFile])
+
+
+function xls_write(file_name,sheet_data,sheet_name, cell_name, excelserver)
+
+% xls_write is an internal util allowing to switch between excel writers
+% based on sysrtem
+
+if nargin == 4
+    
+    if isin(computer,'MACI')
+        excelserver = 'off';
+    end
+end
+
+if strcmp(excelserver,'on')
+    xlswrite1(file_name,sheet_data,sheet_name, cell_name);
+else
+    xlwrite(file_name,sheet_data,sheet_name, cell_name);
+end
+
+
+
