@@ -1,5 +1,27 @@
 function normdata(type)
 
+%NORMDATA(type) plots normative gait data in ensembler. Usefuly for thesis
+% literature reviews or to superimpose normal data on a particular trial
+%
+% ARGUMENTS
+%  type  ...  str, type of normative data to plot      
+
+
+% NOTES
+% sources
+%
+% Michael H. Schwartz, Adam Rozumalski, Joyce P. Trost. The effect of walking speed on the gait of 
+% typically developing children,Journal of Biomechanics,Volume 41, Issue 8,2008,
+% https://doi.org/10.1016/j.jbiomech.2008.03.015.
+%
+% Dixon P.C. and Pearsall D.J. Gait dynamics on a cross-slope walking surface. J App Biomech, 
+% 26(1):17–25, 2010. https://doi.org/10.1123/jab.26.1.17 
+%
+% Stebbins J., Harrington M., Thompson N., Zavatsky A.B., and Theologis T. Repeatability of a model 
+% for measuring multi-segment foot kinematics in children. Gait Posture, 23(4):401–10, 2006.
+% https://doi.org/10.1016/j.gaitpost.2005.03.002 
+
+
 %--To plot only norm data from scratch
 %
 axes = findobj(gcf,'type','axes');
@@ -12,7 +34,7 @@ end
 
 %----find normative figure data
 %
-sl = slash;
+sl = filesep;
 root = which('ensembler');
 indx = strfind(root,sl);
 nroot = root(1:indx(end-1)-1);
@@ -119,8 +141,8 @@ for j = 1:length(figs)
                     continue
                 end
                 
-                p.x = normalizeline(p.x,101);
-                p.y = normalizeline(p.y,101);
+                p.x = normalize_line(p.x,101);
+                p.y = normalize_line(p.y,101);
                 patch(p.x,p.y,col)
                 
             end
@@ -189,8 +211,8 @@ for j = 1:length(figs)
                     continue
                 end
                 
-                p.x = normalizeline(p.x,101);
-                p.y = normalizeline(p.y,101);
+                p.x = normalize_line(p.x,101);
+                p.y = normalize_line(p.y,101);
                 patch(p.x,p.y,col)
                 
             end
@@ -234,8 +256,8 @@ for j = 1:length(figs)
                     continue
                 end
                 
-                p.x = normalizeline(p.x,101);
-                p.y = normalizeline(p.y,101);
+                p.x = normalize_line(p.x,101);
+                p.y = normalize_line(p.y,101);
                 patch(p.x,p.y,col)
                 
             end
@@ -286,8 +308,8 @@ for j = 1:length(figs)
                     
                 end
                 
-                p.x = normalizeline(p.x,101);
-                p.y = normalizeline(p.y,101);
+                p.x = normalize_line(p.x,101);
+                p.y = normalize_line(p.y,101);
                 patch(p.x,p.y,col)
                 
             end
@@ -397,8 +419,8 @@ for j = 1:length(figs)
                     continue
                 end
                 
-                p.x = normalizeline(p.x,101);
-                p.y = normalizeline(p.y,101);
+                p.x = normalize_line(p.x,101);
+                p.y = normalize_line(p.y,101);
                 patch(p.x,p.y,col)
                 
             end
@@ -461,8 +483,8 @@ for j = 1:length(figs)
                     
                 end
                 
-                p.x = normalizeline(p.x,101);
-                p.y = normalizeline(p.y,101);
+                p.x = normalize_line(p.x,101);
+                p.y = normalize_line(p.y,101);
                 patch(p.x,p.y,col)
                 
             end
@@ -567,7 +589,7 @@ for j = 1:length(figs)
                     continue
                 end
                 
-                p.y = normalizeline(p.y,101);
+                p.y = normalize_line(p.y,101);
                 y1 = p.y(1:31);
                 y2=p.y(72:end);
                 y = [y1;y2];
@@ -622,7 +644,7 @@ for j = 1:length(figs)
                     
                 end
                 
-                p.y = normalizeline(p.y,101);
+                p.y = normalize_line(p.y,101);
                 y1 = p.y(1:31);
                 y2=p.y(72:end);
                 y = [y1;y2];

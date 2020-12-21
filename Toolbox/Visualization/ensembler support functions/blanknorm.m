@@ -1,5 +1,3 @@
-
-
 function id =blanknorm(type)
 
 close all

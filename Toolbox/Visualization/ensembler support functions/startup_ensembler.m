@@ -24,6 +24,8 @@ if nargin < 10
     FontName = 'Arial'; % default axis font
     FontSize = 14;      % default axis font size
     units = 'inches';   % default units for ensembler
+    msgbox_space = 1.25;
+    opening_msg = '';
 end
 
 mult = 1; % label font size multiplier
