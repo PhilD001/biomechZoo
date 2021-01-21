@@ -4,20 +4,19 @@ function evalFile = eventval(varargin)
 % a spreadsheet for further analysis
 %
 % ARGUMENTS
-% 'fld'          ... path to data folder as string
-% 'dim1'         ... list of conditions as cell array of strings
-% 'dim2'         ... list of subjects in study as cell array of strings
-% 'ch'           ... list of channels as cell array of strings
-% 'localevts'    ... list of local events as cell array of strings
-% 'globalevts'   ... list of global events as cell array of strings
-% 'anthroevts'   ... list of anthro events as cell array of strings
-% 'ext'          ... Spreadsheet file type .xls, .xlsx, and .csv are possible.
-%                    Default is .xls
-% 'excelserver'  ... Choice to use excel server. Default 'off'
+% 'fld'             ... path to data folder as string
+% 'dim1'            ... list of conditions as cell array of strings
+% 'dim2'            ... list of subjects in study as cell array of strings
+% 'ch'              ... list of channels as cell array of strings
+% 'localevts'       ... list of local events as cell array of strings
+% 'globalevts'      ... list of global events as cell array of strings
+% 'anthroevts'      ... list of anthro events as cell array of strings
+% 'ext'             ... Spreadsheet file type .xls, .xlsx, and .csv are possible. Default is .xls
+% 'excelserver'     ... Choice to use excel server. Default 'off'
 % 'eventvalfilename ... Custom name for eventval spreadsheet. Default 'eventval'
 %
 % RETURNS
-% evalFile       ... Path leading to exported spreadsheet
+% evalFile           ... Path leading to exported spreadsheet
 %
 % NOTES:
 % - 'dim1' refers to the condition folders in your study
@@ -177,6 +176,27 @@ if isin(computer,'MACI')
     disp('using java...')
     excelserver = 'off';
     ext = '.xls';
+end
+
+% Load excel server or java path
+%
+if strcmp(excelserver,'on')
+    disp('loading excel server')
+    Excel = actxserver ('Excel.Application');
+    ExcelWorkbook = Excel.workbooks.Add;
+    ExcelWorkbook.SaveAs(evalfilename,1);
+    ExcelWorkbook.Close(false);
+    invoke(Excel.Workbooks,'Open',evalfilename);
+else
+    disp('Adding Java paths');
+    r = which('xlwrite.m');
+    pp = fileparts(r);
+    jfl = engine('path',pp,'search path','poi_library','extension','.jar');
+    
+    for i = 1:length(jfl)
+        javaaddpath(jfl{i});
+    end
+    
 end
 
 conditions = strrep(conditions,'/',filesep);
@@ -593,7 +613,7 @@ if strcmp(excelserver,'on')
     xlswrite1(file_name,sheet_data,sheet_name, cell_name);
 else
     xlwrite(file_name,sheet_data,sheet_name, cell_name);
-end
+end 
 
 
 
