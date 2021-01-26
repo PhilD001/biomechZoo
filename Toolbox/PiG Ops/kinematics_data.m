@@ -81,7 +81,7 @@ function data = kinematics_data(data,settings)
 % - More testing of global angles in all directions
 % - Fixed bug with graphing outputs
 %
-% Updated by Philippe C. Dixn Dec 2017
+% Updated by Philippe C. Dixon Dec 2017
 % - Bug fix for axis flipping for large ROM movement at the hip and knee
 %   based on 'atan2' approach from pyCGM (see pyCGM.py --> getangle). For
 %   more info see: Schwartz and Dixon "The Effect of Subject Measurement Error on
@@ -90,7 +90,9 @@ function data = kinematics_data(data,settings)
 %   press. Update for ankle and pelvis should be considered
 % - Bug fix for static trials with less than 3 frames ('length' changed to
 %  'size') when building ort in 'getdataPiG' sub function
-
+%
+% Updated by Philippe C. Dixon Jan 26, 2021
+% - replaced use of 'isin' for 'strfind'
 
 % Set defaults
 %
@@ -243,9 +245,9 @@ fpath = [p,f];
 cd(p)
 ext = extension(fpath);
 
-if isin(ext,'c3d')
+if strfind(ext,'c3d')
     data= c3d2zoo(fpath);
-elseif isin(ext,'zoo')
+elseif strfind(ext,'zoo')
     data = zload(fpath);
 else
     error('only c3d and zoo files can be input')
@@ -527,7 +529,7 @@ end
 flcross = zeros(size(float));
 nflx = zeros(size(flx));
 
-if isin(dir,'pos')
+if strfind(dir,'pos')
     
     for i = 1:length(float)
         flcross(i,:) = cross(float(i,:),long_prox(i,:));
