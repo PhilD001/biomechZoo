@@ -329,12 +329,16 @@ end
 
 function [explode,ch_exp] = checkExplode(data)
 
-process = data.zoosystem.Processing;
-explode = false;
-for i = 1:length(process)
-    if strfind(process{i},'explode')
-        explode = true;
+if isfield(data.zoosystem, 'Processing')
+    process = data.zoosystem.Processing;
+    explode = false;
+    for i = 1:length(process)
+        if strfind(process{i},'explode')
+            explode = true;
+        end
     end
+else
+    explode = true;
 end
 
 if explode
