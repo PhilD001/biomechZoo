@@ -21,7 +21,7 @@ function [globalOr, orient] = getFPGlobalOrigin(data)
 % compute global origin
 %
 globalOr = struct;
-nplates = data.zoosystem.Analog.FPlates.NUMUSED;
+nplates = get_nforceplates(data);
 
 if nplates == 0
     error('no force plates detected')

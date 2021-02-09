@@ -27,12 +27,17 @@ if isempty(data.zoosystem.Analog.FPlates.LOCALORIGIN)
     localOr = [];
     return
 end
-    
-nplates = data.zoosystem.Analog.FPlates.NUMUSED;
-localOr = struct;
 
+nplates = get_nforceplates(data);
+
+localOr = struct;
 for i = 1:nplates
-    localOr.(['FP',num2str(i)]) =  data.zoosystem.Analog.FPlates.LOCALORIGIN(:,i)/1000';
+    try
+        localOr.(['FP',num2str(i)]) =  data.zoosystem.Analog.FPlates.LOCALORIGIN(:,i)/1000';
+    catch me
+        localOr.(['FP',num2str(i)]) = [0, 0, 0];
+        disp(['missing local origin coordinates for FP ', num2str(i)])
+    end
 end
 
 

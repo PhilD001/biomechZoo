@@ -151,7 +151,6 @@ for i = 1:length(ch)
     
     if ~isin(ch{i},{'x1','y1','z1','x2','y2','z2','Force','Moment','Angle','Power',...
             'GRF','star'})
-        
         [~,cc] = size(data.(ch{i}).line);
         if cc==3
             

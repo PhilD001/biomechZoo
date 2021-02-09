@@ -1392,14 +1392,7 @@ path = pathname(d) ;  % local folder where director resides
 
 ach =  data.zoosystem.Analog.Channels;
 
-nplates = 0;
-if isfield(data.zoosystem.Analog, 'FPlates')
-    if isfield(data.zoosystem.Analog.FPlates, 'NUMUSED')
-        nplates = data.zoosystem.Analog.FPlates.NUMUSED;
-    elseif isfield(data.zoosystem.Analog.FPlates, 'CORNERS')
-        [~, ~, nplates] = size(data.zoosystem.Analog.FPlates.CORNERS);
-    end
-end
+nplates = get_nforceplates(data);
     
 if ismember('F1X1',ach)
     disp('kistler force plates detected, computed GRF')
