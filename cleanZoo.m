@@ -28,6 +28,13 @@ if exist(fl,'file')
     batchdisp(fl,'deleting')
     delete(fl)
 end
+
+fl = fullfile(fld,'Statistics','eventval.xls');            % sample study user gen stats file
+if exist(fl,'file')
+    batchdisp(fl,'deleting')
+    delete(fl)
+end
+ 
  
 
 % Remove user generated folders in the examples

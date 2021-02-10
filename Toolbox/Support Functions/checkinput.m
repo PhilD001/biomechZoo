@@ -3,6 +3,11 @@ function [fld,fl,saveFile] = checkinput(fld,ext)
 % [fld,fl,saveFile] = CHECKINPUT(fld,ext) standalone function used to
 % switch between file and folder inputs
 
+% try to catch error if fld is the output of engine
+if isa(fld, 'cell')
+fld = fld{1};
+end
+
 if strfind(fld,ext)                                       % for converting a single trial 
     if iscell(fld)
         fld = fld{1};
