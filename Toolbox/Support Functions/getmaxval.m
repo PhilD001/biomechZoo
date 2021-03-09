@@ -108,7 +108,7 @@ for c = 1:length(cons)
             data = zload(fl{i});
             
             if ~isfield(data,ch)
-                batchdisplay(fl{i},'channel does not exist')
+                batchdisp(fl{i},'channel does not exist')
             end
             
             plate = data.(ch).line';

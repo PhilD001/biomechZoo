@@ -30,7 +30,7 @@ fl_tmp = engine('path',fld,'extension','zoo','search file','Cal');
 fl = setdiff(fl_all,fl_tmp);
 
 for i = 1:length(fl)    
-    batchdisplay(fl{i},'emg process')
+    batchdisp(fl{i},'emg process')
     data = zload(fl{i});
     data = emgprocess_data(data,ch);
     zsave(fl{i},data);

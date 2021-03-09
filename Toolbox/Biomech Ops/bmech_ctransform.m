@@ -34,7 +34,7 @@ end
 %
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'changing coordinate systems')
+    batchdisp(fl{i},'changing coordinate systems')
     data = ctransform_data(data,ch,c1,c2);
     zsave(fl{i},data);
 end

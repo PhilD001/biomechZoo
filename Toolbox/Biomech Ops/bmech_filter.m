@@ -91,7 +91,7 @@ msg = prepmsg(filt,ch);
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'filtering')
+    batchdisp(fl{i},'filtering')
     data = filter_data(data,ch,filt);
     zsave(fl{i},data,msg);
 end

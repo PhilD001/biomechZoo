@@ -66,7 +66,7 @@ cd(fld)
 %-------LOAD EXCEL DATA--------
 %
 for i = 1:length(fl)
-    batchdisplay(fl{i},'creating zoo file')
+    batchdisp(fl{i},'creating zoo file')
     zfl = extension(fl{i},'zoo');
         
     r  = readcsvVicon(fl{i});

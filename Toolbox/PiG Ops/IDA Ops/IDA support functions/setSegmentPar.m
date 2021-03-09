@@ -17,6 +17,9 @@ function [data,body] = setSegmentPar(dim,bone,data,SegmentPar,body)
 %
 % Updated by Philippe C. Dixon June 2018
 % - big fix for PiG data without SACR, but with RPSI and LPSI
+%
+% Updated by Philippe C. Dixon March 2021
+% - save segment parameters to zoosystem.CompInfo
 
 for i = 1:length(bone(:,1))
     
@@ -150,4 +153,23 @@ for i = 1:length(bone(:,1))
     if ~isfield(data,[(bn),'com'])
         data = addchannel_data(data,[(bn),'com'],cm,'Video');    % add to zoofile
     end
+    
+    % save segment par to zoosystem
+    if ~isfield(data.zoosystem, 'CompInfo')
+        data.zoosystem.CompInfo = struct;
+    end
+    
+    if strfind(bn, 'Right')
+        parbone = strrep(bn, 'Right', '');
+    elseif strfind(bn, 'Left')
+        parbone = strrep(bn, 'Left', '');
+    else
+        continue
+    end
+
+    data.zoosystem.CompInfo.SegmentParameters.(bn) = SegmentPar.(parbone);
+
+    
 end
+
+

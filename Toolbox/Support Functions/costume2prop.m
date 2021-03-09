@@ -15,7 +15,7 @@ cd(fld)
 fl = engine('path',fld,'extension','cos');
 
 for i = 1 :length(fl)
-    batchdisplay(fl{i},'converting to prop')
+    batchdisp(fl{i},'converting to prop')
     t = load(fl{i},'-mat');
     fl{i} = extension(fl{i},'prop');
     object = t.costume;

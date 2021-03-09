@@ -70,7 +70,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'differentiating:');
+    batchdisp(fl{i},'differentiating:');
     data = deriv_data(data,ch,filt);
     zsave(fl{i},data, ch);
 end

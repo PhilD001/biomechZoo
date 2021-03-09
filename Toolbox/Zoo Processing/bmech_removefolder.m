@@ -32,7 +32,7 @@ for i = 1:length(sfld)
     fl = engine('path',fld,'search path',sfld{i});
     
     for j = 1:length(fl)
-        batchdisplay(fl{j},'deleting trial')
+        batchdisp(fl{j},'deleting trial')
         delete(fl{j})
     end
     
@@ -40,7 +40,7 @@ for i = 1:length(sfld)
     
     for j = 1:length(sfld_all)
         if isin(sfld_all{j},sfld{i}) && exist(sfld_all{j},'dir')==7
-            batchdisplay(sfld_all{j},'removing folder')
+            batchdisp(sfld_all{j},'removing folder')
             rmdir(sfld_all{j},'s')
         end
     end

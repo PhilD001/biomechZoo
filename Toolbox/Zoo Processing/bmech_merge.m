@@ -29,7 +29,7 @@ end
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'merging exploded data');
+    batchdisp(fl{i},'merging exploded data');
     for j = 1:length(ch)
         ch_ex  = explodelist({ch{j}});
         data = mergechannel_data(data,ch_ex);

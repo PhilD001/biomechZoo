@@ -133,8 +133,8 @@ for i = 1:length(fl1)
     indx2 = strfind(fl2{i},s);
     indx2 = indx2(end-1);
     
-    batchdisplay(fl1{i},'combining')
-    batchdisplay(fl2{i},'combining')
+    batchdisp(fl1{i},'combining')
+    batchdisp(fl2{i},'combining')
     disp(' ')
     
     if strcmp(fl1{i}(indx1:end),fl1{i}(indx2:end))==0

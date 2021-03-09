@@ -61,7 +61,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'reversing polarity');
+    batchdisp(fl{i},'reversing polarity');
     data = reversepol_data(data,ch);
     zsave(fl{i},data);
     

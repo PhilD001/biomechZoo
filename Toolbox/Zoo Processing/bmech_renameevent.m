@@ -58,7 +58,7 @@ cd(fld);
 fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
-    batchdisplay(fl{i},'renaming events')
+    batchdisp(fl{i},'renaming events')
     data = zload(fl{i});
     data = renameevent_data(data,evt,nevt);
     zsave(fl{i},data);

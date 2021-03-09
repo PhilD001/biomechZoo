@@ -7,7 +7,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'computing free torque')
+    batchdisp(fl{i},'computing free torque')
     data= freetorque_data(data);
     zsave(fl{i},data);
 end

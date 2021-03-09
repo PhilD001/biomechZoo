@@ -58,7 +58,7 @@ end
 fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
-    batchdisplay(fl{i},'resampling')
+    batchdisp(fl{i},'resampling')
     data = zload(fl{i});
     data = resample_data(data,ch,p,q,method);
     zsave(fl{i},data, ['Freq: ',num2str(p),' to ',num2str(q)]);    

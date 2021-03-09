@@ -67,7 +67,10 @@ function data = kinetics_data(data,settings,filt)
 %
 % Updated by Philippe C. Dixon October 2016
 % - improved graphical outputs
-
+%
+% Updated by Philippe C. Dixon March 2021
+% - added outputs to zoo file: com acc, segment ang vel, segment ang acc,
+%   segment parameter info to zoosystem
 
 
 %---------------------------------------%
@@ -509,8 +512,20 @@ data = addchannel_data(data,'LeftKneePower',P_lknee/mass,'Video');
 data = addchannel_data(data,'LeftHipPower',P_lhip/mass,'Video');
 
 
+% d) add segment angular velocity and acceleration channels
+akin_ch = fieldnames(AKIN);
+for i = 1:length(akin_ch) 
+    data = addchannel_data(data,[akin_ch{i}, 'AngVel'],AKIN.(akin_ch{i}).AngVel,'Video');
+    data = addchannel_data(data,[akin_ch{i}, 'AngAcc'],AKIN.(akin_ch{i}).AngAcc,'Video');
+end
 
-% d) Other quantities
+% e) add COM quantities
+com_ch = fieldnames(COM);
+for i = 1:length(com_ch)
+    data = addchannel_data(data,[com_ch{i}, 'comAcc'],COM.(com_ch{i}).Acc,'Video');
+end
+
+% f) Other quantities
 
 data = addchannel_data(data,'RightFootAngVelMag',RightFootAngVelMag,'Video');
 data = addchannel_data(data,'LeftFootAngVelMag',LeftFootAngVelMag,'Video');
@@ -525,7 +540,7 @@ data = addchannel_data(data,'RightPelvisAngVelMag',RightPelvisAngVelMag,'Video')
 data = addchannel_data(data,'LeftPelvisAngVelMag',LeftPelvisAngVelMag,'Video');
 
 
-% e) Free Torque (Nm/kg)
+% g) Free Torque (Nm/kg)
 data = addchannel_data(data,'RightTz',TzR/mass,'Video');
 data = addchannel_data(data,'LeftTz',TzL/mass,'Video');
 

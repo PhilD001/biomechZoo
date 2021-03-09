@@ -76,7 +76,7 @@ for i = 1:length(flDyn)
     flStatic = engine('path',[fld,filesep,currentSub],'extension','zoo','search path','Static');
     sdata = zload(flStatic{1});
     
-    batchdisplay(flDyn{i},'computing joint angles via kinemat toolbox')
+    batchdisp(flDyn{i},'computing joint angles via kinemat toolbox')
     data = kinematicsRvdB_data(sdata,data,Pelvis,Thigh,Shank,Foot,sequence);
     
     zsave(flDyn{i},data);

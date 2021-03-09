@@ -74,7 +74,7 @@ cd(fld)
 %
 
 for i = 1:length(fl)
-    batchdisplay(fl{i},'creating zoo file')
+    batchdisp(fl{i},'creating zoo file')
     zfl = extension(fl{i},'zoo');
       
     % Read file and extract header, channel names, and data

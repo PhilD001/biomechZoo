@@ -60,7 +60,7 @@ end
 %
 for i= 1:length(fl)
     
-    batchdisplay(fl{i},'copying file')
+    batchdisp(fl{i},'copying file')
     
     [p,f] = fileparts(fl{i});
     ext = extension(fl{i});

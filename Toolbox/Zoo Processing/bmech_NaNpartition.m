@@ -44,7 +44,7 @@ fl = engine('fld',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'NaNpartition');
+    batchdisp(fl{i},'NaNpartition');
     data = NaNpartition(data);
     data = partition_data(data,'data_start','data_end');
     zsave(fl{i},data);

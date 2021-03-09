@@ -117,7 +117,7 @@ for i = 1:length(fl)
         %
         for j=1:length(trial_names)
             
-            batchdisplay(trial_names{j},'creating zoo file')
+            batchdisp(trial_names{j},'creating zoo file')
             
             data = struct;
             data.zoosystem.Video.Channels = {};
@@ -247,7 +247,7 @@ for i = 1:length(fl)
         %
         for j=1:length(trial_names)
             
-            batchdisplay(trial_names{j},'creating zoo file')
+            batchdisp(trial_names{j},'creating zoo file')
             
             data = struct;
             data.zoosystem.Video.Channels = {};
@@ -314,7 +314,7 @@ end
 if isin(del,'yes') || isin(del,'on')
     recycle('on')
     for i =1:length(fl)
-        batchdisplay(fl{i},'deleting source file')
+        batchdisp(fl{i},'deleting source file')
         delete(fl{i})
     end
 end

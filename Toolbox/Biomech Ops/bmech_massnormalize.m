@@ -38,7 +38,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'mass normalizing amplitude'); 
+    batchdisp(fl{i},'mass normalizing amplitude'); 
     data = massnormalize_data(data,ch,type);
     zsave(fl{i},data,['for ',strjoin(ch,' ')]);
 end

@@ -57,7 +57,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'associating limb to force plate')
+    batchdisp(fl{i},'associating limb to force plate')
     data= forceplate2limbside_data(data,ch,thresh,ref);
     zsave(fl{i},data);
 end

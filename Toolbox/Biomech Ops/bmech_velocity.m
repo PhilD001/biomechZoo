@@ -61,7 +61,7 @@ fl = engine('path',fld,'extension','zoo');
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'computing velocity'); 
+    batchdisp(fl{i},'computing velocity'); 
     data = velocity_data(data,ch,method);
     zsave(fl{i},data,['for channel ',ch]);
 end

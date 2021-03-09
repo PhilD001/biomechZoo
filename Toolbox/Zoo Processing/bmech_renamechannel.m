@@ -69,7 +69,7 @@ disp(' ')
 
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisplay(fl{i},'renaming channels')
+    batchdisp(fl{i},'renaming channels')
     data = renamechannel_data(data,och,nch);
     zsave(fl{i},data);
 end
