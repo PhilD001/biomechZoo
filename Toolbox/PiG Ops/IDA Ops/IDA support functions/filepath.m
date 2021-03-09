@@ -22,7 +22,7 @@
 % Phil Dixon, Montreal, Qc, CANADA
 %
 
-s = slash;
+s = filesep;
 
 indx = strfind(fl,s);
 sslash= indx(end);

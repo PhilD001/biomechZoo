@@ -19,7 +19,7 @@
 
 
 
-s = slash;
+s = filesep;
 
 
 if isempty(strfind(fl,s))    % fl might come from pc zoosystem info    

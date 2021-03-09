@@ -230,7 +230,7 @@ end
 % subfld2 = [fld(1:indx(end-1)),'Statistics']; % 2nd try
 % subfld3 = [fld(1:indx(end-2)),'Statistics']; % 2nd try
 
-s = slash;
+s = filesep;
 indx = strfind(fld,s);
 subfld = fld(1:indx(end-1)); 
 
@@ -359,7 +359,7 @@ for i = 1:length(fl)
         
     % find subject condition
     %
-    fl_temp = strrep(fl{i},[slash,subject],'');
+    fl_temp = strrep(fl{i},[filesep,subject],'');
     for j = 1:length(Conditions)
     
         if isin(fl_temp,Conditions{j})

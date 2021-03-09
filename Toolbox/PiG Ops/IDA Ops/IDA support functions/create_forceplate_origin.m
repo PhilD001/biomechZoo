@@ -4,7 +4,7 @@ function [p1,p2,p3,Or1,Or2,Or3] = create_forceplate_origin
 %- this function is untested!
 % created August 2013 
 
-s = slash;
+s = filesep;
 
 b = which('vicon2ida.m');
 indx = strfind(b,s);

@@ -39,7 +39,7 @@ if nargin ==0
     action = 'space';
 end
 
-s = slash;
+s = filesep;
 
 switch action
 
@@ -129,7 +129,7 @@ switch action
         delete(gco)
         
     case 'load bones'
-        s = slash;
+        s = filesep;
         d=which('director'); % returns path to ensembler
         path = pathname(d) ;  % local folder where director resides
         bones = [path,'Cinema objects',s,'bones',s,'golembones'];
@@ -309,7 +309,7 @@ switch action
         warning off;
         director('resize')
 
-        s = slash;
+        s = filesep;
         d=which('director'); % returns path to ensembler
         path = pathname(d) ;  % local folder where director resides
 %         bones = [path,'Cinema objects',s,'bones',s,'golembones'];
@@ -458,7 +458,7 @@ switch action
     case 'gait cycle'
         
         %---load bones
-        s = slash;
+        s = filesep;
         d=which('director'); % returns path to ensembler
         path = pathname(d) ;  % local folder where director resides
         bones = [path,'Cinema objects',s,'bones',s,'golembones'];
@@ -498,7 +498,7 @@ switch action
     case 'static trial'
         
          %---load bones
-        s = slash;
+        s = filesep;
         d=which('director'); % returns path to ensembler
         path = pathname(d) ;  % local folder where director resides
         bones = [path,'Cinema objects',s,'bones',s,'golembones'];
@@ -558,7 +558,7 @@ switch action
 
         % ------VECTOR ANALYSIS CASES------------
 
-        s = slash;
+        s = filesep;
         
         
     case 'LegFloorAngle'
@@ -1478,7 +1478,7 @@ director('person',ordr{cindx});
 
 function openall(pth)
 
-s = slash;
+s = filesep;
 
 if ~strcmp(pth(end),s);
     pth = [pth,s];
