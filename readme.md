@@ -21,7 +21,6 @@ biomechZoo can help those new to programming / biomechanics to quickly process t
 ## Web: 
 Find more information at http://biomechZoo.com
 
-
 ## Help: 
 Help for biomechZoo can be accessed via the biomechZoo-help repository (https://github.com/PhilD001/biomechZoo-help). This repository provides exercises, sample data, and other resources to help the user get started with biomechZoo. Additional help may be obtained via seminars (see website for announcements) or
 by contacting the main author. 
@@ -38,6 +37,10 @@ Users interested in getting involved should contact the main developper. We are 
 - Development of a python-based version of biomechZoo 
 - Addition of analysis tools for specialized analyses 
 
+## Citation
+
+If the biomechZoo toolbox was useful for your work, plase cite us:
+Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. biomechZoo: An open-source toolbox for the processing, analysis, and visualization of biomechanical movement data, Computer Methods and Programs in Biomedicine, Volume 140, 2017, Pages 1-10, https://doi.org/10.1016/j.cmpb.2016.11.007. 
 
 ## Contact:
 philippe dot dixon at gmail dot com
