@@ -42,7 +42,7 @@ for i = 1:length(ax)
     ln = findobj(ax(i),'type','line','linewidth',.5);
     pt = get(ax(i),'parent');                           % parent of axis is figure
     nm = get(pt,'name');
-    ch = get(gca,'Tag');
+    ch = get(ax(i),'Tag');
     
     if ~isempty(ln)
         xdata = get(ln(1),'XData');
@@ -62,6 +62,16 @@ for i = 1:length(ax)
         end
         
         ehnd = findobj(ax(i),'string',settings.string);
+        
+        % check if there are mulitple events
+%         evt_names = cell(length(ehnd),1);
+%         for j = 1:length(ehnd)
+%             evt_names{j} = get(ehnd(j), 'tag');
+%         end
+%         n_evts = unique(evt_names);
+%         if n_evts > 1
+%             error(['attempt to 
+        
         meanehnd = findobj(ax(i),'string',settings.ensstring);
         
         mn = nanmean(lstk);
@@ -142,7 +152,7 @@ for i = 1:length(ax)
                     
                 end
                 
-                mpos=  nanmean(estk);
+                mpos=  nanmean(estk,1);
                 
                 switch vartype
                     

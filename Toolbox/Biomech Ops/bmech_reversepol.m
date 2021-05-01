@@ -15,6 +15,8 @@ function bmech_reversepol(fld,ch)
 %
 % Notes
 % - event of type range of motion ('rom') will not be changed
+%
+% See also reversepol_data, reversepol_line
 
 
 % Revision history: 

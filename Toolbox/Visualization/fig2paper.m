@@ -1,5 +1,7 @@
 function fig2paper
 
+% FIG2PAPER prepares a basic matlab plot for use in a manuscript
+% presentation by updating fonts and other defaults
 
 axWidth = 1;
 axHeight = 1;
