@@ -352,6 +352,25 @@ for i = 1:length(fl)
     data = zload(fl{i});
     [~,fname] = fileparts(fl{i});
     
+    % write additional meta-info
+    %
+    if i==1
+        info = {'Summary info related to data';
+            ' ';
+            'folder processed: ';
+            fld;
+            'date processed: ';
+            date;
+            'missing events tagged as 999';
+            'Processing steps'};
+        
+        if isfield(data.zoosystem, 'Processing')
+            process = data.zoosystem.Processing;
+        else
+            process = 'process information not available';
+        end
+    end
+    
     % find subject code
     %
     check = true;
@@ -388,24 +407,7 @@ for i = 1:length(fl)
         continue
     end
     
-    % write additional meta-info
-    %
-    if i==1
-        info = {'Summary info related to data';
-            ' ';
-            'folder processed: ';
-            fld;
-            'date processed: ';
-            date;
-            'missing events tagged as 999';
-            'Processing steps'};
-        
-        if isfield(data.zoosystem, 'Processing')
-            process = data.zoosystem.Processing;
-        else
-            process = 'process information not available';
-        end
-    end
+  
     
     % Check subject conditon and name
     %

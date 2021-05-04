@@ -62,6 +62,10 @@ for i = 1:length(ch)
     end
     
     yd = data.(ch{i}).line;
+    [rows, cols] = size(yd); %#ok<ASGLU>
+    if cols > 1
+        warning(['Your data has ', num2str(cols), 'columns, unexpected behavior...'])
+    end
     
     switch lower(type)
         
