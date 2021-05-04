@@ -6,14 +6,14 @@ function fl = engine(varargin)
 % The 'path' property is required.  All other properties are optional. All arguments must be strings.
 %
 % ARGUMENTS
-%  'path' or 'fld' ...  folder path to begin the search as string
-%  'extension'     ...  type of file to search as string. ex. '.c3d' or 'csv'
-%  'search file'   ...  return only files containing specific string ex. '_g_'
-%  'search path'   ...  search for a particular string in the path name ex 'hello' in data/hello
-%  'folder'        ...  search only in folders of a specific name located downstream from the path (string)
+%  'pth, 'path' or 'fld'  ...  folder path to begin the search as string
+%  'extension' or 'ext'   ...  type of file to search as string. ex. '.c3d' or 'csv' ('.' not necessary)
+%  'search file'          ...  return only files containing specific string ex. '_g_'
+%  'search path'          ...  search for a particular string in the path name ex 'hello' in data/hello
+%  'folder'               ...  search only in folders of a specific name located downstream from the path (string)
 %
 % RETURNS
-%  fl              ...  list of files as cell array of strings  
+%  fl                     ...  list of files as cell array of strings  
 %
 % e.g. #1 Return all files in the root folder C:/Users/Public which contain the
 % string 'imba':
@@ -61,25 +61,6 @@ function fl = engine(varargin)
 % - replaced call to function 'slash' with Matlab embedded 
 %   function 'filesep'
 
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2
-%
-% Main contributors:
-% Philippe C. Dixon, Dept of Engineering Science. University of Oxford. Oxford, UK.
-% Yannick Michaud-Paquette, Dept of Kinesiology. McGill University. Montreal, Canada.
-% JJ Loh, Medicus Corda. Montreal, Canada.
-% 
-% Contact: 
-% philippe.dixon@gmail.com
-%
-% Web: 
-% https://github.com/PhilD001/the-zoosystem
-%
-% Referencing:
-% please reference the paper below if the zoosystem was used in the preparation of a manuscript:
-% Dixon PC, Loh JJ, Michaud-Paquette Y, Pearsall DJ. The Zoosystem: An Open-Source Movement Analysis 
-% Matlab Toolbox.  Proceedings of the 23rd meeting of the European Society of Movement Analysis in 
-% Aduts and Children. Rome, Italy.Sept 29-Oct 4th 2014. 
 
 
 % Set arguments
@@ -178,7 +159,7 @@ fl = {};
 if strcmp(src,'all') %if you specify no folder, defaults 'all';see if there are any of the spec files in the folder
     fl = initiatefxn(pth,f,other); % change
     
-elseif ~isempty(strfind(pth,src));
+elseif ~isempty(strfind(pth,src))
     fl = initiatefxn(pth,f,other);
 end
 
@@ -206,7 +187,7 @@ else
     
     switch other{1,1}
         
-        case 'extension'
+        case {'extension', 'ext'}
             fl = findextension(pth,filename,other{1,2});                 %filename can be a cell array of filenames
             
         case 'search file'
