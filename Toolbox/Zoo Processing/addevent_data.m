@@ -35,6 +35,7 @@ function data = addevent_data(data,ch,ename,type)
 % Updated by Philippe C. Dixon Nov 2017
 % - Bug fix for reaction force check
 
+
 % Some settings
 %
 FP_thresh = 0;         % threshold (Newtons) for finding force plate events
