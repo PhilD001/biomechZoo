@@ -8,10 +8,13 @@ function evalFile = eventval(varargin)
 % 'dim1'            ... list of conditions as cell array of strings
 % 'dim2'            ... list of subjects in study as cell array of strings
 % 'ch'              ... list of channels as cell array of strings
-% 'localevts'       ... list of local events as cell array of strings
-% 'globalevts'      ... list of global events as cell array of strings
-% 'anthroevts'      ... list of anthro events as cell array of strings
-% 'ext'             ... Spreadsheet file type .xls, .xlsx, and .csv are possible. Default is .xls
+% 'local'           ... list of local events as cell array of strings.
+%                       Aliases 'localevts', 'localevents'
+% 'global'          ... list of global events as cell array of strings.
+%                       Aliases 'globalevts','globalevents'
+% 'anthroevts'      ... list of anthro events as cell array of strings.
+%                       Aliases 'anthroevts','anthroevents'
+% 'ext'             ... Spreadsheet type. Options '.xls', '.xlsx','.csv'. Default '.xls'
 % 'excelserver'     ... Choice to use excel server. Default 'off'
 % 'eventvalfilename ... Custom name for eventval spreadsheet. Default 'eventval'
 %
