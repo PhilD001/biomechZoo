@@ -140,7 +140,7 @@ for i = 1:length(ch)
             exd = length(yd);
             eyd = 0;
         
-        case 'first_FS'
+        case 'first_fs'
              exd_r = ZeniEventDetect(data, 'R', 'FS');
              exd_l = ZeniEventDetect(data, 'L', 'FS');
              
