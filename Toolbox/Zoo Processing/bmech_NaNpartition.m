@@ -29,11 +29,10 @@ function bmech_NaNpartition(fld)
 
 
 % set defaults
-%
+
 if nargin==0
     fld = uigetfolder;
 end
-
 
 
 % Batch process
