@@ -57,7 +57,13 @@ if ismember({'PELO','RFEO'},ch)
     chname = ch{indx};
     
     jplate = {'GlobalPelvis','Global','Pelvis'};
-    bplate = {'GLB','Global'};   
+    bplate = {'GLB_PEL','Global'};   
+    
+    jnt=[jnt;jplate];
+    pgbone = [pgbone;bplate];
+    
+    jplate = {'GlobalBelfastPelvis','GlobalBelfast','Pelvis'};
+    bplate = {'GLB_PEL','GlobalBelfast'};   
     
     jnt=[jnt;jplate];
     pgbone = [pgbone;bplate];

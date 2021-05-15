@@ -14,36 +14,23 @@ function data = kinematics_data(data,settings)
 %
 %
 % NOTES:
-% - It is anatomically implausible for the vectors to flip during walking but may be
-%   possible for tasks with large ranges of motion (e.g. running). A correction has been
-%   implemented at the knee, but might require future updates (see 'checkflippg')
-% - For PiG, choice of axes for angle computation based on work of Vaughan
-%   (Dynamics of Human Gait 1999, Appendix B p94-96). This is the Grood and Suntay method.
-% - For OFM, choice of axes based on trial and error.
-% - Lower limb PiG outputs of this function have been validated
-%   (see Fig4.dpf and Supplemental Fig2.pdf in ~\biomechZoo-samplestudy\Figures\manuscript\
-% - Head angles are not offset by static posture (PiG angles use static offset)
+% - PiG
+%   * choice of segment embedded axes for angle computation based on work of
+%     Vaughan (Dynamics of Human Gait 1999, Appendix B p94-96). 
+%   * Lower limb PiG outputs of this function have been validated
+%     (see Fig4.ppf and Supplemental Fig2.pdf in ~\biomechZoo-samplestudy\Figures\manuscript\
+%   * Head angles are not offset by static posture (PiG angles use static offset)
+% - OFM
+%   * choice of segment embedded axes was based on trial and error, comparing
+%   results to Vicon outputs.
+%   * Grood and Suntay approach is implemented
+% - Belfast Pelvis
+%   * Belfast pelvis angles based on Baker 'Pelvic angles: a mathematically rigorous
+%     definition which is consistent with a conventional clinical understanding of 
+%     the terms'. Gait Posture. 2001 Feb;13(1):1-6. doi: 10.1016/s0966-6362(00)00083-7.    
+% - A correction for vector flips near 90 degrees has been implemented at the knee, 
+%   and BelfastPelvis but might require future updates (see 'checkflip_pyCGM')
 %
-% SUMMARY OF CALCULATIONS
-%
-% floating axis (PIG) = cross(lat_prox , long_dist)
-%
-% Pelvis
-% flx = asind(dot(-long_dist,lat_prox,2));
-% abd = asind(dot(long_dist,ant_prox,2)./cosd(flx));
-% twix = asind( dot(ant_dist,ant_prox,2)./cosd(flx));
-% twiy = asind( dot(ant_dist,lat_prox,2)./cosd(flx));
-% * adjustments made on direction of travel
-%
-% Hip & Knee
-% flx = asind(dot(floatax,long_prox,2));
-% abd = asind(dot(lat_prox,long_dist,2));
-% tw  = asind(dot(floatax,lat_dist,2));
-%
-% Ankle PiG
-% flx = asind(dot(floatax,ant_prox,2));
-% abd = asind(dot(lat_prox,long_dist,2));
-% tw  = asind(dot(floatax,lat_dist,2));
 %
 % See also makebones_data, bmech_kinematicsPiG, bmech_jointcentrePiG
 
@@ -93,14 +80,16 @@ function data = kinematics_data(data,settings)
 %
 % Updated by Philippe C. Dixon Jan 26, 2021
 % - replaced use of 'isin' for 'strfind'
+%
+% Updated by Philippe C. Dixon May 15, 2021
+% - add Belfast pelvis
+
 
 % Set defaults
 %
 if nargin==0                                                    % test mode
     [data,settings] = testmode;
 end
-
-
 
 if nargin==1
     settings.graph = false;
@@ -132,7 +121,6 @@ end
 %
 % collect bones into appropriate format
 
-
 [bone,jnt,data,oxbone] = getbones_data(data);
 
 if isempty(bone)
@@ -150,18 +138,16 @@ dimPiG = {'O','A','L','P'};
 % L is medial( right) or lateral (left) vector
 % P is long axis of bone vector (pointing proximally)
 
-
 for i = 1:length(bone(:,1))
     
     d = cell(1,length(dimPiG));
     
-    if strcmp(bone{i,1},'GLB')
-        d{1} =  zeros(size(data.([bone{i+1,1},dimPiG{1}]).line));
+    if strcmp(bone{i,1},'GLB_PEL')
+        d{1} =  zeros(size(data.(['PEL',dimPiG{1}]).line));
         d{2} =  [d{1}(:,1)+10 d{1}(:,2:3)];
         d{3} =  [d{1}(:,1) d{1}(:,2)+10 d{1}(:,3)];
         d{4} =  [d{1}(:,1:2) d{1}(:,3)+10];
     else
-        
         for j = 1:4
             d{j} = data.([bone{i,1},dimPiG{j}]).line;
         end
@@ -177,7 +163,6 @@ dimOFM = {'0','1','2','3'};
 % 1 is anterior vector
 % 2 is medial (right) or lateral(left) vector
 % 3 is long axis of bone vector (pointing distally)
-
 
 if ~isempty(oxbone)
     
@@ -209,7 +194,7 @@ KIN = get_grood_suntay(r,jnt,dir);
 KIN = refsystem(KIN);
 
 
-%----6: CHECK ACCURACY OF CALCULATIONS AGAINST ORIGINAL VICON DATA (DISPLAY OPTIONAL) ----
+%----5: CHECK ACCURACY OF CALCULATIONS AGAINST VICON DATA (DISPLAY OPTIONAL) ----
 %
 if settings.comp == true
     ERR=checkvicon(KIN,data);
@@ -220,19 +205,16 @@ else
     ERR = [];
 end
 
-%----7: ADD COMPUTED ANGLES TO DATA STRUCT -----------------------------------------------
+%----6: ADD COMPUTED ANGLES TO DATA STRUCT -----------------------------------------------
 %
 data = addchannelsgs(data,KIN,ERR);
 
 
-%----8: IMPLEMENT A GRAPHICAL CHECK AGAINST ORIGINAL VICON DATA (OPTIONAL)
+%----7: IMPLEMENT A GRAPHICAL CHECK AGAINST ORIGINAL VICON DATA (OPTIONAL)
 %
-
 if settings.graph == true
     graphresults(data,gsettings)
 end
-
-
 
 
 %=================EMBEDDED FUNCTIONS=======================================
@@ -316,10 +298,6 @@ function [flx,abd,tw] = groodsuntay(r,jnt,dir)
 % Gait Book' Appendix B, p95. Offsets made to match oxford foot model
 % outputs
 
-% Axis set-up follows Vicon
-
-% Updated January 15th 2011
-% - works with VICON2GROODSUNTAY
 
 %---SET UP VARIABLES ---
 
@@ -341,25 +319,74 @@ end
 
 switch bone
     
+    case 'GlobalBelfast'
+        [~,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,~] = makeaxPiG(pax,dax);
+        
+        % based on 'Belfast sequence; 'ZXY' RotMatrix = [Ry]*[Rx]*[Rz].
+        % See: Baker Pelvic angles: a mathematically rigorous definition which is consistent
+        % with a conventional clinical understanding of the terms. Gait Posture. 2001
+        % Feb;13(1):1-6. doi: 10.1016/s0966-6362(00)00083-7.
+        %
+        % NOT TESTED FOR TURNING OR INEG/IPOS DIRECTION
+        
+        
+        abd = asind(dot(lat_dist,long_prox,2));             % verified against bodybuilder output
+        tw = asind(dot(-ant_dist,long_prox,2)./cosd(abd));  % verified against bodybuilder output
+        % flx = asind(dot(-lat_dist,ant_prox,2)./cosd(abd));  % 90 degree flip possible
+   
+        a = dot(-lat_dist,lat_prox,2);
+        flx = zeros(size(a));
+        for i = 1:length(flx)
+            
+            if strcmp(dir, 'Jpos')
+                flx(i)  = atan2d(dot(-1*lat_dist(i,:), ant_prox(i,:))./cosd(abd(i, :)), ...
+                    dot(-1*lat_dist(i,:), lat_prox(i,:))./cosd(abd(i, :)));
+                
+            elseif strcmp(dir, 'Jneg')
+                flx(i)  = atan2d(dot(lat_dist(i,:), ant_prox(i,:))./cosd(abd(i, :)), ...
+                    dot(lat_dist(i,:), lat_prox(i,:))./cosd(abd(i, :)));
+                
+                
+            elseif strcmp(dir, 'Ipos')
+                warning('Ipos not tested')
+                flx(i)  = atan2d(dot(lat_dist(i,:), ant_prox(i,:))./cosd(abd(i, :)), ...
+                    dot(lat_dist(i,:), lat_prox(i,:))./cosd(abd(i, :)));
+                
+                
+            elseif strcmp(dir, 'Ineg')
+                warning('Ineg not tested')
+                flx(i)  = atan2d(dot(lat_dist(i,:), ant_prox(i,:))./cosd(abd(i, :)), ...
+                    dot(lat_dist(i,:), lat_prox(i,:))./cosd(abd(i, :)));
+                
+            end
+                        
+        end
+
+        
+          
     case 'Global'
         [~,ant_prox,ant_dist,lat_prox,~,~,long_dist] = makeaxPiG(pax,dax);
         
+        % based on Cardanian YXZ sequence RotMatrix = [Rz]*[Ry]*[Rx]. See
+        % Kadaba et al. Measurement of lower extremity kinematics during level walking
+        % May 1990. https://doi.org/10.1002/jor.1100080310
+
         flx = asind(dot(-long_dist,lat_prox,2));
-        abdx = asind(dot(long_dist,ant_prox,2)./cosd(flx));
+        abd = asind(dot(long_dist,ant_prox,2)./cosd(flx));
         twix = asind(dot(ant_dist,ant_prox,2)./cosd(flx));
         twiy = asind(dot(ant_dist,lat_prox,2)./cosd(flx));
         
-        [flx,abd,tw] = checkdir(flx,abdx,twix,twiy,dir);
+        [flx,abd,tw] = checkdir(flx,abd,twix,twiy,dir);
         
     case {'Pelvis','Femur'}  % Hip and Knee
-        [floatax,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist]= makeaxPiG(pax,dax);
+        [~,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist]= makeaxPiG(pax,dax);
         % old code biomechZoo some flip problems with large angles
         % flx = asind(dot(floatax,long_prox,2));
         % abd = asind(dot(lat_prox,long_dist,2));
         % tw  = asind(dot(floatax,lat_dist,2));
         %
         % if isnear(max(abs(flx)),90,1)
-        %    flx = checkflipPiG(flx,floatax,long_prox);
+        %    flx = checkflip_PiG(flx,floatax,long_prox);
         % end
         
         % New code based on pyCGM approach (see pyCGM.py --> getangle)
@@ -368,14 +395,14 @@ switch bone
         [flx,tw] = checkflip_pyCGM(abd,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist);
         abd = asind(abd);
         
-    case 'Tibia'   % Ankle PG angles
+    case 'Tibia'   % Ankle PiG angles
         [floatax,ant_prox,~,lat_prox,lat_dist,~,long_dist] = makeaxPiG(pax,dax);
         
         flx = asind(dot(floatax,ant_prox,2)); % chosen to avoid axis flipping
         abd = asind(dot(lat_prox,long_dist,2));
         tw  = asind(dot(floatax,lat_dist,2));
         
-    case 'TibiaStatic'   % Ankle PG Static angles
+    case 'TibiaStatic'   % Ankle PiG Static angles
         [floatax,~,~,lat_prox,lat_dist,long_prox,long_dist] = makeaxPiG(pax,dax);
         
         flx = asind(dot(floatax,long_prox,2));    % beta from pyCGM
@@ -434,7 +461,6 @@ switch dir
 end
 
 
-
 function [floatax,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist] = makeaxPiG(pax,dax)
 
 ant_prox = zeros(length(pax),3);
@@ -469,7 +495,6 @@ long_prox = makeunit(long_prox);
 long_dist = makeunit(long_dist);
 
 
-
 function [floatax,ant_prox,ant_dist,lat_prox,lat_dist,long_prox] = makeaxOFM(pax,dax)
 
 ant_prox = zeros(length(pax),3);
@@ -493,6 +518,7 @@ for i = 1:length(pax)
     floatax(i,:) = cross(lat_prox(i,:), ant_dist(i,:));
 end
 
+
 function [flx,tw] = checkflip_pyCGM(abd,ant_prox,ant_dist,lat_prox,lat_dist,long_prox,long_dist)
 
 flx = zeros(size(abd));
@@ -515,7 +541,8 @@ end
 flx = rad2deg(flx);
 tw  = rad2deg(tw);
 
-function flx = checkflipPiG(flx,float,long_prox)
+
+function flx = checkflip_PiG(flx,float,long_prox)
 
 one = cross(float(1,:),long_prox(1,:));   % here the calculation must be correct
 
@@ -617,6 +644,16 @@ if isfield(KIN,'RightKnee')  % checks for plugin gait
     r.LeftAnkle.InvEve = KIN.LeftAnkle.tw;
 end
 
+if isfield(KIN, 'GlobalBelfastPelvis')
+    r.RightBelfastPelvis.Tilt      = -KIN.GlobalBelfastPelvis.flx+90;
+    r.RightBelfastPelvis.Obliquity = -KIN.GlobalBelfastPelvis.abd;
+    r.RightBelfastPelvis.IntExt    = KIN.GlobalBelfastPelvis.tw;
+    
+    r.LeftBelfastPelvis.Tilt       = KIN.GlobalBelfastPelvis.flx-90;
+    r.LeftBelfastPelvis.Obliquity  = KIN.GlobalBelfastPelvis.abd;
+    r.LeftBelfastPelvis.IntExt     = KIN.GlobalBelfastPelvis.tw;
+end
+    
 if isfield(KIN,'GlobalHead')  % checks for plugin gait
     r.RightHead.Tilt      = -KIN.GlobalHead.flx;
     r.RightHead.Obliquity = KIN.GlobalHead.abd;
@@ -688,7 +725,7 @@ function data = addchannelsgs(data,KIN,ERR)
 % add plugingait channels---
 
 kch = {'RightHead','RightThorax','RightPelvis','RightHip','RightKnee','RightAnkle',...
-    'LeftHead', 'LeftThorax', 'LeftPelvis', 'LeftHip', 'LeftKnee', 'LeftAnkle'};                       % Vicon lower-limbs
+       'LeftHead', 'LeftThorax', 'LeftPelvis', 'LeftHip', 'LeftKnee', 'LeftAnkle'};                       % Vicon lower-limbs
 kch = intersect(kch,fieldnames(KIN));
 
 for i = 1:length(kch)
@@ -702,7 +739,7 @@ for i = 1:length(kch)
         if ~isempty(strfind(kch{i},'Ankle'))
             data = addchannel_data(data,[kch{i},'Angle_',dsub{j}],KIN.(kch{i}).(asub{j}),'Video');
             
-            if ~isempty(ERR)
+            if isfield(ERR, kch{1})
                 data.([kch{i},'Angle_',dsub{j}]).event.NRMSE = [1 ERR.(kch{i}).(asub{j}).NRMSE 0];
             end
             
@@ -710,7 +747,7 @@ for i = 1:length(kch)
                 || ~isempty(strfind(kch{i},'Thorax'))
             data = addchannel_data(data,[kch{i},'Angle_',dsub{j}],KIN.(kch{i}).(gsub{j}),'Video');
             
-            if ~isempty(ERR)
+            if isfield(ERR, kch{1})
                 data.([kch{i},'Angle_',dsub{j}]).event.NRMSE = [1 ERR.(kch{i}).(gsub{j}).NRMSE 0];
             end
             
@@ -721,6 +758,23 @@ for i = 1:length(kch)
             if ~isempty(ERR)
                 data.([kch{i},'Angle_',dsub{j}]).event.NRMSE = [1 ERR.(kch{i}).(ksub{j}).NRMSE 0];
             end
+        end
+    end
+end
+
+%-- add belfast pelvis angles
+if isfield(KIN, 'RightBelfastPelvis')
+    
+    sides = {'Right','Left'};
+    for i = 1:length(sides)  
+        data = addchannel_data(data,[sides{i},'BelfastPelvisAngle_x'],KIN.([sides{i},'BelfastPelvis']).Tilt,'Video');
+        data = addchannel_data(data,[sides{i},'BelfastPelvisAngle_y'],KIN.([sides{i},'BelfastPelvis']).Obliquity,'Video');
+        data = addchannel_data(data,[sides{i},'BelfastPelvisAngle_z'],KIN.([sides{i},'BelfastPelvis']).IntExt,'Video');
+                
+        if isfield(ERR,[sides{i},'BelfastPelvis'])
+            data.([sides{i},'BelfastPelvisAngle_x']).event.NRMSE = [1 ERR.([sides{i},'BelfastPelvis']).Tilt.NRMSE 0];
+            data.([sides{i},'BelfastPelvisAngle_y']).event.NRMSE = [1 ERR.([sides{i},'BelfastPelvis']).Obliquity.NRMSE 0];
+            data.([sides{i},'BelfastPelvisAngle_z']).event.NRMSE = [1 ERR.([sides{i},'BelfastPelvis']).IntExt.NRMSE 0];            
         end
     end
 end
@@ -738,7 +792,7 @@ if isfield(KIN,'RightAnkleStatic')
         for j = 1:length(dsub)
             data = addchannel_data(data,[kch{i},'Angle_',dsub{j}],KIN.(kch{i}).(asub{j}),'Video');
             
-            if ~isempty(ERR)
+            if isfield(ERR,'RightAnkleStatic')
                 data.([kch{i},'Angle_',dsub{j}]).event.NRMSE = [1 NaN 0]; % no error possible
             end
         end
@@ -765,7 +819,7 @@ if isfield(KIN,'RightAnkleOFM')
         data = addchannel_data(data,[side,'HXFFA_x'],KIN.([side,'MTP']).PlaDor,'Video');
         data = addchannel_data(data,[side,'HXFFA_y'],KIN.([side,'MTP']).AbdAdd,'Video');
         
-        if ~isempty(ERR)
+        if isfield(ERR,'RightAnkleOFM')
             data.([side,'HFTBA_x']).event.NRMSE = [1 ERR.([side,'AnkleOFM']).PlaDor.NRMSE 0];
             data.([side,'HFTBA_y']).event.NRMSE = [1 ERR.([side,'AnkleOFM']).InvEve.NRMSE 0];
             data.([side,'HFTBA_z']).event.NRMSE = [1 ERR.([side,'AnkleOFM']).IntExt.NRMSE 0];
@@ -777,10 +831,7 @@ if isfield(KIN,'RightAnkleOFM')
             data.([side,'HXFFA_x']).event.NRMSE = [1 ERR.([side,'MTP']).PlaDor.NRMSE 0];
             data.([side,'HXFFA_y']).event.NRMSE = [1 ERR.([side,'MTP']).AbdAdd.NRMSE 0];
             data.([side,'HXFFA_y']).event.NRMSE = [1 ERR.([side,'MTP']).IntExt.NRMSE 0];
-            
-            
-        end
-        
+        end   
     end
 end
 
@@ -788,25 +839,27 @@ end
 function ERR=checkvicon(KIN,data)
 
 ERR = struct;
-chPiG = [];
-chOFM = [];
 
 if isfield(data,'RKneeAngles')
     [errPiG,chPiG]= checkPiG(KIN,data);
+    for j = 1:length(chPiG)
+        ERR.(chPiG{j}) = errPiG.(chPiG{j});
+    end
 end
 
+if isfield(data, 'RBelfastPelvisAngles')
+    [errBelfast, chBelfast] = checkBelfastPelvis(KIN, data);
+    for j = 1:length(chBelfast)
+        ERR.(chBelfast{j}) = errBelfast.(chBelfast{j});
+    end
+end
+    
 
 if isfield(data,'RHFTBA')
     [errOFM,chOFM]= checkOFM(KIN,data);
-end
-
-
-for j = 1:length(chPiG)
-    ERR.(chPiG{j}) = errPiG.(chPiG{j});
-end
-
-for j = 1:length(chOFM)
-    ERR.(chOFM{j}) = errOFM.(chOFM{j});
+    for j = 1:length(chOFM)
+        ERR.(chOFM{j}) = errOFM.(chOFM{j});
+    end
 end
 
 
@@ -866,6 +919,28 @@ ERR.LeftMTP.IntExt.NRMSE = 999*LMTP(3);  % garbage
 ch = fieldnames(ERR);
 
 
+function [ERR,ch]= checkBelfastPelvis(KIN,data)
+
+RBelfastPstk = zeros(3,1);      % pelvis (absolute)
+LBelfastPstk = zeros(3,1);      % pelvis (absolute)
+
+subchp = {'Tilt','Obliquity','IntExt',};
+for k = 1:3
+    RBelfastPstk(k)=nrmse(data.RBelfastPelvisAngles.line(:,k),KIN.RightBelfastPelvis.(subchp{k}));
+    LBelfastPstk(k)=nrmse(data.LBelfastPelvisAngles.line(:,k),KIN.LeftBelfastPelvis.(subchp{k}));
+end
+
+ERR.RightBelfastPelvis.Tilt.NRMSE      = RBelfastPstk(1);
+ERR.RightBelfastPelvis.Obliquity.NRMSE = RBelfastPstk(2);
+ERR.RightBelfastPelvis.IntExt.NRMSE    = RBelfastPstk(3);
+
+ERR.LeftBelfastPelvis.Tilt.NRMSE      = LBelfastPstk(1);
+ERR.LeftBelfastPelvis.Obliquity.NRMSE = LBelfastPstk(2);
+ERR.LeftBelfastPelvis.IntExt.NRMSE    = LBelfastPstk(3);
+
+ch = fieldnames(ERR);
+
+
 function [ERR,ch]= checkPiG(KIN,data)
 
 RHdstk  = zeros(3,1);     % head (absolute)
@@ -910,7 +985,6 @@ if isfield(data,'RThoraxAngles')
         LTstk(k)=nrmse(data.LThoraxAngles.line(:,k),KIN.LeftThorax.(subchp{k}));
     end
 end
-
 
 subcha = {'PlaDor','InvEve','IntExt',};
 for k = 1:3
@@ -1248,7 +1322,52 @@ if ismember('RThoraxAngles',fieldnames(data)) ||...
     
 end
 
-
+if isfield(data,[side(1),'BelfastPelvisAngles'])  % Belfast pelvis is included
+    figure('name','Belfast Pelvis')
+    sides = {'Right','Left'};
+    
+    for i = 1:length(sides)
+        side = sides{i};
+        s = side(1);
+        
+        if strcmp(side,'Left')
+            offset= 3;
+        else
+            offset = 0;
+        end
+        
+        subplot(2,3,1+offset);
+        plot(data.([s,'BelfastPelvisAngles']).line(:,1),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+        hold on
+        plot(data.([side,'BelfastPelvisAngle_x']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        title([s,'BelfastPelvis'],'FontSize',FontSize,'FontName',FontName)
+        ylabel({'Sagittal','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
+        axis('square')
+        set(gca,'tag',[side,'BelfastPelvisAnglesSagittal'])
+        
+        subplot(2,3,2+offset);
+        plot(data.([s,'BelfastPelvisAngles']).line(:,2),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+        hold on
+        plot(data.([side,'BelfastPelvisAngle_y']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        ylabel({'Coronal','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
+        axis('square')
+        set(gca,'tag',[side,'BelfastPelvisAnglesCoronal'])
+        
+        
+        subplot(2,3,3+offset);
+        plot(data.([s,'BelfastPelvisAngles']).line(:,3),'Color',vcol,'LineStyle',vstyle,'LineWidth',LineWidth);
+        hold on
+        plot(data.([side,'BelfastPelvisAngle_z']).line,'Color',zcol,'LineStyle',zstyle,'LineWidth',LineWidth)
+        ylabel({'Transverse','Angles','(deg)'},'FontSize',FontSize,'FontName',FontName)
+        axis('square')
+        set(gca,'tag',[side,'BelfastPelvisAnglesTransverse'])
+        
+    end
+    
+    legend('Vicon Belfast Pelvis','biomechZoo')
+    
+end
+    
 if isfield(data,[side(1),'HFTBA'])  % OFM is included
     
     figure('name','multi-segment foot OFM')

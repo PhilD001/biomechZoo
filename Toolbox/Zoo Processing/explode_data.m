@@ -24,6 +24,11 @@ function data = explode_data(data,ch)
 
 % set defaults/error check
 %
+
+if nargin ==1
+    ch = 'all';
+end
+
 if strcmp(ch,'all')
     ch = setdiff(fieldnames(data),'zoosystem');
 end

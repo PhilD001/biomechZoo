@@ -89,8 +89,6 @@ if strcmp(del,'yes') || strcmp(del,'on')
 end
 
 [fld,fl,saveFile] = checkinput(fld,'.c3d');
-cd(fld)
-
 
 % FIND AND LOAD .C3D FILES
 %
