@@ -25,6 +25,10 @@ for i = 1:length(bone(:,1))
     
     d = cell(1,length(dim));
     
+    if strfind(bone{i, 1}, 'GLB')
+        continue
+    end
+    
     for j = 1:length(dim)
         d{j} = data.([bone{i,1},dim{j}]).line;
     end
