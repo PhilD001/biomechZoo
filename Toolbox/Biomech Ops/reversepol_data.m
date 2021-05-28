@@ -30,6 +30,12 @@ end
 
 for i = 1:length(ch)
     
+    if ~isfield(data, ch{i})
+        warning('dsds')
+        warning(['channel ', ch{i}, ' does not exist, skipping...'])
+        continue
+    end
+    
     if isfield(data,ch{i})
         data.(ch{i}).line = reversepol_line(data.(ch{i}).line);
         evt = fieldnames(data.(ch{i}).event);
