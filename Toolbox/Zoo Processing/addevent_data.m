@@ -121,7 +121,7 @@ for i = 1:length(ch)
             
             eyd = yd(exd);
          
-        case {'rfs','rfo','lfs','flo'}
+        case {'rfs','rfo','lfs','lfo'}
             exd = ZeniEventDetect(data,type(1),type(2:end));
             
             if isnan(exd)

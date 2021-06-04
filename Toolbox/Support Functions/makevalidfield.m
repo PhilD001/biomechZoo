@@ -46,6 +46,9 @@ if ~isempty(strfind(ch,' '))
     ch = strrep(ch,' ','_');
     ch = makevalidfield(ch);
 
+elseif isempty(ch)
+    ch = 'empty';
+    
 elseif ~isempty(strfind(ch,'-'))
     ch = strrep(ch,'-','');
     ch = makevalidfield(ch);
@@ -134,6 +137,16 @@ elseif strfind(ch(1),'_')
     
 elseif strfind(ch,'''')
     ch = strrep(ch,'''','');
-    ch = makevalidfield(ch);
-    
+    ch = makevalidfield(ch);  
+
 end
+
+% if anything is still bad deal with it
+a = struct;
+try
+   a.(ch) = 3;
+catch 
+    disp(['invalid field name ', ch, ' ...ignoring'])
+    ch = 'invalid_field_name';
+end 
+

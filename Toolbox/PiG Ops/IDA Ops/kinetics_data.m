@@ -120,6 +120,14 @@ else
     gsettings = struct;
 end
 
+if ~isfield(settings, 'city')
+    settings.city   = 'standard';                               % choose g based on city
+end
+
+if ~isfield(settings, 'segpar')
+    settings.segpar = 'segments.xls';
+end
+
 %---------------------------------------%
 %                                       %
 %             PREPARING                 %

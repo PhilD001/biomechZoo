@@ -124,9 +124,7 @@ end
 [bone,jnt,data,oxbone] = getbones_data(data);
 
 if isempty(bone)
-    error('no PiG virtual bone markers found ... computing virtual markers')
-    %data = makebones_data(data);
-    %[bone, jnt, data, oxbone] = getbones_data(data);
+    error('no PiG virtual bone markers found ... compute virtual markers first using static data, see makebones_data.m')
 end
 
 
