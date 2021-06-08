@@ -6,7 +6,7 @@ function data = xsens2zoo(fld, ftype, del)
 % ARGUMENTS
 % fld    ...   string, folder to operate on
 % ftpye  ...   string, file type. Default 'xlsx'. Future versions will
-%              support .mnvx files
+%              support .mvnx files
 % del    ...   bool, option to delete c3d file after creating zoo file.
 %              Default: false
 % RETURNS
