@@ -88,7 +88,7 @@ if strcmp(del,'yes') || strcmp(del,'on')
     del = true;
 end
 
-[fld,fl,saveFile] = checkinput(fld,'.c3d');
+[~,fl,saveFile] = checkinput(fld,'.c3d');
 
 % FIND AND LOAD .C3D FILES
 %
@@ -151,7 +151,7 @@ for i = 1:length(fl)
         data.zoosystem.Analog.Freq = 0;
     end
     
-    data.zoosystem.AVR =   data.zoosystem.Analog.Freq/data.zoosystem.Video.Freq;
+    data.zoosystem.AVR = data.zoosystem.Analog.Freq/data.zoosystem.Video.Freq;
     
     
     % Set frame information
