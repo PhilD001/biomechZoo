@@ -44,6 +44,7 @@ end
 
 % Set defaults/check arguments
 %
+if ~isempty(ch)
 if ismember(ch{1},data.zoosystem.Video.Channels)             % ch in Video channel list
     curSec = 'Video';
     othSec = 'Analog';
@@ -117,4 +118,5 @@ else
 %     data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
     disp(['zoosystem.',(curSec),' not correctly updated, consider using ',curSec,...
         'as input for channel'])
+end
 end

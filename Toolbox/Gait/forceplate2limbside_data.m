@@ -44,7 +44,11 @@ AVR = data.zoosystem.AVR;                              % Analog/Video rate
 % Get info from metadata
 %
 nForcePlates = data.zoosystem.Analog.FPlates.NUMUSED;
+if ~isempty(find(contains(fieldnames(data.zoosystem.Units),'FORCE_UNITS'),1))
 units = data.zoosystem.Units.FORCE_UNITS;
+else
+units='N';    
+end
 
 if strcmp(units,'N/kg')
     m = getanthro(data,'Bodymass');
