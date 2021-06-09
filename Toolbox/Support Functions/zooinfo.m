@@ -30,7 +30,7 @@ if nargin == 0
     verbose = true;
 end
 
-version = '1.6.0';
+version = '1.6.1';
 date = ' (June 8, 2021)';
 
 if verbose
