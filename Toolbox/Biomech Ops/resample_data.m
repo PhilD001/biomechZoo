@@ -45,78 +45,78 @@ end
 % Set defaults/check arguments
 %
 if ~isempty(ch)
-if ismember(ch{1},data.zoosystem.Video.Channels)             % ch in Video channel list
-    curSec = 'Video';
-    othSec = 'Analog';
-    if isempty(p)
+    if ismember(ch{1},data.zoosystem.Video.Channels)             % ch in Video channel list
+        curSec = 'Video';
+        othSec = 'Analog';
+        if isempty(p)
+            p = data.zoosystem.(othSec).Freq;
+            q = data.zoosystem.(curSec).Freq;
+        end
+        
+    elseif ismember(ch{1},data.zoosystem.Analog.Channels)        % ch in Analog channel list
+        curSec = 'Analog';
+        othSec = 'Video';
+        if isempty(p)
+            p = data.zoosystem.(othSec).Freq;
+            q = data.zoosystem.(curSec).Freq;
+        end
+        
+    elseif ismember(ch,{'Video'})                                % extract all video channels
+        ch = data.zoosystem.Video.Channels;
+        curSec = 'Video';
+        othSec = 'Analog';
         p = data.zoosystem.(othSec).Freq;
         q = data.zoosystem.(curSec).Freq;
-    end
-    
-elseif ismember(ch{1},data.zoosystem.Analog.Channels)        % ch in Analog channel list
-    curSec = 'Analog';
-    othSec = 'Video';
-    if isempty(p)
+        
+    elseif ismember(ch,{'Analog'})                               % extract all analog channels
+        ch = data.zoosystem.Analog.Channels;
+        curSec = 'Analog';
+        othSec = 'Video';
         p = data.zoosystem.(othSec).Freq;
         q = data.zoosystem.(curSec).Freq;
+        
+    elseif ~isfield(data,ch{1})
+        disp('channel doesn''t exist')
+        return
+        
+    else
+        error('unknown section of channels')
     end
     
-elseif ismember(ch,{'Video'})                                % extract all video channels
-    ch = data.zoosystem.Video.Channels;
-    curSec = 'Video';
-    othSec = 'Analog';
-    p = data.zoosystem.(othSec).Freq;
-    q = data.zoosystem.(curSec).Freq;
+    factor = p/q;
     
-elseif ismember(ch,{'Analog'})                               % extract all analog channels
-    ch = data.zoosystem.Analog.Channels;
-    curSec = 'Analog';
-    othSec = 'Video';
-    p = data.zoosystem.(othSec).Freq;
-    q = data.zoosystem.(curSec).Freq;
-    
-elseif ~isfield(data,ch{1})
-    disp('channel doesn''t exist')
-    return
-    
-else
-    error('unknown section of channels')
-end
-
-factor = p/q;
-
-% Perform resampling procedure
-%
-for j = 1:length(ch)
-    
-    if isfield(data,ch{j})
-        r = data.(ch{j}).line;
-        ndatalength = round(length(r)*factor)-1;
-        data.(ch{j}).line = normalize_line(r,ndatalength,method);
+    % Perform resampling procedure
+    %
+    for j = 1:length(ch)
+        
+        if isfield(data,ch{j})
+            r = data.(ch{j}).line;
+            ndatalength = round(length(r)*factor)-1;
+            data.(ch{j}).line = normalize_line(r,ndatalength,method);
+        end
+        
+        evts = fieldnames(data.(ch{j}).event);                  % update event values
+        for e =1:length(evts)
+            r =  data.(ch{j}).event.(evts{e});
+            r(1) = round(r(1)*factor);
+            data.(ch{j}).event.(evts{e}) = r;
+        end
+        
     end
     
-    evts = fieldnames(data.(ch{j}).event);                  % update event values
-    for e =1:length(evts)
-        r =  data.(ch{j}).event.(evts{e});
-        r(1) = round(r(1)*factor);
-        data.(ch{j}).event.(evts{e}) = r;
+    % add zoosystem info
+    %
+    if q/p == data.zoosystem.AVR
+        data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
+        data.zoosystem.(curSec).CURRENT_START_FRAME = data.zoosystem.(othSec).CURRENT_START_FRAME;
+        data.zoosystem.(curSec).CURRENT_END_FRAME = data.zoosystem.(othSec).CURRENT_END_FRAME;
+        data.zoosystem.(curSec).Indx = data.zoosystem.(othSec).Indx;
+        data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
+        
+    else
+        data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
+        %     data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
+        disp(['zoosystem.',(curSec),' not correctly updated, consider using ',curSec,...
+            'as input for channel'])
     end
-    
-end
-
-% add zoosystem info
-%
-if q/p == data.zoosystem.AVR
-    data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
-    data.zoosystem.(curSec).CURRENT_START_FRAME = data.zoosystem.(othSec).CURRENT_START_FRAME;
-    data.zoosystem.(curSec).CURRENT_END_FRAME = data.zoosystem.(othSec).CURRENT_END_FRAME;
-    data.zoosystem.(curSec).Indx = data.zoosystem.(othSec).Indx;
-    data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
-    
-else
-    data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
-%     data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
-    disp(['zoosystem.',(curSec),' not correctly updated, consider using ',curSec,...
-        'as input for channel'])
-end
 end
