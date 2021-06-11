@@ -46,8 +46,20 @@ cd(fld)
 
 % Get static and dynamic trials
 %
-fl = engine('path',fld,'extension','zoo');
-flStat = engine('path',fld,'extension','zoo','folder',settings.static);
+fl = engine('path',fld,'ext','zoo');
+flStat = engine('path',fld,'ext','zoo','folder',settings.static);
+if isempty(flStat)
+    flStat = engine('path',fld,'ext','zoo','folder',lower(settings.static));
+end
+
+if isempty(flStat)
+        flStat = engine('path',fld,'ext','zoo','search file',settings.static);
+end
+
+if isempty(flStat)
+    flStat = engine('path',fld,'ext','zoo','search file',lower(settings.static));
+end
+
 flDyn =setdiff(fl,flStat);
 subname_prev = [];
 
@@ -57,17 +69,18 @@ for i = 1:length(flDyn)
     subname = data.zoosystem.Header.SubName;                              % ID subject
 
     if ~strcmp(subname_prev,subname)                                      % load static
-        flStat = engine('path',fld,'extension','zoo',...                  % associated with
-            'search path',[subname,filesep,settings.static]);             % dyn trial
-        if isempty(flStat)
-            error(['no static trials for: ',subname])
-        elseif length(flStat)>1
-            error(['more than one static trial for: ',subname])
+        indx = find(contains(flStat,subname));
+        if isempty(indx)
+           error(['no static trials for: ',subname])
+        elseif length(indx) > 1
+           error(['more than one static trial for: ',subname])
         end
-        [~,flStatFile] = fileparts(flStat{1});
+        
+        flStatSub = flStat(indx);
+        [~,flStatFile,ext] = fileparts(flStatSub{1});
         disp(' ')
-        disp(['processing static trial ',flStatFile,' for subject ',subname])                     % compute quants
-        sdata = zload(flStat{1});
+        disp(['processing static trial ',flStatFile,ext,' for subject ',subname])                     % compute quants
+        sdata = zload(flStatSub{1});
         subname_prev = subname;
           
         % Compute ankle static offset using static trial

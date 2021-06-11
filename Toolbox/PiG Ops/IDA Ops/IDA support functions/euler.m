@@ -7,7 +7,6 @@ function Euler=euler(LKIN,fsamp,f)
 % LKIN    ...  segment embedded coordinate system
 % fsamp   ...  sampling frequency
 % f       ...  choice to filter. f = 0 no, f=1 yes
-% cut     ...  cut-off frequency for filter
 %
 % RETURNS
 % Euler  ...   structured array containing phi, theta, psi angles for
@@ -117,15 +116,9 @@ r.theta_lfoot =   acos(dot(K,k6,2));                       %works
 r.phi_lfoot   =  -asin( dot(cross(I,L6,2),K,2))+pi;       %works!!
 r.psi_lfoot   =   asin ( dot(cross(L6,i6,2),k6,2));        %good
 
-
 % filter if selected by user
-
-if f==1    % default filtering settings
-    %cut = 10;
-    %ftype = 'butterworth';
-    %order = 4;
-    %pass = 'lowpass';
-    filt = setFilt;
+if f==1   
+    filt = setFilt;  % default filtering settings
     
     ch = fieldnames(r);
     for i = 1:length(ch)
@@ -133,6 +126,7 @@ if f==1    % default filtering settings
     end
     
 elseif isstruct(f)
+    filt = f;
     ch = fieldnames(r);
    
     for i = 1:lenght(ch)
@@ -173,7 +167,6 @@ end
 
 
 %------------------EXPORT AS STRUCT ARRAY-------
-
 Euler.Pelvis = [r.theta_pelvis r.phi_pelvis  r.psi_pelvis];
 Euler.RightThigh = [r.theta_rthigh r.phi_rthigh  r.psi_rthigh];
 Euler.LeftThigh = [r.theta_lthigh r.phi_lthigh  r.psi_lthigh];
@@ -181,7 +174,6 @@ Euler.RightShank = [r.theta_rshank r.phi_rshank r.psi_rshank];
 Euler.LeftShank = [r.theta_lshank r.phi_lshank  r.psi_lshank];
 Euler.RightFoot = [r.theta_rfoot r.phi_rfoot  r.psi_rfoot];
 Euler.LeftFoot = [r.theta_lfoot r.phi_lfoot  r.psi_lfoot];
-
 
 
 %----OXFORD BONES-----
@@ -248,26 +240,21 @@ if isfield(LKIN,'RightHindFoot')
     r.phi_lffoot   = -asin( dot(cross(I,LLFF,2),K,2))+pi;       %works!!
     r.psi_lffoot   =  asin ( dot(cross(LLFF,iLFF,2),kLFF,2));        %good
     
-    
     % filter if selected by user
-    
     if f==1
         ch = fieldnames(r);
-        for i = 1:lenght(ch)
-            r.(ch{i}) = bmech_filter('vector',r.(ch{i}),'fsamp',fsamp,'cut-off',cut');
+        for i = 1:length(ch)
+            r.(ch{i}) = filter_line(r.(ch{i}),filt, fsamp);
         end
     end
     
     %-----------------EXPORT AS STRUCT ARRAY-------
-    
     Euler.RightShankOFM = [r.theta_rshank r.phi_rshank  r.psi_rshank];
     Euler.LeftShankOFM = [r.theta_lshank r.phi_lshank  r.psi_lshank];
     Euler.RightHindFoot = [r.theta_rhfoot r.phi_rhfoot  r.psi_rhfoot];
     Euler.LeftHindFoot = [r.theta_lhfoot r.phi_lhfoot r. psi_lhfoot];
     Euler.RightForeFoot = [r.theta_rffoot r.phi_rffoot r.psi_rffoot];
     Euler.LeftForeFoot = [r.theta_lffoot r.phi_lffoot  r.psi_lffoot];
-    
-    
 end
 
 

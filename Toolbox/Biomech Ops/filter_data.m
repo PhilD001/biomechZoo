@@ -76,11 +76,16 @@ for j = 1:length(ch)
             error('channel not in zoosystem list')
         end
         
-        if ismember(ch{j},data.zoosystem.Analog.FPlates.LABELS)
-            indx = find(data.(ch{j}).line == 0);                               % find all zeros
-            data.(ch{j}).line(indx) = NaN;                                                 
-            data.(ch{j}).line = filter_line(data.(ch{j}).line,filt,fsamp);
-            data.(ch{j}).line(indx) = 0;
+        if isfield(data.zoosystem.Analog.FPlates, 'LABELS')
+            
+            if ismember(ch{j},data.zoosystem.Analog.FPlates.LABELS)
+                indx = find(data.(ch{j}).line == 0);                               % find all zeros
+                data.(ch{j}).line(indx) = NaN;
+                data.(ch{j}).line = filter_line(data.(ch{j}).line,filt,fsamp);
+                data.(ch{j}).line(indx) = 0;
+            else
+                data.(ch{j}).line = filter_line(data.(ch{j}).line,filt,fsamp);
+            end
         else
             data.(ch{j}).line = filter_line(data.(ch{j}).line,filt,fsamp);
         end

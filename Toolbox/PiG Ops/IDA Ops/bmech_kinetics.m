@@ -44,8 +44,18 @@ end
 
 % Get static and dynamic trials
 %
-fl = engine('path',fld,'extension','zoo');
-flStat = engine('path',fld,'extension','zoo','search path',settings.static);
+fl = engine('path',fld,'ext','zoo');
+flStat = engine('path',fld,'ext','zoo','search path',settings.static);
+if isempty(flStat)
+    flStat = engine('path',fld,'ext','zoo','search path',lower(settings.static));
+end
+if isempty(flStat)
+    flStat = engine('path',fld,'ext','zoo','search file',settings.static);
+end
+if isempty(flStat)
+    flStat = engine('path',fld,'ext','zoo','search file',lower(settings.static));
+end
+
 flDyn = setdiff(fl,flStat);
 
 for i = 1:length(flDyn)
