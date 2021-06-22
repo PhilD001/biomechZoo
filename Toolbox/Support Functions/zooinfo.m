@@ -1,4 +1,4 @@
-function [version,date] = zooinfo(verbose)
+function [version_num,version_date] = zooinfo(verbose)
 
 % The biomechZoo biomechanics Toolbox Copyright (c) 2006-2020 (Main contributors)
 %
@@ -30,11 +30,20 @@ if nargin == 0
     verbose = true;
 end
 
-version = '1.7.0';
-date = ' (June 22, 2021)';
+% get version number
+e=which('engine'); % returns path to ensemlber
+path = pathname(e) ;  % local folder where ensembler resides
+defaultvalfile = [path,'biomechZoo_version_number.mat'];
+version = load(defaultvalfile,'-mat');
+version= version.version;
+        
+version_num = version.number;
+version_date = version.date;
 
 if verbose
     help zooinfo
-    disp(['  Latest version: ',num2str(version),date])
+    disp(['  Latest version: ',num2str(version_num),' (', version_date, ')'])
 end
+
+
 

@@ -7,6 +7,10 @@ biomechZoo is a user-customizable toolbox for the processing, analysis, and visu
 - Start Matlab 
 - Open and run 'startZoo.m' located in the root biomechZoo folder to set your Matlab path
 
+## User guide:
+Directory tree and function descriptions can be found at:
+https://phild001.github.io/biomechZoo-help/
+
 ### Prerequisites
 
 Matlab (The Mathworks Inc., Natick, USA) v2014b or newer software running, at minimum, the Signal processing and Statistics toolboxes. 
@@ -17,10 +21,6 @@ Movement data often contain variables recorded over time, for many subjects, gro
 
 ## Audience: 
 biomechZoo can help those new to programming / biomechanics to quickly process their data by providing a framework from which to create a streamlined processing workflow. Advanced users are encouraged to contribute to the biomechZoo project by providing additional functions. 
-
-## User guide:
-Directory tree and function descriptions can be found at:
-https://phild001.github.io/biomechZoo-help/
 
 ## Help: 
 Help for biomechZoo can be accessed via the biomechZoo-help repository (https://github.com/PhilD001/biomechZoo-help). This repository provides exercises, sample data, and other resources to help the user get started with biomechZoo. Additional help may be obtained via seminars (see website for announcements) or
