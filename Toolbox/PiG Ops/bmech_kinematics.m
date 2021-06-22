@@ -44,61 +44,52 @@ end
 
 cd(fld)
 
-% Get static and dynamic trials
+% Get static trials
 %
-fl = engine('path',fld,'ext','zoo');
-flStat = engine('path',fld,'ext','zoo','folder',settings.static);
+flStat = engine('path',fld,'ext','zoo','search path',settings.static);
 if isempty(flStat)
-    flStat = engine('path',fld,'ext','zoo','folder',lower(settings.static));
+    flStat = engine('path',fld,'ext','zoo','search file',settings.static);
 end
 
-if isempty(flStat)
-        flStat = engine('path',fld,'ext','zoo','search file',settings.static);
-end
-
-if isempty(flStat)
-    flStat = engine('path',fld,'ext','zoo','search file',lower(settings.static));
-end
-
-flDyn =setdiff(fl,flStat);
-subname_prev = [];
-
-for i = 1:length(flDyn)
+for i = 1:length(flStat)
     
-    data = zload(flDyn{i});                                               % load dyn trial
-    subname = data.zoosystem.Header.SubName;                              % ID subject
-
-    if ~strcmp(subname_prev,subname)                                      % load static
-        indx = find(contains(flStat,subname));
-        if isempty(indx)
-           error(['no static trials for: ',subname])
-        elseif length(indx) > 1
-           error(['more than one static trial for: ',subname])
-        end
-        
-        flStatSub = flStat(indx);
-        [~,flStatFile,ext] = fileparts(flStatSub{1});
-        disp(' ')
-        disp(['processing static trial ',flStatFile,ext,' for subject ',subname])                     % compute quants
-        sdata = zload(flStatSub{1});
-        subname_prev = subname;
-          
-        % Compute ankle static offset using static trial
-        %
-        sdata = makebones_data(sdata,'static',settings.flat);
-        sdata = kinematics_data(sdata);
+    % load static trial
+    sdata = zload(flStat{i});                                               % load dyn trial
+    subname = sdata.zoosystem.Header.SubName;                              % ID subject
+    
+    if str2double(subname) < 120
+        continue
     end
+        
     
-    % Create joint kinematics for dynamic trial
-    %
-    batchdisp(flDyn{i},'computing PiG kinematics')
-    data = ankleoffsetPiG_data(data,sdata);
-    data = makebones_data(data,'dynamic');
-    data = kinematics_data(data,settings);
+    [~,flStatFile,ext] = fileparts(flStat{i});
+    disp(' ')
+    disp(['processing static trial ',flStatFile,ext,' for subject ',subname])                     % compute quants
+    
+    % Compute ankle static offset using static trial
+    sdata = makebones_data(sdata,'static',settings.flat);
+    sdata = kinematics_data(sdata);
     
     % save to zoo
-    zsave(flStat{1},sdata);
-    zsave(flDyn{i},data);
+    zsave(flStat{i},sdata);
+
+    % Create joint kinematics for dynamic trial(s)
+    flDyn = engine('fld', fld, 'search path', subname, 'ext', 'zoo');
+    if isempty(flDyn)
+        flDyn = engine('fld', fld, 'search file', subname, 'ext', 'zoo');
+    end
+    flDyn = setdiff(flDyn, flStat);
+    
+    for j = 1:length(flDyn)
+        data = zload(flDyn{j});
+        batchdisp(flDyn{j},'computing PiG kinematics')
+        data = ankleoffsetPiG_data(data,sdata);
+        data = makebones_data(data,'dynamic');
+        data = kinematics_data(data,settings);
+        
+        % save to zoo
+        zsave(flDyn{j},data);
+    end
 end
 
 
