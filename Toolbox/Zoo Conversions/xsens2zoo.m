@@ -10,13 +10,14 @@ function data = xsens2zoo(fld, ftype, del)
 % del    ...   bool, option to delete c3d file after creating zoo file.
 %              Default: false
 % RETURNS
-%  data  ...  zoo data. Return if fld is individual file 
+%  data  ...  zoo data. Return if fld is individual file
 %
 %
 % Created by Vaibhav Shah June 7th, 2021
 %
 % Updated by Philippe C. Dixon June 8th, 2021
-
+%
+% Updated by Vaibhav Shah June 23th, 2021
 
 % set defaults
 if nargin == 0
@@ -34,13 +35,20 @@ if nargin ==2
     del = false;
 end
 
+
 % check input (file or folder)
 [~,fl,saveFile] = checkinput(fld,ftype);
 
 tic
 for i=1:length(fl)
     [fpath,fname]=fileparts(fl{i});
-    sname=sheetnames(fl{i});
+    %sname=sheetnames(fl{i});
+    sname=["General Information";"Markers";"Segment Orientation - Quat";...
+        "Segment Orientation - Euler";"Segment Position";"Segment Velocity";...
+        "Segment Acceleration";"Segment Angular Velocity";"Segment Angular Acceleration";...
+        "Joint Angles ZXY";"Joint Angles XZY";"Ergonomic Joint Angles ZXY";...
+        "Ergonomic Joint Angles XZY";"Center of Mass";"Sensor Free Acceleration";...
+        "Sensor Magnetic Field";"Sensor Orientation - Quat";"Sensor Orientation - Euler"];
     disp(' ')
     batchdisp(fl{i},'converting Xsens file to zoo format')
     data=struct;
