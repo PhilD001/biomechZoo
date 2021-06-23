@@ -44,15 +44,15 @@ INDXFP = [];                            % force plate data
 
 for j = 1:length(txt(:,1))
     
-    if strcmp('ANALYSIS',txt{j,1});
+    if strcmp('ANALYSIS',txt{j,1})
         INDXANALYSIS = j;
-    elseif strcmp('EVENTS',txt{j,1});
+    elseif strcmp('EVENTS',txt{j,1})
         INDXEVENTS = j;
-    elseif  strcmp('TRAJECTORIES',txt{j,1});
+    elseif  strcmp('TRAJECTORIES',txt{j,1})
         INDXTRAJ = j;
-    elseif strcmp('ANALOG',txt{j,1});
+    elseif strcmp('ANALOG',txt{j,1})
         INDXANALOG = j;
-    elseif strcmp('FORCE PLATES',txt{j,1});
+    elseif strcmp('FORCE PLATES',txt{j,1})
         INDXFP = j;
     end
 end
@@ -60,12 +60,14 @@ end
 INDXALL = [INDXANALYSIS; INDXEVENTS; INDXTRAJ; INDXANALOG; INDXFP];
 
 
-
-
-
 % Extract header information ------------------------------------------------------------------
 %
 % - Header is all information before first data section in capitals
+
+if isempty(INDXALL)
+    r = [];
+    return
+end
 
 header = txt(1:INDXALL(1)-2,1:2);
 
@@ -150,19 +152,19 @@ if ~isempty(INDXEVENTS)
     RightFS = sort(RightFS);
     RightFO = sort(RightFO);
     
-    for j = 1:length(LeftFS);
+    for j = 1:length(LeftFS)
         r.Events.(['LeftFS',num2str(j)]) = [LeftFS(j) 0 0];
     end
     
-    for k = 1:length(LeftFO);
+    for k = 1:length(LeftFO)
         r.Events.(['LeftFO',num2str(k)]) = [LeftFO(k) 0 0];
     end
     
-    for l = 1:length(RightFS);
+    for l = 1:length(RightFS)
         r.Events.(['RightFS',num2str(l)]) = [RightFS(l) 0 0];
     end
     
-    for m = 1:length(RightFO);
+    for m = 1:length(RightFO)
         r.Events.(['RightFO',num2str(m)]) = [RightFO(m) 0 0];
     end
     
@@ -263,7 +265,6 @@ if ~isempty(INDXFP)
     end
     r.Forces.FPlates.CORNERS = stk;
     r.Forces.FPlates.NUMUSED = rows;
-    
     
 end
 

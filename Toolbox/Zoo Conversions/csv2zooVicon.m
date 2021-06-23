@@ -70,7 +70,13 @@ for i = 1:length(fl)
     zfl = extension(fl{i},'zoo');
         
     r  = readcsvVicon(fl{i});
-        
+    
+    if isempty(r)
+       warning('file is possible of incorrect format, skipping...')
+       continue
+    end
+
+    
     % Initialize zoo data structure
     %
     data = struct;

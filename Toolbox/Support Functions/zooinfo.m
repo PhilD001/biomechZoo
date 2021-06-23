@@ -43,6 +43,9 @@ version_date = version.date;
 if verbose
     help zooinfo
     disp(['  Latest version: ',num2str(version_num),' (', version_date, ')'])
+    disp(' ')
+    disp('  List of available functions available at ')
+    disp('  <a href="https://phild001.github.io/biomechZoo-help">https://phild001.github.io/biomechZoo-help</a>')
 end
 
 

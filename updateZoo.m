@@ -48,4 +48,4 @@ if ~exist(fld_m2html, 'dir')
     error(['you must have the m2html repo installed at ', fld_m2html])
 end
 addpath(fld_m2html)  
-biomechZoo_documentation
+Biomechzoo_documentation

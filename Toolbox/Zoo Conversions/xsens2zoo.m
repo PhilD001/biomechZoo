@@ -17,7 +17,11 @@ function data = xsens2zoo(fld, ftype, del)
 %
 % Updated by Philippe C. Dixon June 8th, 2021
 %
-% Updated by Vaibhav Shah June 23th, 2021
+% Updated by Vaibhav Shah June 23rd, 2021
+%
+% Updated by Philippe Dixon June 23rd, 2021
+% - maintain use of sheetnames function if available
+% - add error catch for wrong sheet name
 
 % set defaults
 if nargin == 0
@@ -42,13 +46,16 @@ end
 tic
 for i=1:length(fl)
     [fpath,fname]=fileparts(fl{i});
-    %sname=sheetnames(fl{i});
-    sname=["General Information";"Markers";"Segment Orientation - Quat";...
-        "Segment Orientation - Euler";"Segment Position";"Segment Velocity";...
-        "Segment Acceleration";"Segment Angular Velocity";"Segment Angular Acceleration";...
-        "Joint Angles ZXY";"Joint Angles XZY";"Ergonomic Joint Angles ZXY";...
-        "Ergonomic Joint Angles XZY";"Center of Mass";"Sensor Free Acceleration";...
-        "Sensor Magnetic Field";"Sensor Orientation - Quat";"Sensor Orientation - Euler"];
+    if exist('sheetnames.m', 'file') ==2
+        sname=sheetnames(fl{i});
+    else
+        sname=["General Information";"Markers";"Segment Orientation - Quat";...
+            "Segment Orientation - Euler";"Segment Position";"Segment Velocity";...
+            "Segment Acceleration";"Segment Angular Velocity";"Segment Angular Acceleration";...
+            "Joint Angles ZXY";"Joint Angles XZY";"Ergonomic Joint Angles ZXY";...
+            "Ergonomic Joint Angles XZY";"Center of Mass";"Sensor Free Acceleration";...
+            "Sensor Magnetic Field";"Sensor Orientation - Quat";"Sensor Orientation - Euler"];
+    end
     disp(' ')
     batchdisp(fl{i},'converting Xsens file to zoo format')
     data=struct;
@@ -104,7 +111,12 @@ data.zoosystem.Video.ORIGINAL_START_FRAME = 1;
 data.zoosystem.Video.CURRENT_START_FRAME  = 1;
 
 function data=other_sheets(data,filename,sheetname)
-[num,txt,~] = xlsread(filename,sheetname);
+try
+    [num,txt,~] = xlsread(filename,sheetname);
+catch ME
+    warning(ME.message)
+    return
+end
 str = regexprep(sheetname, {'-',' ','_','/'},{''});
 str=char(str);
 if contains(sheetname,'Segment Orientation - Quat')

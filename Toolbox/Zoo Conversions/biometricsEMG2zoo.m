@@ -1,18 +1,18 @@
-function data = biometricsEMG2zoo(fld,nHeaderRows,del)  
+function data = biometricsEMG2zoo(fld,nHeaderRows,del)
 
-% data = biometricsEMG2zoo(fld,nHeaderRows,del) converts EMG data collected with a 
+% data = biometricsEMG2zoo(fld,nHeaderRows,del) converts EMG data collected with a
 % biometrics data logger to zoo files
 %
 %
 % ARGUMENTS
 %  fld           ...  Folder (batch process) or full path to individual file (string).
-%  nHeaderRows   ...  Total number of rows in the header. This could change based on 
+%  nHeaderRows   ...  Total number of rows in the header. This could change based on
 %                     number of muscles collected. Default, nHeaderRows = 16
-%  del           ...  option to delete csv file after creating zoo file. 
+%  del           ...  option to delete csv file after creating zoo file.
 %                     Default, del = false
 %
 % RETURNS
-%  data  ...  zoo data. Return if fld is individual file 
+%  data  ...  zoo data. Return if fld is individual file
 %
 % NOTES
 % - Data logger does not record sampling rate information in the files,
@@ -31,44 +31,50 @@ function data = biometricsEMG2zoo(fld,nHeaderRows,del)
 %
 ext = 'csv';                                                          % always this extension
 section = 'Analog';                                                   % where to store zoo info
-fsamp = 1000;                                                         % sampling rate 
+fsamp = 1000;                                                         % sampling rate
 if nargin==0
     fld = uigetfolder;
     nHeaderRows = 16;                                                  % this can change later
     del = false;
 end
 
+if nargin == 1
+    nHeaderRows = 16;                                                  % this can change later
+    del = false;
+end
+
+if nargin ==2
+    del = false;
+end
 tic                                                                   % start timer
 
-[fld,fl,saveFile] = checkinput(fld,ext);
-cd(fld)
-
+[~,fl,saveFile] = checkinput(fld,ext);
 
 % LOAD DATA
 %
 for i = 1:length(fl)
     batchdisp(fl{i},'creating zoo file')
     zfl = extension(fl{i},'zoo');
-      
+    
     % Read file and extract header, channel names, and data
     %
     fid= fopen(fl{i});
     
     header = textscan(fid,'%s',nHeaderRows,'Delimiter','\n');         % header is first nHeaderLines
     header = header{1};
-     
+    
     chnames = header(2:nHeaderRows-1);                                % get channel names from file
     chnames = strrep(chnames,'"','');                                 % clean up names
-    chnames = strrep(chnames,'''','');    
-
+    chnames = strrep(chnames,'''','');
+    
     r = textscan(fid, '%s', 'Delimiter', ',');                        % data cols are next
-    r = r{:};                                                         % clean up data 
+    r = r{:};                                                         % clean up data
     r = r(15:end,:);                                                  % first line is blank
     r = str2double(r);                                                % convert to numbers
-    cols = length(chnames);                                           % get number of cols 
+    cols = length(chnames);                                           % get number of cols
     rows = length(r)/cols;                                            % get number of rows
-    r = reshape(r,cols,rows)';                                        % reshape matrix 
-   
+    r = reshape(r,cols,rows)';                                        % reshape matrix
+    
     st = fclose(fid);                                                 % close file
     if st
         error('unable to close file')
@@ -77,9 +83,9 @@ for i = 1:length(fl)
     % Initialize zoo data structure
     %
     data = struct;
-    data.zoosystem = setZoosystem(fl);
-
-   
+    data.zoosystem = setZoosystem(fl{i});
+    
+    
     % Add channels data to proper section
     %
     for a = 1:length(chnames)
@@ -88,7 +94,7 @@ for i = 1:length(fl)
         ch = ch(11:13);                                               % THIS IS THE NEW LINE, JUST EXTRACT THE NAME
         data = addchannel_data(data,ch,temp,section);                 % add to zoo branches
     end
-
+    
     % Add metainfo to zoosystem
     %
     data.zoosystem.(section).Freq = fsamp;                            % make sure you know correct value
