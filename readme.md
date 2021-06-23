@@ -7,10 +7,14 @@ biomechZoo is a user-customizable toolbox for the processing, analysis, and visu
 - Start Matlab 
 - Open and run 'startZoo.m' located in the root biomechZoo folder to set your Matlab path
 
+## User guide:
+Directory tree and function descriptions can be found at:
+https://phild001.github.io/biomechZoo-help/
+
 ### Prerequisites
 
-Matlab (The Mathworks Inc., Natick, USA) v2016a or newer software running, at minimum, the Signal processing and Statistics toolboxes. 
-Previous Matlab versions should run, but are not explicitely supported. 
+Matlab (The Mathworks Inc., Natick, USA) v2014b or newer software running, at minimum, the Signal processing and Statistics toolboxes. 
+Older Matlab versions are not supported. 
 
 ## Summary:
 Movement data often contain variables recorded over time, for many subjects, groups, or conditions. The biomechZoo toolbox provides tools to help users achieve sort, process, statistically analyze, and visualize these data. 
@@ -18,16 +22,16 @@ Movement data often contain variables recorded over time, for many subjects, gro
 ## Audience: 
 biomechZoo can help those new to programming / biomechanics to quickly process their data by providing a framework from which to create a streamlined processing workflow. Advanced users are encouraged to contribute to the biomechZoo project by providing additional functions. 
 
-## Web: 
-Find more information at http://biomechZoo.com
-
 ## Help: 
 Help for biomechZoo can be accessed via the biomechZoo-help repository (https://github.com/PhilD001/biomechZoo-help). This repository provides exercises, sample data, and other resources to help the user get started with biomechZoo. Additional help may be obtained via seminars (see website for announcements) or
 by contacting the main author. 
 
 ## Additional information
 
-The biomechZoo toolbox, was tested on Mac (OSX 10.11.5, Matlab v2016b),  Windows 10 Enterprise (Matlab 2015a and 2016a), and Linux (Ubuntu 16.04 LTS) platforms. 
+The biomechZoo toolbox, was tested on Mac (OSX 10.11.5, Matlab v2016b),  Windows 10 Enterprise (Matlab 2015a and 2016a), and Linux (Ubuntu 16.04 LTS) platforms.
+
+## Web: 
+Find more information at http://biomechZoo.com
 
 ## Get involved
 

@@ -16,7 +16,8 @@ function data = xsens2zoo(fld, ftype, del)
 % Created by Vaibhav Shah June 7th, 2021
 %
 % Updated by Philippe C. Dixon June 8th, 2021
-
+%
+% Updated by Vaibhav Shah June 23th, 2021
 
 % set defaults
 if nargin == 0
@@ -33,6 +34,7 @@ end
 if nargin ==2
     del = false;
 end
+
 
 % check input (file or folder)
 [~,fl,saveFile] = checkinput(fld,ftype);

@@ -41,13 +41,17 @@ if nargin == 2
     filt = setFilt;
 end
 
+% get all  trials
+fl = engine('path',fld,'ext','zoo');
 
-% Get static and dynamic trials
-%
-fl = engine('path',fld,'extension','zoo');
-flStat = engine('path',fld,'extension','zoo','search path',settings.static);
+% Get static trials
+flStat = engine('path',fld,'ext','zoo','search path',settings.static);
+if isempty(flStat)
+    flStat = engine('path',fld,'ext','zoo','search file',settings.static);
+end
+
+% only run through 
 flDyn = setdiff(fl,flStat);
-
 for i = 1:length(flDyn)
     data = zload(flDyn{i});                                               % load dyn trial
     batchdisp(flDyn{i},'computing lower-limb kinetics')     
