@@ -66,12 +66,19 @@ end
 % Check if channel already exists
 %
 if isfield(data,ch)
-    disp(['WARNING: channel ',ch,' already exists, overwriting with new data'])
+    warning(['channel ',ch,' already exists, overwriting with new data...'])
 end
 
-% Add channel to zoo struct
+
+% Add channel (check if field is valid) to zoo struct
 %
-data.(ch).line = ndata;
+try
+    data.(ch).line = ndata;
+catch ME
+    warning([ME.message, ' making valid field...'])
+    ch = makevalidfield(ch);
+    data.(ch).line = ndata;
+end
 data.(ch).event = struct;
 
 
