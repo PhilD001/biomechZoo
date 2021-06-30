@@ -1,4 +1,4 @@
-function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,mode,bonf)
+function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,tail,mode,bonf)
 
 % [P,t,df,e] = OMNI_TTEST(data1,data2,type,alpha,thresh,tail,mode,bonf) performs statistical
 % comparison of two groups taking into account parametric assumptions.
@@ -10,9 +10,9 @@ function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,mode,bo
 %  alpha    ...  significance level. Default '0.05'
 %  thresh   ...  threshold for failure of parametric assumptions and use of
 %                nonparametric tests. Default '0.05'
-%  corr     ...  apply bonferroni correction based on n tests. default = 1
-%  mode      ... display information 'full'
-%
+%  mode     ...  display information 'full'
+%  bonf     ...  apply bonferroni correction based on n tests. default n = 1
+
 % RETURNS
 %  P        ...  pvalue associated with test (parametric or non-parametric)
 %  t        ...  t-statistic associated with test
@@ -62,6 +62,7 @@ switch nargin
         thresh = 0.01;
         tail = 'both';
         mode = 'full';
+        bonf = 1;
         
     case {1,2}
         error('not enough inputs')
@@ -69,21 +70,27 @@ switch nargin
     case 3
         alpha = 0.05;
         thresh = 0.01;
+        tail = 'both';
         mode = 'full';
         bonf = 1;
         
     case 4
         thresh = 0.01;
+        tail = 'both';
         mode = 'full';
         bonf = 1;
         
     case 5
+        tail = 'both';
         mode = 'full';
         bonf = 1;
         
     case 6
+        mode = 'full';
         bonf = 1;
         
+    case 7
+         bonf = 1;
 end
 
 
@@ -113,8 +120,6 @@ indx2 = find(~isnan(data2));
 
 data1_nonans =data1(indx1);
 data2_nonans =data2(indx2);
-
-data_all_nonans = [data1_nonans; data2_nonans];
 
 xbar1 = nanmean(data1);
 xbar2 = nanmean(data2);
@@ -281,11 +286,11 @@ if strcmp(mode,'full')
     title(['QQ Plot Data2 (p = ',num2str(p_lil2),')'])
     
     subplot(2,4,3)
-    hist(data1)
+    histogram(data1)
     title('Histogram Data1')
     
     subplot(2,4,4)
-    hist(data2)
+    histogram(data2)
     title('Histogram Data2')
     
     subplot(2,4,5)
