@@ -36,7 +36,7 @@ indx = strfind(sub{1},filesep);                                % find slashes in
 path([zoo_fld,filesep,'Support Functions'],path)               % quick add path
 [version,date] = zooinfo;
 clc
-fprintf(['---------------- Welcome to the biomechZoo Toolbox ',version,date,' ----------------------\n\n'])
+fprintf(['---------------- Welcome to the biomechZoo Toolbox ',version, ' ', date,' ----------------------\n\n'])
 
 
 

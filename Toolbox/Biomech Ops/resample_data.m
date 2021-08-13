@@ -84,39 +84,43 @@ if ~isempty(ch)
     end
     
     factor = p/q;
-    
-    % Perform resampling procedure
-    %
-    for j = 1:length(ch)
-        
-        if isfield(data,ch{j})
-            r = data.(ch{j}).line;
-            ndatalength = round(length(r)*factor)-1;
-            data.(ch{j}).line = normalize_line(r,ndatalength,method);
-        end
-        
-        evts = fieldnames(data.(ch{j}).event);                  % update event values
-        for e =1:length(evts)
-            r =  data.(ch{j}).event.(evts{e});
-            r(1) = round(r(1)*factor);
-            data.(ch{j}).event.(evts{e}) = r;
-        end
-        
-    end
-    
-    % add zoosystem info
-    %
-    if q/p == data.zoosystem.AVR
-        data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
-        data.zoosystem.(curSec).CURRENT_START_FRAME = data.zoosystem.(othSec).CURRENT_START_FRAME;
-        data.zoosystem.(curSec).CURRENT_END_FRAME = data.zoosystem.(othSec).CURRENT_END_FRAME;
-        data.zoosystem.(curSec).Indx = data.zoosystem.(othSec).Indx;
-        data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
-        
+    if factor == 1
+        disp(['no resampling required : audio and video at same sampling rate of ', num2str(p), ' Hz'])
     else
-        data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
-        %     data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
-        disp(['zoosystem.',(curSec),' not correctly updated, consider using ',curSec,...
-            'as input for channel'])
+        
+        % Perform resampling procedure
+        %
+        for j = 1:length(ch)
+            
+            if isfield(data,ch{j})
+                r = data.(ch{j}).line;
+                ndatalength = round(length(r)*factor)-1;
+                data.(ch{j}).line = normalize_line(r,ndatalength,method);
+            end
+            
+            evts = fieldnames(data.(ch{j}).event);                  % update event values
+            for e =1:length(evts)
+                r =  data.(ch{j}).event.(evts{e});
+                r(1) = round(r(1)*factor);
+                data.(ch{j}).event.(evts{e}) = r;
+            end
+            
+        end
+        
+        % add zoosystem info
+        %
+        if q/p == data.zoosystem.AVR
+            data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
+            data.zoosystem.(curSec).CURRENT_START_FRAME = data.zoosystem.(othSec).CURRENT_START_FRAME;
+            data.zoosystem.(curSec).CURRENT_END_FRAME = data.zoosystem.(othSec).CURRENT_END_FRAME;
+            data.zoosystem.(curSec).Indx = data.zoosystem.(othSec).Indx;
+            data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
+            
+        else
+            data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
+            %     data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
+            disp(['zoosystem.',(curSec),' not correctly updated, consider using ',curSec,...
+                'as input for channel'])
+        end
     end
 end

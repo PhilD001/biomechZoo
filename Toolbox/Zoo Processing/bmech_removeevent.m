@@ -27,8 +27,6 @@ function bmech_removeevent(fld,evt,ch)
 % - fixed bug in channel selection
 
 
-
-
 % Set Defaults
 %
 if nargin ==0
@@ -48,15 +46,11 @@ end
 
 evt = makerow(evt);
 
-    
 cd(fld);
 
 
-
 % Batch Process
-%
 fl = engine('path',fld,'extension','zoo');
-
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisp(fl{i},'removing events');
