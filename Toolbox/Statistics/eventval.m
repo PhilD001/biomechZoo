@@ -376,7 +376,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if contains(fl{i},subjects{count})
+        if strcmp(fname,subjects{count})
             subject = subjects{count};
             check = false;
         else
