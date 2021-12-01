@@ -376,7 +376,7 @@ for i = 1:length(fl)
     check = true;
     count = 1;
     while check
-        if strcmp(fname,subjects{count})
+        if strfind(fname, subjects{count})
             subject = subjects{count};
             check = false;
         else

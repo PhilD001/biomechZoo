@@ -4,19 +4,16 @@ function checkZoo
 
 
 
-% 1 - check machine learning module
-ml_processing_template_IMU_simple
-ml_processing_template_IMU
-ml_processing_template_mocap
+% 1 - run sample study
+samplestudy_process
 
 % 2 - run all examples test
 all_examples_test
 
-% 3 - run sample study
-samplestudy_process
-
-
-
+% 3 - check machine learning module
+ml_processing_template_IMU_simple
+ml_processing_template_IMU
+ml_processing_template_mocap
 
 
 
