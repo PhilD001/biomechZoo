@@ -4,7 +4,7 @@ function openall(pth)
 % standalone function used by director
 s = filesep;    % determine slash direction based on computer type
 
-if ~strcmp(pth(end),s);
+if ~strcmp(pth(end),s)
     pth = [pth,s];
 end
 
@@ -20,7 +20,7 @@ fl = [fl;dataf];
 for i = 1:length(fl)
     filename = fl{i};
     [f,p] = partitionfile(fl{i});
-    switch lower(extension(filename));
+    switch lower(extension(filename))
         case '.ort'
             actor('load orientation',filename);
         case '.dis'
@@ -39,7 +39,7 @@ for i = 1:length(fl)
             lightman('load',filename);
         case '.prop'
             props('load',filename);
-            disp(['Loading prop - ',filename])
+            % disp(['Loading prop - ',filename])
         case '.c3d'
             marker('load c3d',filename);
         case '.z3d'

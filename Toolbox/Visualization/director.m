@@ -106,8 +106,6 @@ if nargin ==0
     action = 'start director';
 end
 
-disp(action)
-
 switch action
     
     case 'start director'

@@ -35,7 +35,9 @@ function zsave(fl,data,message)
 %
 % Updated by Philippe C. Dixon August 2018
 % - zsave can be called from outside a batch process function
-
+%
+% Updated by Philippe C. Dixon Feb 2022
+% - add zooversion to process information
 
 % version type for file save
 %
@@ -51,13 +53,17 @@ else
     process = ST.name;
 end
 
+% add zoo version
+zversion = zooinfo(false);
+process  = [process, '_v', zversion];
+
 % Add additional processing info
 %
 if nargin==2
     message = '';
 end
 
-process = [process,' ',message,' (',date,')'];
+process = [process,' ',message,' (run on ',date,')'];
 
 % write processing step to zoosystem
 %
@@ -68,35 +74,6 @@ else
     r{end+1,1} = process;
     data.zoosystem.Processing = r;
 end    
-
-% check write status of file
-%
-% 
-% if exist(fl,'file')==2
-%     [~,values] = fileattrib(fl);
-%     if values.UserWrite ==0
-%         check = false;
-%     end
-% end
-
-
-% if exist(fl,'file')==2 
-%    check = true;
-%    maxCount = 100;
-%    count = 1;
-%    while check
-%      [~,values] = fileattrib(fl);
-%      
-%      if values.UserWrite && count < maxCount
-%          check = false;
-%      else
-%          count = count+1;
-%          disp('file locked for writing, trying again...')
-%      end
-%    
-%    end
-% end
-
 
 
 % traditional save
