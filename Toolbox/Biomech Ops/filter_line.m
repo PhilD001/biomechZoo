@@ -32,6 +32,15 @@ function r = filter_line(r,filt,fsamp)
 
 % error checking
 %
+
+
+% Median filters
+if strcmp(filt.type, 'movmedian')
+    r = movmedian(r, filt.movmedianwindowsize);
+    return
+end
+
+
 if strcmp(filt.pass,'low') || strcmp(filt.pass,'high') || strcmp(filt.pass,'band')
     filt.pass = [filt.pass,'pass'];
 end
@@ -46,7 +55,6 @@ if isfield(filt,'forder')
     filt = rmfield(filt,'forder');
 end
 
-
 if isfield(filt,'cut')
     filt.cutoff = filt.cut;
     filt = rmfield(filt,'cut');
@@ -54,7 +62,10 @@ end
 
 % add sampling rate to filt struct
 %
-filt.smprate = fsamp;
+if ~isfield(filt, 'smprate')
+    filt.smprate = fsamp;
+end
+
 [b,a] = get_filter_coeffs(filt);
 
 
@@ -110,7 +121,7 @@ end
 st = 'stop';
 hi = 'high';
 
-switch filt.type
+switch lower(filt.type)
        
     case 'butterworth'
         switch filt.pass
@@ -124,7 +135,7 @@ switch filt.type
                 [b,a] = butter(filt.order,coff,hi);
         end
         
-    case 'chebychev I'
+    case 'chebychev i'
         switch filt.pass
             case 'lowpass'
                 [b,a] = cheby1(filt.order,filt.srip,coff);
@@ -136,7 +147,7 @@ switch filt.type
                 [b,a] = cheby1(filt.order,filt.srip,coff,hi);
         end
         
-    case 'chebychev II'
+    case 'chebychev ii'
         switch filt.pass
             case 'lowpass'
                 [b,a] = cheby2(filt.order,filt.srip,coff);
@@ -171,4 +182,5 @@ switch filt.type
             case 'highpass'
                 [b,a] = besself(filt.order,coff,hi);
         end
+        
 end

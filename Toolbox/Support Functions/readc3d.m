@@ -263,6 +263,10 @@ inc = 4*numVideo+H.SamplesPerFrame;
 
 
 %Begin to read the numbers
+if numFrames < 0
+    warning('number of frames from c3d is a negative value, taking absolute value...')
+    numFrames = abs(numFrames);
+end
 numdatapts = numFrames*inc;
 %number of data points to read this is:
 %(Number of frames)*(Number of data per frame)
