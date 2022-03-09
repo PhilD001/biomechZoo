@@ -53,10 +53,13 @@ function data =readc3d(fname)
 % Updated by Philippe C. Dixon December 2017
 % - bug fix for c3d files without 'ANALOG' field in parameter info
 %
-% Updated by Philippe C. Dixn May 2019
+% Updated by Philippe C. Dixon May 2019
 % - invalid fields that cannot be fixed are displayed and skipped via try 
 %   and catch statement
-
+%
+% Updated by Philippe C. Dixon March 2022
+% - updated reading of header to deal with long trials. See: 
+% https://www.mathworks.com/matlabcentral/answers/79368-use-of-the-fread-function
 % -------------------------------------------
 
 mtype = getmachinecode(fname);
@@ -79,16 +82,23 @@ fread(fid,1,'int8');           %code for a C3D file
 
 %  Getting all the necessary parameters from the header record
 %                                  word     description
+U16 = 'uint16';   
+F32 = 'float32';
 H.ParamterBlockNum = pblock;
-H.NumMarkers =fread(fid,1,'int16');             %2      number of markers
-H.SamplesPerFrame =fread(fid,1,'int16');        %3      total number of analog measurements per video frame
-H.FirstVideoFrame =fread(fid,1,'int16');        %4      # of first video frame
-H.EndVideoFrame =fread(fid,1,'int16');          %5      # of last video frame
-H.MaxIntGap =fread(fid,1,'int16');              %6      maximum interpolation gap allowed (in frame)
-H.Scale =fread(fid,1,'float32');                %7-8    floating-point scale factor to convert 3D-integers to ref system units
-H.StartRecord =fread(fid,1,'int16');            %9      starting record number for 3D point and analog data
-H.SamplesPerChannel =fread(fid,1,'int16');      %10     number of analog samples per channel
-H.VideoHZ =fread(fid,1,'float32');              %11-12  frequency of video data
+H.NumMarkers =fread(fid,1,U16);             %2      number of markers
+H.SamplesPerFrame =fread(fid,1,U16);        %3      total number of analog measurements per video frame
+H.FirstVideoFrame =fread(fid,1,U16);        %4      # of first video frame
+H.EndVideoFrame =fread(fid,1,U16);          %5      # of last video frame
+H.MaxIntGap =fread(fid,1,U16);              %6      maximum interpolation gap allowed (in frame)
+
+Scale =fread(fid,1,F32);                    %7-8    floating-point scale factor to convert 3D-integers to ref system units
+% If scale is negative, the data is stored in float format:
+H.FloatMode = (Scale < 0.0);
+H.Scale     = abs(Scale);
+
+H.StartRecord =fread(fid,1,U16);            %9      starting record number for 3D point and analog data
+H.SamplesPerChannel =fread(fid,1,U16);      %10     number of analog samples per channel
+H.VideoHZ =fread(fid,1,F32);                %11-12  frequency of video data
 fseek(fid,2*148,'bof');                         %13-147 reserved for future use
 H.LablePointer =fread(fid,1,'int16');           %label and range data pointer
 
@@ -96,6 +106,7 @@ if nargin == 2
     data = H;
     return
 end
+
 
 %---------------------PARAMETER SECTION-------------------------------------
 fseek(fid,(pblock-1)*512,'bof');  %the start of the parameter block
@@ -131,7 +142,6 @@ while 1
     fld.id = id;                                %fld has fields id and description
     fld.islock = islock;
     
-    
     if id < 0                                       %groups always have id <0 parameters are always >0
         dnum = fread(fid,1,'uint8');                %number of characters of the desctription
         desc = char(fread(fid,dnum,'uint8')');      %description of the group/parameter
@@ -143,7 +153,6 @@ while 1
             disp(['skipping invalid field found:' gname])
             continue
         end
-        
                                       %add the field to the variable P
     else %it is a parameter
         dtype = fread(fid,1,'int8');                %what type of data -1 = char 1 = byte  2 = 16 bit integer 3 = 32 bit floating point
@@ -195,7 +204,6 @@ data.Parameter = P;
 fseek(fid,(data.Parameter.POINT.DATA_START.data-1)*512,'bof');
 %Analogue data parameters
 
-
 if ~isfield(data.Parameter,'ANALOG')                       % PD update for Optitrak
     numAnalogue = 0;
     Alabels = [];
@@ -233,7 +241,6 @@ else
     Aoffset = [];
 end
 
-
 %Video (3D) data parameters
 numVideo = data.Parameter.POINT.USED.data;
 if isfield(data.Parameter.POINT,'LABELS')
@@ -251,7 +258,8 @@ for i = 2:length(fieldnames(data.Parameter.POINT))
     end
 end
 Vscale = data.Parameter.POINT.SCALE.data;
-numFrames = data.Parameter.POINT.FRAMES.data;
+% numFrames = data.Parameter.POINT.FRAMES.data;     % old JJ code
+numFrames = H.EndVideoFrame - H.FirstVideoFrame + 1;
 
 inc = 4*numVideo+H.SamplesPerFrame;
 %inc is the increment.  Increment is the number of elements in a video
@@ -261,12 +269,6 @@ inc = 4*numVideo+H.SamplesPerFrame;
 %Note: the number of Analogue Measurements does NOT always equal the number
 %of analogue channels.
 
-
-%Begin to read the numbers
-if numFrames < 0
-    warning('number of frames from c3d is a negative value, taking absolute value...')
-    numFrames = abs(numFrames);
-end
 numdatapts = numFrames*inc;
 %number of data points to read this is:
 %(Number of frames)*(Number of data per frame)
@@ -278,7 +280,6 @@ if Vscale >= 0   %integer format
 else            %floating point format
     AVdata = fread(fid,numdatapts,'float32',machinetype);
 end
-
 
 V = struct;
 %data for all Video channels
