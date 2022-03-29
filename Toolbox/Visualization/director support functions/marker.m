@@ -179,7 +179,7 @@ for i = 1:length(v)
     xyz = data.(v{i}).line;
     dis = clean(xyz);
     tg = v{i};
-    marker('create',tg,1.5,dis,newcolor(i))
+    marker('create',tg,1.5,dis,newcolor(i));
 end
 
 

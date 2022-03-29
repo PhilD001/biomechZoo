@@ -717,19 +717,19 @@ xhnd = findobj(c,'tag','x');
 yhnd = findobj(c,'tag','y');
 zhnd = findobj(c,'tag','z');
 
-if get(xhnd,'backgroundcolor') == [1 0 0];
+if get(xhnd,'backgroundcolor') == [1 0 0]
     vr(vindx(1),1) = get(xhnd,'userdata');
 else
     set(xhnd,'string',num2str(vr(vindx(1),1)),'userdata',vr(vindx(1),1));
 end
 
-if get(yhnd,'backgroundcolor') == [0 1 0];
+if get(yhnd,'backgroundcolor') == [0 1 0]
     vr(vindx(1),2) = get(yhnd,'userdata');
 else
     set(yhnd,'string',num2str(vr(vindx(1),2)),'userdata',vr(vindx(1),2));
 end
 
-if get(zhnd,'backgroundcolor') == [0 0 1];
+if get(zhnd,'backgroundcolor') == [0 0 1]
     vr(vindx(1),3) = get(zhnd,'userdata');
 else
     set(zhnd,'string',num2str(vr(vindx(1),3)),'userdata',vr(vindx(1),3));
@@ -905,7 +905,7 @@ for i = 1:length(phnd)
         continue
         
     elseif isfield(pud,'ort') %prop is moves on its own
-        if frm > length(pud.ort);
+        if frm > length(pud.ort)
             continue
         end
         vr = ctransform(pud.ort{frm},gunit,pud.vertices);
@@ -917,7 +917,7 @@ for i = 1:length(phnd)
         continue
     end
     
-    if isfield(pud,'units');
+    if isfield(pud,'units')
         vr = vr*pud.units;
     end
     
@@ -932,12 +932,12 @@ end
 function r = getmarkers(mrk,frm)
 
 r = [];
-if nargin == 1;
+if nargin == 1
     pud = get(mrk,'userdata');
     vr = pud.mvertices;
     nm = pud.mname;
     as = pud.association(:,1);
-    for i = 1:length(as);
+    for i = 1:length(as)
         indx = find(strcmp(as{i},nm));
         if isempty(indx)
             r = [r;[NaN,NaN,NaN]];
@@ -975,7 +975,7 @@ x = x*.7;
 y = y*.7;
 z = z*.7;
 ax = finddobj('axes');
-for i = 1:length(nm);
+for i = 1:length(nm)
     nx = x+mvr(i,1);
     ny = y+mvr(i,2);
     nz = z+mvr(i,3);
@@ -1087,7 +1087,7 @@ prp = finddobj('props');
 mrk = finddobj('marker');
 for i = 1:length(prp)
     ud = get(prp(i),'userdata');
-    if isfield(ud,'puckmarkers');
+    if isfield(ud,'puckmarkers')
         if isempty(findobj(mrk,'tag',ud.puckmarkers{1})) || isempty(findobj(mrk,'tag',ud.puckmarkers{2}))
             continue
         end
@@ -1152,7 +1152,7 @@ function caliper(hnd)
 
 if length(hnd) == 2
     stk = [];
-    for i = 1:length(hnd);
+    for i = 1:length(hnd)
         ud = get(hnd(i),'userdata');
         vr = get(ud.object,'vertices');
         stk = [stk;vr(ud.vindex,:)];
@@ -1211,7 +1211,7 @@ obj = get(hnd,'tag');
 found = 0;
 ljnt = length(ud.joint);
 for i = 1:ljnt
-    if strcmp(ud.joint(i).object,obj);
+    if strcmp(ud.joint(i).object,obj)
         ud.joint(i).vertices = [ud.joint(i).vertices;vindx];
         found = 1;
         break
@@ -1230,7 +1230,7 @@ vstk = [];
 bstk = [];
 nstk = [];
 ax = finddobj('axes');
-for i = 1:length(ud.joint);
+for i = 1:length(ud.joint)
     bstk = [bstk;length(ud.joint(i).vertices)];
     hnd = findobj(ax,'tag',ud.joint(i).object);
     vr = get(hnd,'vertices');
@@ -1355,10 +1355,17 @@ dim = {'O','A','L','P'};
 for i = 1:length(amat(:,1))
     d = [];
     
-    if isfield(data,[amat{i,1},dim{1}])  % if you have dim1 you have them all
+    if isfield(data,[amat{i,1},dim{1}]) && isfield(data,[amat{i,1},dim{2}]) ...
+               && isfield(data,[amat{i,1},dim{3}]) && isfield(data,[amat{i,1},dim{4}])
         
-        for j = 1:4
-            d{j} = data.([amat{i,1},dim{j}]).line;
+        for j = 1:length(dim)
+            
+            if isfield(data,[amat{i,1},dim{j}])
+                d{j} = data.([amat{i,1},dim{j}]).line;
+            else
+                d = [];
+                continue
+            end
         end
         bn = amat{i,2};
         [dis,ort] = getdata(d);
