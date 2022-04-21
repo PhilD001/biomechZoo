@@ -3,13 +3,17 @@ function Mdl=bmech_ml_classification(data, Model_name)
 %
 % ARGUMENTS
 % data        ...   struct, struct returned with train_test_split
-% Model_name  ...   string,'BDT'     --> Binary Classification Tree 
+% Model_name  ...   string,'BDT'     --> Binary Classification Tree
 %                          'NBayes'  --> Naive bayes
 %                          'knn'     --> k-Nearest Neighbor Classifier
 %                          'Bsvm'    --> Binary support vector machines
 %                          'Blinear' --> Binary Linear Classification
 %                          'Bkernel' --> Binary Kernel Classification
 %                          'Msvm'    --> Multiclass support vector machines
+%                          'FF'      --> Forward Feed Neural network
+%                          'LSTM'    --> Long short-term memory
+%                          'BiLS'  --> Bidirectional Long short-term memory
+%                          'CNN'     --> Convolutional neural network
 % RETURNS
 % Mdl         ...   Trained model
 %
@@ -58,7 +62,7 @@ elseif contains(Model_name,'Blinear')
         'Lambda',data.Blinear.Lambda,...
         'Learner',data.Blinear.Learner,...
         'Prior',data.Prior);
-    
+
 elseif contains(Model_name,'Bkernel')
     disp('Training Binary Kernel Classification')
     Mdl = fitckernel(data.x_train,data.y_train,...
@@ -74,8 +78,20 @@ elseif contains(Model_name,'Msvm')
         'Learners',data.Msvm.Learners,...
         'NumConcurrent',data.Msvm.NumConcurrent,...
         'Prior',data.Prior);
-%elseif contains(Model_name,'FFNN')
-%        net = feedforwardnet(hiddenSizes,trainFcn); % still working
+elseif contains(Model_name,'FF')
+    disp('Training forward feed neural network')
+    Mdl = trainNetwork(data.x_train,data.y_train,data.FF.layers,data.deeplearning.options);
+elseif contains(Model_name,'LSTM')
+    disp('Training Long shot-term memory neural network')
+    Mdl = trainNetwork(data.x_train,data.y_train,data.LSTM.layers,data.deeplearning.options);
+elseif contains(Model_name,'BiLS')
+    disp('Training Bidirectional Long shot-term memory neural network')
+    Mdl = trainNetwork(data.x_train,data.y_train,data.BiLSTM.layers,data.deeplearning.options);
+elseif contains(Model_name,'CNN')
+    disp('Training Convolutional neural network')
+    Mdl = trainNetwork(data.x_train,data.y_train,data.CNN.layers,data.deeplearning.options);
+    %elseif contains(Model_name,'FFNN')
+    %        net = feedforwardnet(hiddenSizes,trainFcn); % still working
 else
     error([Model_name,' model name does not exist check available models'])
 end

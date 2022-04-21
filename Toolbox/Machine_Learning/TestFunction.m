@@ -1,0 +1,17 @@
+model_name='FF';
+[ml_data,stats,Mdl]=Introduction_to_deep_learning_capabilities_of_BiomechZoo(model_name);
+%%
+model_name='LSTM';
+[ml_data,stats,Mdl]=Introduction_to_deep_learning_capabilities_of_BiomechZoo(model_name);
+%%
+model_name='BiLS';
+[ml_data,stats,Mdl]=Introduction_to_deep_learning_capabilities_of_BiomechZoo(model_name);
+%%
+model_name='CNN';
+[ml_data,stats,Mdl]=Introduction_to_deep_learning_capabilities_of_BiomechZoo(model_name);
+%%
+model_name='Msvm';
+[ml_data,stats,Mdl]=Introduction_to_deep_learning_capabilities_of_BiomechZoo(model_name);
+%%
+model_name='Msvm';
+[ml_data,stats,Mdl]=Introduction_to_deep_learning_capabilities_of_BiomechZoo(model_name);

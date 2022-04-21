@@ -90,10 +90,10 @@ else
     disp(['unknown scale ', Normalize, ' Check Normalizating setting'])
 end
 
-data.y_train=y(train_index);
+data.y_train=categorical(y(train_index));
 x_test=x(test_index,:);
 data=test_normalize(data,x_test,Normalize);
-data.y_test=y(test_index);
+data.y_test=categorical(y(test_index));
 data.train_subject=train_subject;
 data.test_subject=test_subject;
 data.Conditions=condi;
@@ -170,3 +170,52 @@ data.Bkernel.Lambda='auto';
 % Multiclass support vector machines
 data.Msvm.Learners='svm';
 data.Msvm.NumConcurrent=1;
+
+% forward feed
+numFeatures = length(data.x_train);
+numClasses = length(unique(data.y_train));
+
+data.FF.layers = [
+    featureInputLayer(numFeatures,'Name','input')
+    %sequenceInputLayer(numFeatures,'Name','input')
+    %bilstmLayer(numHiddenUnits,'OutputMode','last')
+    %lstmLayer(numHiddenUnits,'OutputMode','last')
+    fullyConnectedLayer(numClasses, 'Name','fc')
+    softmaxLayer('Name','sm')
+    classificationLayer('Name','classification')];
+
+% LSTM
+if iscell(data.x_train)
+[numFeatures,~]=size(data.x_train{1});
+end
+numHiddenUnits=100;
+data.LSTM.layers = [
+    sequenceInputLayer(numFeatures,'Name','input')
+    lstmLayer(numHiddenUnits,'OutputMode','last')
+    fullyConnectedLayer(numClasses, 'Name','fc')
+    softmaxLayer('Name','sm')
+    classificationLayer('Name','classification')];
+
+% BI LSTM
+data.BiLSTM.layers = [
+    sequenceInputLayer(numFeatures,'Name','input')
+    bilstmLayer(numHiddenUnits,'OutputMode','last')
+    fullyConnectedLayer(numClasses, 'Name','fc')
+    softmaxLayer('Name','sm')
+    classificationLayer('Name','classification')];
+
+% adding deep learning options
+data.deeplearning.maxEpochs = 20;
+data.deeplearning.miniBatchSize = 8;
+data.deeplearning.options = trainingOptions('adam', ...
+    'ExecutionEnvironment','cpu', ...
+    'GradientThreshold',1, ...
+    'MaxEpochs',data.deeplearning.maxEpochs, ...
+    'MiniBatchSize',data.deeplearning.miniBatchSize, ...
+    'SequenceLength','longest', ...
+    'Shuffle','never', ...
+    'Verbose',0, ...
+    'Plots','training-progress');
+
+
+
