@@ -1,4 +1,4 @@
-function train_test_scale(ml_data, normalize)
+function ml_data = train_test_scale(ml_data, normalize)
 %   x           ...   double array, features for classification.
 %   y           ...   double array or cell array of char, conditions to classify.
 %   VariableName...   cell array char, Name of the variables Use this VariableName=table_event.Properties.VariableNames(1:end-2);
@@ -11,7 +11,9 @@ function train_test_scale(ml_data, normalize)
 % scale
 
 x_train = ml_data.x_train;
-x_test = ml_data.x_test;
+
+
+disp(['Scaling data using ', Normalize])
 
 if contains(Normalize,'StandardScaler')
     [x_train,m,s]=StandardScaler(x_train);
@@ -19,18 +21,17 @@ if contains(Normalize,'StandardScaler')
     ml_data.mean=m;
     ml_data.std=s;
 elseif contains(Normalize,'MinMaxScaler')
-    [x_train,Min,Max]=MinMax(x(train_index,:));
+    [x_train,Min,Max]=MinMax(x_train);
     ml_data.x_train=x_train;
     ml_data.Min=Min;
     ml_data.Max=Max;
 elseif contains(Normalize,'None')
-    ml_data.x_train=x(train_index,:);
+    disp('no scaling')
 else
     disp(['unknown scale ', Normalize, ' Check Normalizating setting'])
 end
 
 ml_data.y_train=categorical(y(train_index));
-x_test=x(test_index,:);
 ml_data=test_normalize(ml_data,x_test,Normalize);
 ml_data.y_test=categorical(y(test_index));
 ml_data.train_subject=train_subject;

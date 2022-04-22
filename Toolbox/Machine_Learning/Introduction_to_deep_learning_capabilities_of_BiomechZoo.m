@@ -94,7 +94,7 @@ ml_data=train_test_split(x, y, subject,subject_wise,split,seed);
 
 %%% TODO: I don't think the format works for the scalers
 normalize='None';
-ml_data = train_test_scale(ml_data, normalize);
+%ml_data = train_test_scale(ml_data, normalize);
 
 %% Add additional information for model training to the ml_data struct
 ml_data.VariableName = VariableName;
