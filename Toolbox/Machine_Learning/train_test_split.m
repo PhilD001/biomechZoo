@@ -30,8 +30,10 @@ end
 % set random seed
 rng(seed)
 
+
 % split 
 if subject_wise
+    disp('splitting data into train / test sets via inter-subject scheme (subject_wise = true)')
     subjects=unique(subject);
     n=length(subjects);
     indexs=randperm(n);
@@ -44,6 +46,7 @@ if subject_wise
     train_index=find(contains(subject,test_sub)==0);
     
 else
+    disp('splitting data into train / test sets via intra-subject scheme (subject_wise = false)')
     subjects=subject;
     n=length(subjects);
     indexs=randperm(n);
