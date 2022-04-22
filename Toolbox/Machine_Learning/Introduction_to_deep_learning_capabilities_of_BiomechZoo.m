@@ -92,8 +92,9 @@ ml_data=train_test_split(x, y, subject,subject_wise,split,seed);
 % - scaling is conducted on train set and applied to test set to avoid
 % 'information leakage'
 
-normalize='StandardScaler';
-train_test_scale(ml_data, normalize)
+%%% TODO: I don't think the format works for the scalers
+normalize='None';
+ml_data = train_test_scale(ml_data, normalize);
 
 %% Add additional information for model training to the ml_data struct
 ml_data.VariableName = VariableName;
