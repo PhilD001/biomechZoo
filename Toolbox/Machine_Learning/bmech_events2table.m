@@ -1,15 +1,16 @@
 function table_event = bmech_events2table(fld,ch,event,subjects,Conditions)
-% BMECH_EVENTS2TABLE extracts local events to tabular form
+% bmech_events2table (fld,ch,event,subjects,Conditions) extracts local events to tabular form
 %
 % ARGUMENTS
-% fld         ...   string, folder to operate on
-% ch          ...   string, all channel name. 
-% event       ...   struct, event.channelName --> all event names to be extracted from that channel. 
-% subjects    ...   string cell, subject name of all the subjects. 
-% Conditions  ...   string cell, all Conditions name. 
+%   fld         ...   string, folder to operate on
+%   ch          ...   string, all channel name. 
+%   event       ...   struct, event.channelName --> all event names to be extracted from that channel. 
+%   subjects    ...   string cell, subject name of all the subjects. 
+%   Conditions  ...   string cell, all Conditions name. 
+% 
 % RETURNS
-% table_event ...  Table of events with subjects second last row and conditions last row.
-% If event does not exisit it will be 999.
+%   table_event ...  Table of events with subjects second last row and conditions last row.
+%                    If event does not exisit it will be 999.
 
 
 fl=engine('path',fld,'ext','.zoo');
