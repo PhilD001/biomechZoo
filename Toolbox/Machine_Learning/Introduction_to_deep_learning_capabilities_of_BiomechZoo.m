@@ -102,17 +102,17 @@ ml_data = ml_model_parameters(ml_data, model_name);
 ml_data.Conditions = char2num(y);
 
 
-%% CNN1D data prepration
-if contains(model_name,'CNN')
-    ml_data=CNN1D_data_prepration(ml_data);
-end
+%  CNN1D data prepration
+% if contains(model_name,'CNN')
+%     ml_data=CNN1D_data_prepration(ml_data);
+% end
 %% fit model
 % Model_name  ...   string,'NBayes'  --> Naive bayes
 %                          'knn'     --> k-Nearest Neighbor Classifier
 %                          'Msvm'    --> Multiclass support vector machines
 ml_data.knn.NumNeighbors=3;
 Model_name='knn'; % model_name;% BDT % NBayes %knn %Bsvm
-%Mdl=bmech_ml_classification(ml_data,Model_name);
+Mdl=bmech_ml_classification(ml_data,Model_name);
 %% Predict gait condition classification on the test set
 figure
 if contains(model_name,{'FF','LSTM','BILS','CNN'})
