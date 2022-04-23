@@ -98,7 +98,7 @@ normalize='None';
 
 %% Add additional information for model training to the ml_data struct
 ml_data.VariableName = VariableName;
-ml_data = ml_model_parameters(ml_data);
+ml_data = ml_model_parameters(ml_data, model_name);
 ml_data.Conditions = char2num(y);
 
 
@@ -111,8 +111,8 @@ end
 %                          'knn'     --> k-Nearest Neighbor Classifier
 %                          'Msvm'    --> Multiclass support vector machines
 ml_data.knn.NumNeighbors=3;
-Model_name=model_name;% BDT % NBayes %knn %Bsvm
-Mdl=bmech_ml_classification(ml_data,Model_name);
+Model_name='knn'; % model_name;% BDT % NBayes %knn %Bsvm
+%Mdl=bmech_ml_classification(ml_data,Model_name);
 %% Predict gait condition classification on the test set
 figure
 if contains(model_name,{'FF','LSTM','BILS','CNN'})
