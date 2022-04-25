@@ -1,43 +1,44 @@
-function bmech_feature_extraction(fld,ch,method)
-% BMECH_FEATURE_EXTRACTION extracts features from line data extracted using
-% bmech_line function
+function event_names = bmech_feature_extraction(fld, ch, method)
+
+% BMECH_FEATURE_EXTRACTION extracts basic statistical features from line data 
 %
 % ARGUMENTS
-% table_data  ...   table, line data table extracted with bemch_line function
-% ch          ...   string, all channel name.
-% method      ...   features extraction method 'None' currently, future
-% updates will have PCA, LDA, etc...
-% RETURNS
-% table_event ...   table, Table of featuers with subjects second last row and conditions last row.
+%  fld           ...   string, folder to batch process.   
+%  ch            ...   string, all channel name.
+%  method        ...   features extraction method 'None' currently, future updates will have PCA, LDA, etc...
 %
+% RETURNS
+%  event_names   ...   struct, names of features extracted.
 
-if nargin == 1
-    error("missisng inputs")
+
+if nargin < 2
+   error("missisng inputs")
+end
+
+if nargin == 2
+    method = 'None';
 end
 
 fl = engine('fld', fld, 'extension', 'zoo');
 for f = 1:length(fl)
     batchdisp(fl{f}, 'computing features')
     data = zload(fl{f});
-
-    % Extracts feature ------------
-    data= features_extract(data, ch,method);
-
-    % save to zoo
-    zsave(fl{f}, data)
+    [data, event_names] = feature_extraction_data(data, ch, method);
+    zsave(fl{f}, data, [num2str(length(event_names)), ' features added: ', strjoin(event_names)])
 end
 
 
-function data= features_extract(data,ch,method)
+function [data, events]= feature_extraction_data(data,ch,method)
 if contains(method,'None')
     for i = 1:length(ch)
-        data=features_comput(data,ch{i});
+        [data, events] = feature_extraction_line(data,ch{i});
     end
 else
-    disp(['Feature extraction method not available'])
+    error(['Not implemented error: Feature extraction method ', method, 'not available'])
 end
 
-function data=features_comput(data,ch)
+
+function [data, events] = feature_extraction_line(data,ch)
 disp(['Computing features for ',ch])
 data.(ch).event.Min=[0 0 min(data.(ch).line)];
 data.(ch).event.Max=[0 0 max(data.(ch).line)];
@@ -62,3 +63,5 @@ data.(ch).event.sumLmin=[0 0 sum(Lmin)];
 data.(ch).event.lenghtLmin=[0 0 length(Lmin)];
 data.(ch).event.RatioMaxMin=[0 0 max(Lmax)/min(Lmin)];
 data.(ch).event.RatioMinMax=[0 0 min(Lmax)/max(Lmax)];
+
+events = fieldnames(data.(ch).event);

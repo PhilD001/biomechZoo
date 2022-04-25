@@ -43,7 +43,7 @@ elseif strcmp(model_name,'knn')
 elseif strcmp(model_name,'Bsvm')
     % Binary SVM
     ml_data.Bsvm.BoxConstraint=1;
-    ml_data.Bsvm.KernelFunction='rbf';
+    ml_data.Bsvm.KernelFunction='polynomial';
     ml_data.Bsvm.KernelScale=1;
     ml_data.Bsvm.KernelOffset=0;
     ml_data.Bsvm.Solver='ISDA';

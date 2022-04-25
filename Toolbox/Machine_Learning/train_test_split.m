@@ -15,7 +15,7 @@ function data=train_test_split(x,y,VariableName,subject,subject_wise,split,seed)
 
 
 % error checking
-if nargin < 3
+if nargin < 5
     error('insufficient arguments provided')
 end
 

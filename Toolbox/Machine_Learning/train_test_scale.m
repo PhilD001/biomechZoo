@@ -10,8 +10,6 @@ function ml_data = train_test_scale(ml_data, Normalize)
 %
 % scale
 
-x_train = ml_data.x_train;
-
 
 disp(['Scaling data using ', Normalize])
 
