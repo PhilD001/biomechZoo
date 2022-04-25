@@ -38,7 +38,7 @@ for ii=1:length(ch)
         ename=fieldnames(data.(ch{ii}).event);
         con=contains(ename,event.(ch{ii}){jj});
         if sum(con)>0
-            table_event.(event_name)(row)=data.(ch{ii}).event.(event.(ch{ii}){jj})(2);
+            table_event.(event_name)(row)=data.(ch{ii}).event.(event.(ch{ii}){jj})(3);
         else
             table_event.(event_name)(row)=999; %if event does not exisit
             disp(['event does not exist for ',ch{ii},' ',event.(ch{ii}){jj}]);

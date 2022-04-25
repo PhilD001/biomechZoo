@@ -77,8 +77,16 @@ Conditions=unique(Conditions);
 % - If feature engineering is required it is performed in this step
 %
 if ~ismember(model_name,{'LSTM','BiLS','CNN', 'sequence', 'FF' 'stack'})
-    bmech_feature_extraction(fld, ch)
-    table_data = bmech_events2table(fld);
+    method='None';
+    bmech_feature_extraction(fld, ch,method)
+    features={'Min','Max','Sum','mean','std',...
+        'median','lenght','meanLmax',...
+        'sumLmax','lenghtLmax','meanLmin','sumLmin',...
+        'lenghtLmin','RatioMaxMin','RatioMinMax'};
+    for i=1:length(ch)
+            event.(ch{i})=features;
+    end
+    table_data = bmech_events2table(fld,ch,event,subjects,Conditions);
 else
     table_data = bmech_line2table(fld,ch,subjects,Conditions);
 end
@@ -101,7 +109,7 @@ ml_data=train_test_split(x,y,VariableName,subject,subject_wise,split,seed);
 % - scaling is conducted on train set and applied to test set to avoid
 % 'information leakage'
 
-normalize='MinMax';
+normalize='MinMaxScaler';
 ml_data = train_test_scale(ml_data, normalize);
 
 %% Add additional information for model training to the ml_data struct
@@ -109,7 +117,7 @@ ml_data = ml_model_parameters(ml_data, model_name);
 
 % edit paramters for SVM
 if strcmp(model_name, 'SVM')
-% ml_data.svm.?=3;
+    % ml_data.svm.?=3;
 end
 
 %% fit model

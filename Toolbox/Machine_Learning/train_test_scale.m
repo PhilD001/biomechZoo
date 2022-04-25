@@ -1,4 +1,4 @@
-function ml_data = train_test_scale(ml_data, normalize)
+function ml_data = train_test_scale(ml_data, Normalize)
 %   x           ...   double array, features for classification.
 %   y           ...   double array or cell array of char, conditions to classify.
 %   VariableName...   cell array char, Name of the variables Use this VariableName=table_event.Properties.VariableNames(1:end-2);
@@ -17,46 +17,31 @@ disp(['Scaling data using ', Normalize])
 
 if contains(Normalize,'StandardScaler')
     error('Not implemented')
-%     [x_train,m,s]=StandardScaler(x_train);
-%     ml_data.x_train=x_train;
-%     ml_data.mean=m;
-%     ml_data.std=s;
+    %     [x_train,m,s]=StandardScaler(x_train);
+    %     ml_data.x_train=x_train;
+    %     ml_data.mean=m;
+    %     ml_data.std=s;
 elseif contains(Normalize,'MinMaxScaler')
-    [x_train,Min,Max]=MinMax(x_train);
-    ml_data.x_train=x_train;
-    ml_data.Min=Min;
-    ml_data.Max=Max;
+    disp('MinMax scaling')
+    if isa(ml_data.x_train,'double')
+        ml_data.x_train= MinMax(ml_data.x_train);
+        ml_data.x_test= MinMax(ml_data.x_test);
+    elseif isa(ml_data.x_train,'cell')
+        for j=1:length(ml_data.x_train)
+            ml_data.x_train{j}=MinMax(ml_data.x_train{j});
+        end
+        for j=1:length(ml_data.x_test)
+            ml_data.x_test{j}=MinMax(ml_data.x_test{j});
+        end
+    end
 elseif contains(Normalize,'None')
     disp('no scaling')
 else
     disp(['unknown scale ', Normalize, ' Check Normalizating setting'])
 end
 
-ml_data.y_train=categorical(y(train_index));
-ml_data=test_normalize(ml_data,x_test,Normalize);
-ml_data.y_test=categorical(y(test_index));
-ml_data.train_subject=train_subject;
-ml_data.test_subject=test_subject;
-ml_data.Conditions=condi;
-
-
-function [x_train,m,s]=StandardScaler(x_train)
-m=mean(x_train);
-s=std(x_train);
-x_train=(x_train-m)./s;
-
-function [x_train,MIN,MAX]=MinMax(x_train)
-MIN=min(x_train);
-MAX=max(x_train);
-x_train=(2*(x_train-MIN)./(MAX-MIN))-1;
-
-function ml_data=test_normalize(ml_data,x_test,Normalize)
-if contains(Normalize,'StandardScaler')
-    ml_data.x_test=(x_test-ml_data.mean)./ml_data.std;
-elseif contains(Normalize,'MinMaxScaler')
-    ml_data.x_test=(2*(x_test-ml_data.Min)./(ml_data.Max-ml_data.Min))-1;
-elseif contains(Normalize,'None')
-    ml_data.x_test=x_test;
-end
-
+function rescalex=MinMax(x)
+rowmin = min(x,[],2);
+rowmax = max(x,[],2);
+rescalex= rescale(x,'InputMin',rowmin,'InputMax',rowmax);
 
