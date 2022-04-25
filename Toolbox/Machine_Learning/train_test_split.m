@@ -22,18 +22,15 @@ end
 if nargin == 3
     subject_wise=0;
     split=0.25;
-    Normalize='None';
     seed=0;
 end
 
 if nargin == 4
     split=0.25;
-    Normalize='None';
     seed=0;
 end
 
 if nargin == 5
-    Normalize='None';
     seed=0;
 end
 if nargin == 6

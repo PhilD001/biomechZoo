@@ -16,10 +16,11 @@ x_train = ml_data.x_train;
 disp(['Scaling data using ', Normalize])
 
 if contains(Normalize,'StandardScaler')
-    [x_train,m,s]=StandardScaler(x_train);
-    ml_data.x_train=x_train;
-    ml_data.mean=m;
-    ml_data.std=s;
+    error('Not implemented')
+%     [x_train,m,s]=StandardScaler(x_train);
+%     ml_data.x_train=x_train;
+%     ml_data.mean=m;
+%     ml_data.std=s;
 elseif contains(Normalize,'MinMaxScaler')
     [x_train,Min,Max]=MinMax(x_train);
     ml_data.x_train=x_train;

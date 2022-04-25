@@ -15,24 +15,16 @@ function [x, y, VariableName, subject] = table2ml_structure(table_data, model_na
 if ismember(model_name,{'FF', 'stack'})
     x=table2array(table_data(:,1:length(table_data.Properties.VariableNames)-2));
     x=stackch(x);
-    y= table_data.Conditions;
-    subject=table_data.Subject;
-    VariableName=table_data.Properties.VariableNames(1:end-2);
     % Sequence ch
 elseif ismember(model_name,{'LSTM','BiLS','CNN', 'sequence'})
     x=table2array(table_data(:,1:length(table_data.Properties.VariableNames)-2));
     x=sequencech(x);
-    y= table_data.Conditions;
-    subject=table_data.Subject;
-    VariableName=table_data.Properties.VariableNames(1:end-2);
 else 
-    % Feature extraction
     % - extracts basic statistical features from table_data
-    ch=table_data.Properties.VariableNames(1:end-2);
-    table_event=feature_extraction(table_data,ch);
-
-    VariableName=table_event.Properties.VariableNames(1:end-2);
-    x=table2array(table_event(:,1:length(table_event.Properties.VariableNames)-2));
-    y= table_event.Conditions;
-    subject=table_event.Subject;
+    x=table2array(table_data(:,1:length(table_data.Properties.VariableNames)-2));
 end
+
+y= table_data.Conditions;
+subject=table_data.Subject;
+VariableName=table_data.Properties.VariableNames(1:end-2);
+

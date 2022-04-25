@@ -106,19 +106,20 @@ ml_data=train_test_split(x,y,VariableName,subject,subject_wise,split,seed);
 % - scaling is conducted on train set and applied to test set to avoid
 % 'information leakage'
 
-normalize='MinMax';
-ml_data = train_test_scale(ml_data, normalize);
+%%% TODO: I don't think the format works for the scalers
+%normalize='None';
+%ml_data = train_test_scale(ml_data, normalize);
 
 %% Add additional information for model training to the ml_data struct
 ml_data = ml_model_parameters(ml_data, model_name);
-
-% edit paramters for SVM
-if strcmp(model_name, 'SVM')
-% ml_data.svm.?=3;
-end
+%ml_data.Conditions = char2num(y);
 
 %% fit model
-Mdl=model_train(ml_data,model_name);
+% Model_name  ...   string,'NBayes'  --> Naive bayes
+%                          'knn'     --> k-Nearest Neighbor Classifier
+%                          'Msvm'    --> Multiclass support vector machines
+ml_data.knn.NumNeighbors=3;
+Mdl=bmech_ml_classification(ml_data,model_name);
 % todo rename to model_train
 %% Predict gait condition classification on the test set
 figure
