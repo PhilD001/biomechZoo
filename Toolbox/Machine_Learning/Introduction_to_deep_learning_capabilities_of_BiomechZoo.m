@@ -72,25 +72,20 @@ ch = {'RightHipAngle_x','RightHipAngle_y','RightHipAngle_z',...
 [subjects, Conditions] = extract_filestruct(fld);
 Conditions=unique(Conditions);
 
-%% Feature extraction 
+
+%% EXTRACT DATA FROM ZOO FILES TO TABLE FORMAT
+% - If feature engineering is required it is performed in this step
+%
 if ~ismember(model_name,{'LSTM','BiLS','CNN', 'sequence', 'FF' 'stack'})
-
     bmech_feature_extraction(fld, ch)
-
-
     table_data = bmech_events2table(fld);
 else
-
-    table_data = bmech_zoo2table(fld,ch,subjects,Conditions);
+    table_data = bmech_line2table(fld,ch,subjects,Conditions);
 end
-% TODO: rename bmech_zoo2table to bmech_line2table ?
 
 
-
-%% Reformat data structure depending on model type (signal or feature-based)
-% - Deep learning models train can train directly on the kinematic data
-% - "Traditional" machine learning models use feature input and thus require a 
-%   feature engineering step
+%% Reformat tble data for machine learning
+% %todo: describe x, y
 [x, y, VariableName, subject] = table2ml_structure(table_data, model_name);
 
 
