@@ -85,7 +85,6 @@ table_data = bmech_zoo2table(fld,ch,subjects,Conditions);
 subject_wise=true;
 split=0.30;
 seed=0;
-Normalize='None';
 ml_data=train_test_split(x,y,VariableName,subject,subject_wise,split,seed);
 
 
@@ -98,15 +97,15 @@ ml_data=train_test_split(x,y,VariableName,subject,subject_wise,split,seed);
 %ml_data = train_test_scale(ml_data, normalize);
 
 %% Add additional information for model training to the ml_data struct
-%ml_data.VariableName = VariableName;
-%ml_data = ml_model_parameters(ml_data, model_name);
+ml_data.VariableName = VariableName;
+ml_data = ml_model_parameters(ml_data, model_name);
 %ml_data.Conditions = char2num(y);
 
 
 %  CNN1D data prepration
- if contains(model_name,'CNN')
-     ml_data=CNN1D_data_prepration(ml_data);
- end
+%  if contains(model_name,'CNN')
+%      ml_data=CNN1D_data_prepration(ml_data);
+%  end
 %% fit model
 % Model_name  ...   string,'NBayes'  --> Naive bayes
 %                          'knn'     --> k-Nearest Neighbor Classifier

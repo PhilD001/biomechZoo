@@ -100,7 +100,7 @@ end
 
 % CNN1D data prepration
 if contains(model_name,'CNN')
-    error('not implemented')
+    %error('not implemented')
     ml_data=CNN1D_data_prepration(ml_data);
 end
 
