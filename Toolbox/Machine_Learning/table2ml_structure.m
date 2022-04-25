@@ -28,9 +28,11 @@ elseif ismember(model_name,{'LSTM','BiLS','CNN', 'sequence'})
 else 
     % Feature extraction
     % - extracts basic statistical features from table_data
+    ch=table_data.Properties.VariableNames(1:end-2);
     table_event=feature_extraction(table_data,ch);
+
+    VariableName=table_event.Properties.VariableNames(1:end-2);
     x=table2array(table_event(:,1:length(table_event.Properties.VariableNames)-2));
     y= table_event.Conditions;
     subject=table_event.Subject;
-    VariableName=table_event.Properties.VariableNames(1:end-2);
 end

@@ -58,6 +58,9 @@ if contains(method,'None')
             F9(j)=sum(Lmax);
             F10(j)=length(Lmax);
             Lmin=table_data.(ch{i}){j}(islocalmin(table_data.(ch{i}){j}));
+            if isempty(Lmin)
+                Lmin=1;
+            end
             F11(j)=mean(Lmin);
             F12(j)=sum(Lmin);
             F13(j)=length(Lmin);
