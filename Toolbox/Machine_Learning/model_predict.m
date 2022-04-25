@@ -1,6 +1,6 @@
 function y_pred = model_predict(mdl, model_name, x_test)
 
-if contains(model_name,{'FF','LSTM','BILS','CNN'})
+if contains(model_name,{'FF','LSTM','BiLS','CNN'})
     y_pred = classify(mdl, x_test);
 else
     y_pred= predict(mdl,x_test);

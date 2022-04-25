@@ -5,7 +5,12 @@ function ml_data=ml_model_parameters(ml_data, model_name, numHiddenUnits)
 %common parameters
 ml_data.Prior='empirical';
 
-numFeatures = length(ml_data.x_train);
+if iscell(ml_data.x_train)
+    [numFeatures,~]=size(ml_data.x_train{1});
+else
+
+    numFeatures = length(ml_data.x_train);
+end
 numClasses = length(unique(ml_data.y_train));
 
 if nargin==2
@@ -20,21 +25,21 @@ if strcmp(model_name,'BDT')
     ml_data.BDT.MergeLeaves='off';
     ml_data.BDT.MinLeafSize=1;
     ml_data.BDT.MinParentSize=10;
-    
+
 elseif strcmp(model_name,'NBayes')
     % Naive Bayes
     ml_data.NBayes.DistributionNames='kernel';
     ml_data.NBayes.Kernel='normal';
     ml_data.NBayes.Support='unbounded';
 elseif strcmp(model_name,'knn')
-    
+
     % k-Nearest Neighbor
     ml_data.knn.BucketSize=50;
     ml_data.knn.Distance='minkowski';
     ml_data.knn.Exponent=2;
     ml_data.knn.NSMethod='kdtree';
     ml_data.knn.NumNeighbors=1;
-    
+
 elseif strcmp(model_name,'Bsvm')
     % Binary SVM
     ml_data.Bsvm.BoxConstraint=1;
@@ -43,7 +48,7 @@ elseif strcmp(model_name,'Bsvm')
     ml_data.Bsvm.KernelOffset=0;
     ml_data.Bsvm.Solver='ISDA';
     ml_data.Bsvm.Nu=0.5;
-    
+
 elseif strcmp(model_name,'Blinear')
     % Binary Linear Classification
     ml_data.Blinear.Lambda='auto';
@@ -51,7 +56,7 @@ elseif strcmp(model_name,'Blinear')
     ml_data.Blinear.Regularization='ridge';
     ml_data.Blinear.Solver='lbfgs';
     ml_data.Blinear.TruncationPeriod=10;
-    
+
 elseif strcmp(model_name,'Bkernel')
     % Binary Kernel Classification
     ml_data.Bkernel.Learner='svm';
@@ -62,7 +67,7 @@ elseif strcmp(model_name,'Msvm')
     % Multiclass support vector machines
     ml_data.Msvm.Learners='svm';
     ml_data.Msvm.NumConcurrent=1;
-    
+
 elseif strcmp(model_name,'FF')
     % forward feed
     ml_data.FF.layers = [
@@ -73,22 +78,20 @@ elseif strcmp(model_name,'FF')
         fullyConnectedLayer(numClasses, 'Name','fc')
         softmaxLayer('Name','sm')
         classificationLayer('Name','classification')];
-    
+
 elseif strcmp(model_name,'LSTM')
-    
+
     % LSTM
-    if iscell(ml_data.x_train)
-        [numFeatures,~]=size(ml_data.x_train{1});
-    end
+
     ml_data.LSTM.layers = [
         sequenceInputLayer(numFeatures,'Name','input')
         lstmLayer(numHiddenUnits,'OutputMode','last')
         fullyConnectedLayer(numClasses, 'Name','fc')
         softmaxLayer('Name','sm')
         classificationLayer('Name','classification')];
-    
-elseif strcmp(model_name,'biLSTM')
-    
+
+elseif strcmp(model_name,'BiLS')
+
     % BI LSTM
     ml_data.BiLSTM.layers = [
         sequenceInputLayer(numFeatures,'Name','input')
