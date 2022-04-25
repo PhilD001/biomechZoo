@@ -44,7 +44,7 @@
 % - select 'zoo files (auto process)' from biomechZoo sample study
 
 model_name = 'LSTM';
-%model_name = 'bsvm';
+%model_name = 'Bsvm';
 
 mode = 'auto';                                                         % entire code
 if strfind(mode,'auto')                                              %#ok<*STRIFCND>
