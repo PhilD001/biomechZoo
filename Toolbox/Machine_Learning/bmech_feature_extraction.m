@@ -65,3 +65,4 @@ data.(ch).event.RatioMaxMin=[0 0 max(Lmax)/min(Lmin)];
 data.(ch).event.RatioMinMax=[0 0 min(Lmax)/max(Lmax)];
 
 events = fieldnames(data.(ch).event);
+events=events(~contains(events,'NRMSE'));
