@@ -20,7 +20,7 @@ for f = 1:length(fl)
     batchdisp(fl{f}, 'computing features')
     data = zload(fl{f});
 
-    % Extracts Schutte feature ------------
+    % Extracts feature ------------
     data= features_extract(data, ch,method);
 
     % save to zoo
