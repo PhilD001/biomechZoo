@@ -11,7 +11,7 @@ function ml_data = train_test_scale(ml_data, Normalize)
 % scale
 
 
-disp(['Scaling data using ', Normalize])
+disp(['Scaling data using method ', Normalize])
 
 if contains(Normalize,'StandardScaler')
     error('Not implemented')

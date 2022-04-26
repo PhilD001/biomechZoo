@@ -24,7 +24,7 @@ for s=1:length(subjects)
         flc=fls(contains(fls,Conditions{c}));
         for i=1:length(flc)
             data=zload(flc{i});
-            disp(['extracting events for ', subjects{s},' ', Conditions{c},' cycle ',num2str(i)])
+            disp(['extracting events for ', subjects{s},' ', Conditions{c},' trial ',num2str(i)])
             table_event=event_extract(table_event,data,row,ch,event);
             table_event.Subject(row)={subjects{s}};
             table_event.Conditions(row)={Conditions{c}};

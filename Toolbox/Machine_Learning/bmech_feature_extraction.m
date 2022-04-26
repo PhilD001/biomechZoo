@@ -8,7 +8,7 @@ function event_names = bmech_feature_extraction(fld, ch, method)
 %  method        ...   features extraction method 'None' currently, future updates will have PCA, LDA, etc...
 %
 % RETURNS
-%  event_names   ...   struct, names of features extracted.
+%  event_names   ...   cell array of strings, names of features extracted.
 
 
 if nargin < 2
@@ -39,7 +39,7 @@ end
 
 
 function [data, events] = feature_extraction_line(data,ch)
-disp(['Computing features for ',ch])
+disp(['Computing features for channel ',ch])
 data.(ch).event.Min=[0 0 min(data.(ch).line)];
 data.(ch).event.Max=[0 0 max(data.(ch).line)];
 data.(ch).event.Sum=[0 0 sum(data.(ch).line)];

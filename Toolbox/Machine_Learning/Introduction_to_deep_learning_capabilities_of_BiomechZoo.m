@@ -1,10 +1,10 @@
 % Introduction_to_deep_learning_capabilities_of_BiomechZoo
-% Introduction_to_deep_learning_capabilities_of_BiomechZoo
+%
 % biomechZoo machine learning processing template for mocap data
 %
 % This sample script shows how to run a toy binary classification model which
 % aims to predict gait condition (straight vs turning) based on events
-% (features) extracted from the biomechzoo sample data, available at
+% (features) extracted from the biomechzoo sample data kinematic channels, available at
 % https://github.com/PhilD001/biomechzoo-help/sample study/Data/zoo files (auto process)*
 %
 % * the terminal folder 'zoo files (auto process)' is only available after
@@ -16,35 +16,20 @@
 % - Deep learning toolbox
 %
 % NOTES:
-%   Conditions (y): Straight, Turn
-%   Predictors (x): Hip, knee, ankle joint angles for right and left side
-%
-% ARGUMENTS
-% model_name     ...   srting or character,
-%                          'BDT'     --> Binary Classification Tree
-%                          'NBayes'  --> Naive bayes
-%                          'knn'     --> k-Nearest Neighbor Classifier
-%                          'Bsvm'    --> Binary support vector machines
-%                          'Blinear' --> Binary Linear Classification
-%                          'Bkernel' --> Binary Kernel Classification
-%                          'Msvm'    --> Multiclass support vector machines
-%                          'FF'      --> Forward Feed Neural network
-%                          'LSTM'    --> Long short-term memory
-%                          'BiLS'  --> Bidirectional Long short-term memory
-%                          'CNN'     --> Convolutional neural network
-% Returns
-% ml_data       ...   struct, struct extracted by train_test_split
-% stats         ...   table, table of performance stats
-% Mdl           ...   Trained model
-%
+% - Binary SVM (Bsvm) and Long-Short Term Memory (LSTM) models provided as
+%   examples, see ml_model_parameters for other model types available
+
+
+%% MODEL EXAMPLES-------------------------------------------------------------------------
+%model_name = 'LSTM';
+model_name = 'Bsvm';
+
+
 %% Step 0: Data pre-processing -----------------------------------------------------------
 % - This step runs the biomechZoo sample study processing if data are not already 
 % available, see samplestudy_process for more information
 
 % - select 'zoo files (auto process)' from biomechZoo sample study
-
-%model_name = 'LSTM';
-model_name = 'Bsvm';
 
 mode = 'auto';                                                         % entire code
 if strfind(mode,'auto')                                              %#ok<*STRIFCND>
@@ -89,7 +74,7 @@ end
 
 
 %% Step 3: Reformat table data for machine learning --------------------------------------
-% x: n trial cell array with each cell n channels x frames OR 
+% x: n trial cell array with each cell n channels x frames OR n_features 
 % y: condition name associated with each trial
 % VariableName: names associated with each x
 % subject: subject name associated with each x
@@ -140,8 +125,8 @@ confusionchart(C,ml_data.Conditions);
 
 if strfind(mode,'auto')
     disp(' ')
-    disp('**********************************')
-    disp('Finished running demo program in : ')
+    disp('**************************************************')
+    disp('Finished running machine learning model demo in : ')
     toc
-    disp('**********************************')
+    disp('*************************************************')
 end
