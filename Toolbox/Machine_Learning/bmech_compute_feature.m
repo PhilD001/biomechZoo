@@ -1,4 +1,4 @@
-function event_names = bmech_feature_extraction(fld, ch, method)
+function event_names = bmech_compute_feature(fld, ch, method)
 
 % BMECH_FEATURE_EXTRACTION extracts basic statistical features from line data 
 %
