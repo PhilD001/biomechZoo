@@ -1,4 +1,4 @@
-function table_data = bmech_zoo2table(fld,ch,subjects,conditions)
+function table_data = bmech_line2table(fld,ch,subjects,conditions)
 % BMECH_ZOO2TABLE (fld,ch,subjects,conditions) extracts channel line data
 % to Matlab table
 %
