@@ -8,7 +8,7 @@ function y_pred = model_predict(mdl, model_name, x_test)
 %
 % RETURNS
 %  y_pred        ...   double, predicted test lable.
-[Trails, ~]=size(x_test);
+Trails=max(size(x_test));
 disp(['predicting conditions for n = ', num2str(Trails), ' trials...'])
 if contains(model_name,{'FF','LSTM','BiLS','CNN'})
     y_pred = classify(mdl, x_test);

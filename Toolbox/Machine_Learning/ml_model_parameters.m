@@ -9,7 +9,7 @@ if iscell(ml_data.x_train)
     [numFeatures,~]=size(ml_data.x_train{1});
 else
 
-    numFeatures = length(ml_data.x_train);
+    [~,numFeatures] = size(ml_data.x_train);
 end
 numClasses = length(unique(ml_data.y_train));
 
@@ -72,9 +72,6 @@ elseif strcmp(model_name,'FF')
     % forward feed
     ml_data.FF.layers = [
         featureInputLayer(numFeatures,'Name','input')
-        %sequenceInputLayer(numFeatures,'Name','input')
-        %bilstmLayer(numHiddenUnits,'OutputMode','last')
-        %lstmLayer(numHiddenUnits,'OutputMode','last')
         fullyConnectedLayer(numClasses, 'Name','fc')
         softmaxLayer('Name','sm')
         classificationLayer('Name','classification')];
