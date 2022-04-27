@@ -1,6 +1,6 @@
-function event_names = bmech_compute_feature(fld, ch, method)
+function event_names = bmech_compute_features(fld, ch, method)
 
-% BMECH_FEATURE_EXTRACTION extracts basic statistical features from line data 
+% bmech_compute_features extracts basic statistical features from line data 
 %
 % ARGUMENTS
 %  fld           ...   string, folder to batch process.   
