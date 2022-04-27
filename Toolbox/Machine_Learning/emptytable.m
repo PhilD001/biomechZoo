@@ -2,8 +2,8 @@ function table_event=emptytable(fl,ch,event)
 event_name={};
 n=1;
 for i=1:length(ch)
-    for j=1:length(event.(ch{i}))
-        event_name{n}=[ch{i},'_',event.(ch{i}){j}];
+    for j=1:length(event)
+        event_name{n}=[ch{i},'_',event{j}];
         n=n+1;
     end
 end

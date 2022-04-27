@@ -1,5 +1,6 @@
-function table_data = bmech_zoo2table(fld,ch,subjects,conditions)
-% BMECH_ZOO2TABLE (fld,ch,subjects,Conditions) extracts channel line data 
+function table_data = bmech_line2table(fld,ch,subjects,conditions)
+% BMECH_ZOO2TABLE (fld,ch,subjects,conditions) extracts channel line data
+% to Matlab table
 %
 % ARGUMENTS
 %   fld         ...   string, folder to operate on
@@ -12,23 +13,32 @@ function table_data = bmech_zoo2table(fld,ch,subjects,conditions)
 %                   If channel does not exisit it will be a vector 1xn with all values at 999.
 %
 %
+
+if nargin ==2
+    [subjects, conditions] = extract_filestruct(fld);
+    conditions = unique(conditions);
+end
+
 fl=engine('path',fld,'ext','.zoo');
 table_data=emptytable_data(fl,ch);
 row=1;
 for s=1:length(subjects)
+    disp(['loading all files for subject ', subjects{s}, ' ...'])
     subject = subjects{s};
     fls=fl(contains(fl,subject));
     for c=1:length(conditions)
         flc=fls(contains(fls,conditions{c}));
         condition = conditions{c};
         for i=1:length(flc)
+            disp(['condition ', condition, '...'])
             data=zload(flc{i});
-            disp([subjects{s},conditions{c},' cycle',num2str(i)])
+            disp(flc{i})
             table_data=event_extract(table_data,data,row,ch);
             table_data.Subject(row)={subject};
             table_data.Conditions(row)={condition};
             row=row+1;
         end
+        disp(' ')
     end
 end
 
