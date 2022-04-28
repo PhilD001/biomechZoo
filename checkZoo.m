@@ -3,7 +3,6 @@ function checkZoo
 % CHECKZOO should be used before pushing new updates to the repositories
 
 
-
 % 1 - run sample study
 samplestudy_process
 
