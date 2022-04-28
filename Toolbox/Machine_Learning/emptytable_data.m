@@ -1,12 +1,14 @@
 function table_event=emptytable_data(fl,ch)
-% emptytable_data creates emptytable
+
+% table_event=emptytable_data(fl,ch) creates emptytable
 %
 % ARGUMENTS
-% fl          ...   string cell, all .zoo file in cell.
-% ch          ...   string, all channel name. 
+%   fl          ...   string cell, all .zoo file in cell.
+%   ch          ...   string, all channel name. 
+% 
 % RETURNS
-% table_event ...  empty table of channel line data with subjects second last row and conditions last row.
-%
+%   table_event ...  empty table of channel line data with subjects second last row and conditions last row.
+
 event_name={};
 n=1;
 for i=1:length(ch)

@@ -1,10 +1,14 @@
 function ml_data=CNN1D_data_prepration(ml_data)
-% CNN1D_data_prepration converts train and test inputs to a 4D array
+
+% CNN1D_data_prepration(ml_data) converts train and test inputs to a 4D array
 % Prepares input data for CNN1D
+% 
 % ARGUMENTS
-% ml_data       ...   struct, data struct extracted using train_test_split
+%   ml_data       ...   struct, data struct extracted using train_test_split
+% 
 % RETURNS
-% ml_data       ...   struct, with CNN1D layers and train/test 4D array
+%   ml_data       ...   struct, with CNN1D layers and train/test 4D array
+
 for j=1:length(ml_data.x_train)
     trainD(:,:,:,j)=ml_data.x_train{j};
 end

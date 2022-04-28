@@ -1,7 +1,7 @@
 function [x, y, VariableName, subject] = table2ml_structure(table_data, model_name)
 %
-% table2ml_structure(table_data, model_name) prepares data in Matlab table
-% format for input to machine learning models
+% [x, y, VariableName, subject] = table2ml_structure(table_data, model_name) prepares 
+% data in Matlab table format for input to machine learning models
 %
 % ARGUMENTS
 %   table_data    ...   table. See bmech_zoo2table

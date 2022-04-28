@@ -1,5 +1,6 @@
 function Mdl=bmech_ml_classification(data, Model_name)
-% BMECH_ML_CLASSIFICATION (data,Model_name) trains a classification model
+
+% BMECH_ML_CLASSIFICATION(data, Model_name) trains a classification model
 %
 % ARGUMENTS
 % data        ...   struct, struct returned with train_test_split

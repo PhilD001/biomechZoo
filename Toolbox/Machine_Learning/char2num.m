@@ -1,5 +1,8 @@
 function y=char2num(y)
 
+% y=char2num(y) support function for machine learning module, converts
+% charater to number
+
 if ~isa(y,'double')
     temp=y;
     y=zeros([length(y),1]);

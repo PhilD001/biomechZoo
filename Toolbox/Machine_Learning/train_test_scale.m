@@ -1,15 +1,13 @@
 function ml_data = train_test_scale(ml_data, Normalize)
-%   x           ...   double array, features for classification.
-%   y           ...   double array or cell array of char, conditions to classify.
-%   VariableName...   cell array char, Name of the variables Use this VariableName=table_event.Properties.VariableNames(1:end-2);
-%   subjects    ...   string cell, subject name of all the subjects.
-%   subject_wise...   0 or 1,  subject_wise=0 random spliting subject_wise=1 ml_data spliting based on subjects
-%   split       ...   [0,1], percent of ml_data to be hold out for testing.
-%   Normalize   ...   'StandardScaler' or 'MinMaxScaler' or 'None' for selecting scaler to use
-%   seed        ...   Positive integer. Random seed. Default 0
-%
-% scale
 
+% ml_data = train_test_scale(ml_data, Normalize) scales ml_data using normalization schemes
+%
+% ARGUMENTS
+%   ml_data        ...  Struct containing train, test, Conditions, Classification parameters and etc...
+%   Normalize      ...   'StandardScaler' or 'MinMaxScaler' or 'None' for selecting scaler to use
+%
+% RETURN
+%   ml_data        ...  Struct with scaling implemented 
 
 disp(['Scaling data using method ', Normalize])
 

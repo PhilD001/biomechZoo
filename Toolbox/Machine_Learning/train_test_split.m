@@ -1,17 +1,17 @@
-function data=train_test_split(x,y,VariableName,subject,subject_wise,split,seed)
-% TRAIN_TEST_SPLIT spliting data into train test sets
+function ml_data=train_test_split(x,y,VariableName,subject,subject_wise,split,seed)
+% TRAIN_TEST_SPLIT spliting ml_data into train test sets
 %
 % ARGUMENTS
 %   x           ...   double array, features for classification.
 %   y           ...   double array or cell array of char, conditions to classify.
 %   VariableName...   cell array char, Name of the variables Use this VariableName=table_event.Properties.VariableNames(1:end-2);
 %   subjects     ...  string cell, subject name of all the subjects.
-%   subject_wise ...  bool, subject_wise=0 random spliting subject_wise=1 data spliting based on subjects
-%   split        ...  [0,1], percent of data to be hold out for testing.
+%   subject_wise ...  bool, subject_wise=0 random spliting subject_wise=1 ml_data spliting based on subjects
+%   split        ...  [0,1], percent of ml_data to be hold out for testing.
 %   seed         ...  Positive integer. Random seed. Default 0
 %
 % RETURNS
-%   data        ...  Struct containing train, test, Conditions, Classification parameters and etc...
+%   ml_data        ...  Struct containing train, test, Conditions, Classification parameters and etc...
 
 
 % error checking
@@ -70,14 +70,14 @@ elseif subject_wise==0
 end
 
 % scale
-data.x_train=x(train_index,:);
-data.y_train=categorical(y(train_index));
-data.x_test=x(test_index,:);
-data.y_test=categorical(y(test_index));
-data.train_subject=train_subject;
-data.test_subject=test_subject;
-data.Conditions=condi;
-data.VariableName=VariableName;
+ml_data.x_train=x(train_index,:);
+ml_data.y_train=categorical(y(train_index));
+ml_data.x_test=x(test_index,:);
+ml_data.y_test=categorical(y(test_index));
+ml_data.train_subject=train_subject;
+ml_data.test_subject=test_subject;
+ml_data.Conditions=condi;
+ml_data.VariableName=VariableName;
 
 function [y,condi]=char2num(y)
 temp=y;

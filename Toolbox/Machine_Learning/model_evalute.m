@@ -1,13 +1,15 @@
 function stats=model_evalute(y_true,y_pred,Conditions)
-% model_evalute evaluates predicted data
+
+% stats=model_evalute(y_true,y_pred,Conditions) evaluates predicted data
 %
 % ARGUMENTS
-%  y_true           ...   double, ture test lable.   
-%  y_pred           ...   double, predicted test lable.
-%  Conditions       ...   cell, cell array of prediction class...
+%   y_true           ...   double, ture test lable.   
+%   y_pred           ...   double, predicted test lable.
+%   Conditions       ...   cell, cell array of prediction class...
 %
 % RETURNS
-%  stats            ...   table, performace parameter of model and confusion matrix  
+%   stats            ...   table, performace parameter of model and confusion matrix 
+
 [C,~] = confusionmat(y_true, y_pred);
 confusionchart(C,Conditions);
 tp=diag(C).';
@@ -31,4 +33,4 @@ varNames = ["name"; "classes"; "Average"; "Weighted_Average"];
 
 values = [prec; sens; spec; repmat(acc, 1, len); f1];
 stats=table(name, values, Average, Weighted_Average, ...
-    'VariableNames',varNames)
+    'VariableNames',varNames);
