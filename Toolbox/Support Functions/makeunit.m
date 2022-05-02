@@ -9,59 +9,21 @@ function r = makeunit(unt)
 %
 % updated November 2011 by Phil Dixon 
 % - can normalize nx2 vectors
+%
+% updated May 2022 by Phil Dixon
+% - rely on magnitude function
 
-[~,c] = size(unt);
-
-
-if c==3
-    r = [];
-    if iscell(unt)
-        for i = 1:length(unt)
-            plate = unt{i};
-            mg = diag(sqrt(plate*plate'));
-            plate = plate./[mg,mg,mg];
-            r{i} = plate;
-        end
-    else
-        mg = diag(sqrt(unt*unt'));
-        plate = unt./[mg,mg,mg];
-        r = plate;
+r = [];
+if iscell(unt)
+    for i = 1:length(unt)
+        plate = unt{i};
+        mg = magnitude(plate);
+        plate = plate./mg;
+        r{i} = plate;
     end
-    
-elseif c==2
-    
-    r = [];
-    if iscell(unt)
-        for i = 1:length(unt)
-            plate = unt{i};
-            mg = diag(sqrt(plate*plate'));
-            plate = plate./[mg,mg];
-            r{i} = plate;
-        end
-    else
-        mg = diag(sqrt(unt*unt'));
-        plate = unt./[mg,mg];
-        r = plate;
-    end
-    
 else
-    
-    if iscell(unt)
-        for i = 1:length(unt)
-            plate = unt{i};
-            mg = diag(sqrt(plate*plate'));
-            plate = plate./[mg,mg,mg];
-            r{i} = plate;
-        end
-    else
-        mg = diag(sqrt(unt*unt'));
-        plate = unt./[mg,mg,mg];
-        r = plate;
-    end
-    
-    
-    
-    
-    
-    
+    mg = magnitude(unt);
+    plate = unt./mg;
+    r = plate;
 end
+

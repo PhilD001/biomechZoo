@@ -20,7 +20,7 @@ pmsg = 'Loading ';                                             % prefix for mess
 smsg = ' ... ';                                                % suffix for message
 start = strfind(zoo_fld,'biomechZoo');                         % start of short file path
 
-pad = length(zoo_fld(start(1):end))+30;
+pad = length(zoo_fld(start(1):end))+32;
 lpad = length(pmsg) + pad + length(smsg);                      % length of longest
 frmt = ['%-',num2str(lpad),'s'];                               % format output nicely
 
