@@ -137,11 +137,15 @@ end
 % check for errors
 %
 if isnan(mean(mean(bcm)))
-    error('NaN in data used to calculate Body COM')
+    warning('NaN in data used to calculate Body COM')
 end
 
 % check units
 %
+if ~isfield(data.zoosystem.Units, 'Markers')
+    disp('missing marker unit information in zoo file, assuming markers in mm, ....')
+    data.zoosystem.Units.Markers = 'mm';
+end
 unt = data.zoosystem.Units.Markers;
 
 if isin(unt,'mm')
@@ -175,7 +179,7 @@ function [data,file] = testmode
 pth = fileparts(which('samplestudy_process.m'));
 indx = strfind(pth,'biomechZoo-help');
 root = pth(1:indx+15);
-file = [root,filesep,'HC002D25_testCOM.zoo'];
+file = [root,filesep,'examples', filesep, 'center_of_mass', filesep, 'HC002D25_testCOM.zoo'];
 
 if ~exist(file,'file')
     error('no sample data available for testing')

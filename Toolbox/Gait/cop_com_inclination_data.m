@@ -40,13 +40,13 @@ if nargin ==3
         
         COM = data.(ch_COM).line;
     else
-        error(['Center of mass channel: ', ch_COM, ' does not exist')
+        error(['Center of mass channel: ', ch_COM, ' does not exist'])
     end
     
     if isfield(data, ch_COP)
         COP = data.(ch_COP).line;
     else
-        error(['Center of pressure channel: ', ch_COP, ' does not exist')
+        error(['Center of pressure channel: ', ch_COP, ' does not exist'])
     end
 end
 
@@ -55,4 +55,4 @@ end
 inc_angle = cop_com_inclinaton(COM, COP);
 
 % add to zoo
-data = addchannel_data(inc_angle, 'COP_COM_inclination');
+data = addchannel_data(inc_angle, [ch_COM, '_', ch_COP, '_inclination']);

@@ -12,8 +12,8 @@ end
 
 % Set defaults
 %
-settings.segpar = 'PiG_segments.xls';                           % list of ratios from PiG                 
-functionpath  = [fileparts(which('kinetics_data.m')),filesep];     % get root directory
+settings.segpar = 'segments.xls';                                % list of ratios from PiG                 
+functionpath  = [fileparts(which('kinetics_data.m')),filesep];   % get root directory
 
 
 % Extract relevant markers
@@ -88,7 +88,7 @@ body = struct;                                                  % build new stru
 body.bodymass = getanthro(data,'Bodymass');                     % extract mass info
 body.fsamp = data.zoosystem.Video.Freq;
 
-[pgbone,~,data] = getbones(data);
+[pgbone,~,data] = getbones_data(data);
 pgbone = pgbone(2:end,:);
 pgdim = {'O','A','L','P'};
 
