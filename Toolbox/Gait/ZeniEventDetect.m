@@ -132,7 +132,7 @@ switch evt
         maxs = peakdet(hee_still,delta);
         
         if isempty(maxs)
-            disp('no events detected')
+            warning(['no ',side, evt, ' events detected'])
             indx = NaN;
         elseif maxs(1,1)==1
             indx =  maxs(2:end,1);
@@ -147,7 +147,7 @@ switch evt
         [~,mins] = peakdet(toe_still,delta);
         
         if isempty(mins)
-            disp('no events detected')
+            warning(['no ',side, evt, ' events detected'])
             indx = NaN;      
         elseif mins(1,1)==1
             indx =  mins(2:end,1);
@@ -179,7 +179,7 @@ fin_stk   = [fin_stk; fin];
 % check for nans
 %
 if ~isempty(find(isnan(HEE), 1))
-     disp(['WARNING: ',side,'HEE marker data contains NaNs'])
+     warning([side,'HEE marker data contains NaNs'])
      start = find(~isnan(HEE(:,1)),1,'first');
      fin   = find(~isnan(HEE(:,1)),1,'last');
      start_stk = [start_stk; start];
@@ -187,7 +187,7 @@ if ~isempty(find(isnan(HEE), 1))
 end
 
 if ~isempty(find(isnan(TOE), 1))
-     disp(['WARNING: ',side,'TOE marker data contains NaNs'])
+     warning([side,'TOE marker data contains NaNs'])
      start = find(~isnan(TOE(:,1)),1,'first');
      fin   = find(~isnan(TOE(:,1)),1,'last');
      start_stk = [start_stk; start];
@@ -195,7 +195,7 @@ if ~isempty(find(isnan(TOE), 1))
 end
 
 if ~isempty(find(isnan(SACR), 1))
-     disp(['WARNING: ',side,'SACR marker data contains NaNs'])
+     warning([side,'SACR marker data contains NaNs'])
      start = find(~isnan(SACR(:,1)),1,'first');
      fin   = find(~isnan(SACR(:,1)),1,'last');
      start_stk = [start_stk; start];
@@ -209,78 +209,3 @@ end
 start = max(start_stk);
 fin   = min(fin_stk);
     
-% 
-% ostart = 1;
-% ofin = length(mhee);
-% 
-% if sum(isnan(mtoe))~=0
-%     start = find(~isnan(TOE(:,1)),1,'first');
-%     fin = find(~isnan(TOE(:,1)),1,'last');
-%     l = length(mtoe);
-%     
-%     if ostart~=start
-%         disp(['WARNING: ',side,'TOE marker data has NaNs at start'])
-%         pad = ones(start-1,1) * mtoe(start);
-%         mtoe(1:start-1) = pad;
-%     end
-%     
-%     if ofin~=fin
-%         disp(['WARNING: ',side,'TOE marker data has NaNs at end'])
-%         pad =ones(l-fin+1,1) * mtoe(fin);
-%         mtoe(fin:l) = pad;
-%     end
-%     
-%     if sum(isnan(mtoe))~=0
-%         error('Additional NaNs in data. Fill gaps and rerun program')
-%     end
-%     
-% end
-% 
-% 
-% if sum(isnan(mhee))~=0
-%     start = find(~isnan(mhee),1,'first');
-%     fin = find(~isnan(mhee),1,'last');
-%     l = length(mhee);
-% 
-%     if ostart~=start
-%         disp(['WARNING: ',side,'HEE marker data has NaNs at start'])
-%         pad =ones(start-1,1) * mhee(start);
-%         mhee(1:start-1) = pad;
-%     end
-%     
-%     if ofin~=fin
-%         disp(['WARNING: ',side,'HEE marker data has NaNs at end'])
-%         pad =ones(l-fin+1,1) * mhee(fin);
-%         mhee(fin:l) = pad;
-%     end
-%     
-%     if sum(isnan(mhee))~=0
-%         error('Additional NaNs in data. Fill gaps and rerun program')
-%     end
-%     
-% end
-% 
-% 
-% if sum(isnan(msacr))~=0
-%     start = find(~isnan(msacr),1,'first');
-%     fin = find(~isnan(msacr),1,'last');
-%     l = length(msacr);
-% 
-%     if ostart~=start
-%         disp('WARNING: SACR marker data has NaNs at start')
-%         pad =ones(start-1,1) * msacr(start);
-%         msacr(1:start-1) = pad;
-%     end
-%     
-%     if ofin~=fin
-%         disp('WARNING: SACR marker data has NaNs at end')
-%         pad =ones(l-fin+1,1) * msacr(fin);
-%         msacr(fin:l) = pad;
-%     end
-%     
-%     if sum(isnan(msacr))~=0
-%         error('Additional NaNs in data. Fill gaps and rerun program')
-%     end
-%     
-% end
-% 
