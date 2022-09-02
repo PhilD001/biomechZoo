@@ -1,4 +1,4 @@
-function bmech_cop_com_inclination(fld)
+function bmech_cop_com_inclination(fld, ch_com, ch_cop, vertical)
 % BMECH_COP_COM_INCLINATION compute the angle between the COP and COM in the
 % antero-posterior and medio-lateral diretion with respect to the global vertical
 %
@@ -20,7 +20,7 @@ fl = engine('path',fld,'extension','zoo');
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisp(fl{i},'computing cop-com angle');
-    data = cop_com_inclination_data(data);
+    data = cop_com_inclination_data(data, ch_com, ch_cop, vertical);
     zsave(fl{i},data);
 end
 

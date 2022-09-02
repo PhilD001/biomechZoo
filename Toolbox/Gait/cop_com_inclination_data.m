@@ -1,4 +1,4 @@
-function data = cop_com_inclination_data(data, ch_COM, ch_COP)
+function data = cop_com_inclination_data(data, ch_COM, ch_COP, vertical)
 
 % BMECH_COP_COM_INCLINATION compute the angle between the COP and COM in the
 % antero-posterior and medio-lateral diretion with respect to the global vertical
@@ -17,42 +17,11 @@ function data = cop_com_inclination_data(data, ch_COM, ch_COP)
 %
 % see also cbmech_op_com_inclination, cop_com_inclinaton
 
-if nargin == 0 || nargin ==2
-    error('insufficient inputs')
-end
-
-if nargin == 1
-    if isfield(data, 'CenterOfMass')
-        COM = data.CenterOfMass.line;
-    else
-        error('Unknown CenterOfMNass channel')
-    end
-    
-    if isfield(data, 'COP')
-        COP = data.COP.line;
-    else
-        error('Unknown center of pressure channel')
-    end
-end
-
-if nargin ==3
-    if isfield(data, ch_COM)
-        
-        COM = data.(ch_COM).line;
-    else
-        error(['Center of mass channel: ', ch_COM, ' does not exist'])
-    end
-    
-    if isfield(data, ch_COP)
-        COP = data.(ch_COP).line;
-    else
-        error(['Center of pressure channel: ', ch_COP, ' does not exist'])
-    end
-end
-
+COM = data.(ch_COM).line;
+COP = data.(ch_COP).line;
 
 % compute inclination angle
-inc_angle = cop_com_inclinaton(COM, COP);
+inc_angle = cop_com_inclinaton(COM, COP, vertical);
 
 % add to zoo
 data = addchannel_data(inc_angle, [ch_COM, '_', ch_COP, '_inclination']);
