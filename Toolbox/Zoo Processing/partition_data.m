@@ -61,7 +61,7 @@ if ~iscell(ch)
     ch = {ch};
 end
 
-e1 = findfield(data,evt1);         % both events must be for data of the same tyle
+e1 = data.(ch{1}).event.(evt1)(1);         % both events must be for data of the same tyle
 e2 = findfield(data,evt2);         % either analog or video
 
 
