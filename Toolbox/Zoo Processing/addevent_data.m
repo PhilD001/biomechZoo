@@ -126,10 +126,10 @@ for i = 1:length(ch)
             
             if isnan(exd)
                 eyd = NaN;
-                ename = [ename,'1']; 
+                nename = [ename,'1']; 
             elseif length(exd)==1
                 eyd = yd(exd);
-                ename = [ename,'1']; %#ok<*AGROW>
+                nename = [ename,'1']; %#ok<*AGROW>
             end
             
             
@@ -170,7 +170,7 @@ for i = 1:length(ch)
         end
         
     else
-        data.(ch{i}).event.(ename) = [exd,eyd,0];
+        data.(ch{i}).event.(nename) = [exd,eyd,0];
     end
     
     
