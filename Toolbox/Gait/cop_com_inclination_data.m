@@ -21,7 +21,8 @@ COM = data.(ch_COM).line;
 COP = data.(ch_COP).line;
 
 % compute inclination angle
-inc_angle = cop_com_inclinaton(COM, COP, vertical);
+[inc_angle_ap, inc_angle_ml] = cop_com_inclinaton(COM, COP, vertical);
 
 % add to zoo
-data = addchannel_data(inc_angle, [ch_COM, '_', ch_COP, '_inclination']);
+data = addchannel_data(data, [ch_COM, '_', ch_COP, '_inc_angle_ap'], inc_angle_ap, 'video');
+data = addchannel_data(data, [ch_COM, '_', ch_COP, '_inc_angle_ml'], inc_angle_ml, 'video');
