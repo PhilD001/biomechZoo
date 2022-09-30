@@ -114,8 +114,10 @@ if static
   
     xr = front(1);
     yr = front(2);
+    zr = front(3);
     xs = back(1);
     ys = back(2);
+    zs = back(3);
     
     if xr > xs && yr < ys
         walkDir = 'Ipos';
@@ -129,23 +131,33 @@ if static
         error('unknown standing direction')
     end
     
+    warning('function does not provide reliable results for static trials where Z is a horizontal axis')
+    
+    
+    
 else
     
     istart = find(~isnan(vec(:,1)),1,'first');
     iend = find(~isnan(vec(:,1)),1,'last');
     vec = vec(istart:iend,:);
     
-    % Determine if most of motion is along global X or Y
+    % Determine if most of motion is along global X, Y, or Z
     %
     X = abs(vec(1,1)-vec(end,1));
     Y = abs(vec(1,2)-vec(end,2));
+    Z = abs(vec(1,3)-vec(end,3));
     
-    if Y > X % moving along Y
-        axis = 'J';
-        dim = 2;
-    else     % moving along X
-        axis = 'I';
+    [~, indx] = sort([X, Y, Z]);
+    
+    if indx(end) == 1
+        axis = 'X';
         dim = 1;
+    elseif indx(end) ==2
+        axis = 'Y';
+        dim = 2;
+    elseif indx(end) ==3
+        axis = 'Z';
+        dim = 3;
     end
     
     % determine which direction along known axis person is travelling
