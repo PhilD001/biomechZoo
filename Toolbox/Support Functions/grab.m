@@ -31,7 +31,7 @@
 % catch some possible errors
 clear extension
 
-[f,p]=uigetfile({'*.zoo';'*.c3d'});
+[f,p]=uigetfile('*');
 cd(p);
 
 ext = extension(f);
@@ -44,6 +44,8 @@ switch ext
 
     case '.c3d'
         data = readc3d([p,f]);
+    otherwise
+        error(['file type ', ext, ' not supported'])
   
 end
 
