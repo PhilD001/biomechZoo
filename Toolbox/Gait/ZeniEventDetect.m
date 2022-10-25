@@ -63,6 +63,11 @@ end
 % - check if required channels are present
 % - make substitution if requried
 %
+
+% change side to upper case 
+side = upper(side);
+evt = upper(evt)
+
 if ~isfield(data,[side,'HEE']) && ~isfield(data,[side,'HEE_x'])
     error(['required marker ',side,'HEE missing'])
 end

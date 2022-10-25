@@ -69,6 +69,8 @@ switch type
         
         list = {'MHamstringsLat',' ','MHamstringsMed','MGastrocnemiusMed','MRectusFem','MTibialisAnt'};
         
+        id = [];
+        
     case 'OFM Kinematics'
         
         startup_ensembler('NormData',3,3,xwid,ywid,xspace,yspace,fw,fh)
