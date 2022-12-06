@@ -7,7 +7,7 @@ function  data = resample_data(data,ch,p,q,method)
 %  ch       ...  Channel(s) to operate on (single string or cell array of strings).
 %                Use 'Video' or 'Analog' to resample all video or analog channels
 %  p        ...  Numerator of fraction of sampling rate. Default = [];
-%  q        ...  Denominator of fraction of fraction of sampling rate. Default = []
+%  q        ...  Denominator of fraction of sampling rate. Default = []
 %  method   ...  Manner in which interpolation is conducted (string).
 %                Default 'linear'
 %
@@ -120,7 +120,7 @@ if ~isempty(ch)
             data.zoosystem.(curSec).Freq = data.zoosystem.(curSec).Freq*p/q;
             %     data.zoosystem.AVR = data.zoosystem.(curSec).Freq/data.zoosystem.(othSec).Freq;
             disp(['zoosystem.',(curSec),' not correctly updated, consider using ',curSec,...
-                'as input for channel'])
+                ' as input for channel'])
         end
     end
 end

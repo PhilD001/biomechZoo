@@ -60,5 +60,8 @@ for i = 1:length(emg_ch)
     mean_temp=convn(rect_r,window,'same');
     RMS_r=sqrt(mean_temp);
     data = addchannel_data(data,[emg_ch{i},'_filthigh_filtlow_rect_RMS'],RMS_r,'Analog');
+    data = addchannel_data(data,[emg_ch{i},'_processed'],RMS_r,'Analog');  % create a final version called processed
 end
+
+
 
