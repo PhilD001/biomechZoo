@@ -396,7 +396,7 @@ switch bone
     case 'Tibia'   % Ankle PiG angles
         [floatax,ant_prox,~,lat_prox,lat_dist,~,long_dist] = makeaxPiG(pax,dax);
         
-        flx = asind(dot(floatax,ant_prox,2)); % chosen to avoid axis flipping
+        flx = asind(dot(floatax,ant_prox,2)); % chosen to avoid axis flipping        
         abd = asind(dot(lat_prox,long_dist,2));
         tw  = asind(dot(floatax,lat_dist,2));
         
@@ -588,7 +588,7 @@ function r=refsystem(KIN)
 
 r = struct;
 
-if isfield(KIN,'RightKnee')  % checks for plugin gait
+if isfield(KIN, 'GlobalPelvis')
     r.RightPelvis.Tilt      = KIN.GlobalPelvis.flx;
     r.RightPelvis.Obliquity = KIN.GlobalPelvis.abd;
     r.RightPelvis.IntExt    = KIN.GlobalPelvis.tw;
@@ -596,47 +596,40 @@ if isfield(KIN,'RightKnee')  % checks for plugin gait
     r.LeftPelvis.Tilt       = KIN.GlobalPelvis.flx;
     r.LeftPelvis.Obliquity  = -KIN.GlobalPelvis.abd;
     r.LeftPelvis.IntExt     = -KIN.GlobalPelvis.tw;
+end
+
+if isfield(KIN,'RightHip')  % checks for plugin gait
     
-    % original biomechZoo style
-    %
-    % r.RightHip.FlxExt = KIN.RightHip.flx;
-    % r.RightHip.AbdAdd = -KIN.RightHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    % r.RightHip.IntExt = -KIN.RightHip.tw;
-    
-    % r.LeftHip.FlxExt = KIN.LeftHip.flx;
-    % r.LeftHip.AbdAdd = KIN.LeftHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    % r.LeftHip.IntExt = KIN.LeftHip.tw;
-    
-    % r.RightKnee.FlxExt = -KIN.RightKnee.flx;
-    % r.RightKnee.AbdAdd = -KIN.RightKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    % r.RightKnee.IntExt = -KIN.RightKnee.tw;
-    
-    % r.LeftKnee.FlxExt = -KIN.LeftKnee.flx;
-    % r.LeftKnee.AbdAdd = KIN.LeftKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
-    % r.LeftKnee.IntExt = KIN.LeftKnee.tw;
-    
-    % new offsets based on pyCGM atan2 approach
-    %
     r.RightHip.FlxExt = -KIN.RightHip.flx;
     r.RightHip.AbdAdd =  KIN.RightHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.RightHip.IntExt = -KIN.RightHip.tw + 90;
-    
+end
+
+if isfield(KIN, 'LeftHip')
     r.LeftHip.FlxExt = -KIN.LeftHip.flx;
     r.LeftHip.AbdAdd = -KIN.LeftHip.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.LeftHip.IntExt =  KIN.LeftHip.tw - 90;
-    
+end
+
+if isfield(KIN, 'RightKnee')
     r.RightKnee.FlxExt = KIN.RightKnee.flx;
     r.RightKnee.AbdAdd = KIN.RightKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.RightKnee.IntExt = -KIN.RightKnee.tw + 90;
-    
+end
+
+if isfield(KIN, 'LeftKnee')
     r.LeftKnee.FlxExt = KIN.LeftKnee.flx;
     r.LeftKnee.AbdAdd = -KIN.LeftKnee.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.LeftKnee.IntExt = KIN.LeftKnee.tw -90;
-    
+end
+
+if isfield(KIN, 'RightAnkle')
     r.RightAnkle.PlaDor = -KIN.RightAnkle.flx;
     r.RightAnkle.IntExt = -KIN.RightAnkle.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.RightAnkle.InvEve = -KIN.RightAnkle.tw;
-    
+end
+
+if isfield(KIN, 'LeftAnkle')
     r.LeftAnkle.PlaDor = -KIN.LeftAnkle.flx;
     r.LeftAnkle.IntExt = KIN.LeftAnkle.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.LeftAnkle.InvEve = KIN.LeftAnkle.tw;
@@ -678,13 +671,15 @@ if isfield(KIN,'RightAnkleStatic')
     r.RightAnkleStatic.PlaDor = KIN.RightAnkleStatic.flx;
     r.RightAnkleStatic.IntExt = KIN.RightAnkleStatic.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.RightAnkleStatic.InvEve = KIN.RightAnkleStatic.tw;
-    
+end
+
+if isfield(KIN, 'LeftAnkleStatic')
     r.LeftAnkleStatic.PlaDor  = KIN.LeftAnkleStatic.flx;
     r.LeftAnkleStatic.IntExt  = KIN.LeftAnkleStatic.abd;     % vicon int/ext is the same as IDA Abd/Add (
     r.LeftAnkleStatic.InvEve = KIN.LeftAnkleStatic.tw;
 end
 
-if isfield(KIN,'RightMidFoot')  % checks for oxford
+if isfield(KIN,'RightMidFoot')  % checks for oxford (assumes all are present)
     
     %Right Ankle (HindFoot relative to Tibia)
     r.RightAnkleOFM.PlaDor = -KIN.RightAnkleOFM.flx+90;

@@ -66,7 +66,7 @@ end
 
 % change side to upper case 
 side = upper(side);
-evt = upper(evt)
+evt = upper(evt);
 
 if ~isfield(data,[side,'HEE']) && ~isfield(data,[side,'HEE_x'])
     error(['required marker ',side,'HEE missing'])

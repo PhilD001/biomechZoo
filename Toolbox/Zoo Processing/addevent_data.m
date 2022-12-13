@@ -39,6 +39,8 @@ function data = addevent_data(data,ch,ename,type)
 % Some settings
 %
 FP_thresh = 0;         % threshold (Newtons) for finding force plate events
+delta = 150;           % threshold for Zeni event detection
+
 
 if ~iscell(ch)
     ch = {ch};
@@ -122,7 +124,7 @@ for i = 1:length(ch)
             eyd = yd(exd);
          
         case {'rfs','rfo','lfs','lfo'}
-            exd = ZeniEventDetect(data,type(1),type(2:end));
+            exd = ZeniEventDetect(data,type(1),type(2:end), delta);
             
             if isnan(exd)
                 eyd = NaN;
@@ -142,8 +144,8 @@ for i = 1:length(ch)
             eyd = 0;
         
         case 'first_fs'
-             exd_r = ZeniEventDetect(data, 'R', 'FS');
-             exd_l = ZeniEventDetect(data, 'L', 'FS');
+             exd_r = ZeniEventDetect(data, 'R', 'FS', delta);
+             exd_l = ZeniEventDetect(data, 'L', 'FS', delta);
              
              if exd_r(1) < exd_l(1)
                 exd = exd_r;

@@ -46,8 +46,14 @@ function [data,walkDir] = getDir(data,ch)
 if nargin==1
     if isfield(data,'LPSI') && ~isfield(data,'SACR')
         vec = (data.LPSI.line + data.RPSI.line)/2;
+    elseif isfield(data,'LPSI_x') && ~isfield(data,'SACR_x')
+        LPSI = [data.LPSI_x.line, data.LPSI_y.line, data.LPSI_z.line];
+        RPSI = [data.RPSI_x.line, data.RPSI_y.line, data.RPSI_z.line];
+        vec = (LPSI + RPSI)/2;
     elseif isfield(data,'SACR')
         vec = data.SACR.line;
+    elseif isfield(data, 'SACR_x')
+        vec =  [data.SACR_x.line, data.SACR_y.line, data.SACR_z.line];
     else
         error('getDir works with PiG data using SACR or L/R PSI markers')
     end
@@ -150,13 +156,13 @@ else
     [~, indx] = sort([X, Y, Z]);
     
     if indx(end) == 1
-        axis = 'X';
+        axis = 'I';
         dim = 1;
     elseif indx(end) ==2
-        axis = 'Y';
+        axis = 'J';
         dim = 2;
     elseif indx(end) ==3
-        axis = 'Z';
+        axis = 'K';
         dim = 3;
     end
     
