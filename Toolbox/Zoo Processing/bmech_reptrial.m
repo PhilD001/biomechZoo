@@ -75,6 +75,8 @@ end
 
 cd(fld)
 
+method = lower(method);
+
 
 % Find all subfolders and extract terminal folders only
 %
@@ -116,17 +118,19 @@ for i = 1:length(tsubs)
         
         [data,file_indx] = reptrial(gdata,chrp, method);
         
+        % delete old files
+        delfile(fl)
+        
         if strcmp(method, 'mean')
             fl_rep = strrep(fl{1}, '.zoo', '_mean.zoo');
-        else
+        elseif strcmp(method, 'rmse')
             fl_rep = fl{file_indx};
+        else
+            error(['method ', method, ' not implemented'])
         end
+        disp(['saving representative trial ', fl_rep])
         zsave(fl_rep, data);
-
-    % delete old files
-    delfile(fl)
-
-        
+  
     elseif length(fl)==1
         batchdisp(tsubs{i},'only 1 trial, keeping single trial ')
     else
@@ -188,7 +192,7 @@ end
 
 ch(cellfun(@isempty,ch)) = [];
 
-if method == 'mean'
+if strcmp(method, 'mean')
     
     for i = 1:length(ch)
         
@@ -204,7 +208,7 @@ if method == 'mean'
     data = gdata.data1;
     file_indx = 'mean';
     
-elseif method == 'RMSE'
+elseif strcmp(method, 'rmse')
     
     for i = 1:length(ch)
         
@@ -243,26 +247,27 @@ elseif method == 'RMSE'
     ach = setdiff(fieldnames(gdata.(trials{j})),'zoosystem');
     
     for i = 1:length(ach)
-        evts = fieldnames(gdata.data1.(ach{i}).event);
-        
-        for j = 1:length(evts)
-            evtstk = zeros(length(trials),3);
-            for k = 1:length(trials)
-                
-                if ~isfield(gdata.(trials{k}).(ach{i}).event,evts{j})
-                    evtstk(k,:) = [NaN NaN NaN];
-                else
-                    evtstk(k,:) = gdata.(trials{k}).(ach{i}).event.(evts{j});
+        if isfield(gdata.data1, ach{i})
+            evts = fieldnames(gdata.data1.(ach{i}).event);
+            
+            for j = 1:length(evts)
+                evtstk = zeros(length(trials),3);
+                for k = 1:length(trials)
+                    
+                    if ~isfield(gdata.(trials{k}).(ach{i}).event,evts{j})
+                        evtstk(k,:) = [NaN NaN NaN];
+                    else
+                        evtstk(k,:) = gdata.(trials{k}).(ach{i}).event.(evts{j});
+                    end
                 end
+                
+                mean_evt = nanmean(evtstk);
+                sd_evt = nanstd(evtstk);
+                
+                gdata.(trials{file_indx}).(ach{i}).event.(['mean_',evts{j}]) = mean_evt;
+                gdata.(trials{file_indx}).(ach{i}).event.(['sd_',evts{j}]) = sd_evt;
             end
-            
-            mean_evt = nanmean(evtstk);
-            sd_evt = nanstd(evtstk);
-            
-            gdata.(trials{file_indx}).(ach{i}).event.(['mean_',evts{j}]) = mean_evt;
-            gdata.(trials{file_indx}).(ach{i}).event.(['sd_',evts{j}]) = sd_evt;
         end
-        
     end
     
     % write back rep trial to data
