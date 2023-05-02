@@ -4,7 +4,7 @@ function data = velocity_data(data,ch,method)
 % trial based on a given marker
 %
 % ARGUMENTS
-%  fld         ...    folder to operate on
+%  data         ...   zoo file to operate on
 %  ch          ...    name of marker (as string)
 %  method      ...    'normalize' to dimensionally normalize. Default no normalization 
 %

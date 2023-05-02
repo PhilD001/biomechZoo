@@ -386,29 +386,32 @@ for i = 1:length(fl)
     
     % find subject condition
     %
-    fl_temp = strrep(fl{i},[subject,s],'');
-    check = true;
-    count = 1;
-    while check
-        if contains(fl_temp,conditions{count})
-            con = conditions{count};
-            check = false;
-        else
-            count = count+1;
+    if ~isempty(conditions)
+        fl_temp = strrep(fl{i},[subject,s],'');
+        check = true;
+        count = 1;
+        while check
+            if contains(fl_temp,conditions{count})
+                con = conditions{count};
+                check = false;
+            else
+                count = count+1;
+            end
+            
+            if count > length(conditions)
+                disp('no match for conditions, skipping file')
+                check = false;
+            end
         end
         
         if count > length(conditions)
-            disp('no match for conditions, skipping file')
-            check = false;
+            continue
         end
-    end
-    
-    if count > length(conditions)
-        continue
+    else
+        con = '';
     end
     
   
-    
     % Check subject conditon and name
     %
     if ~ismember(con,conditions)

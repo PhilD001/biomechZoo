@@ -1,4 +1,4 @@
-function [StrideLength, StepLength,StrideWidth] = SpatialParameters(FS1,FS2,FS3)
+function [StrideLength, StepLength,StrideWidth] = SpatialParameters(FS1,FS2,FS3, LegLength)
 
 
 % computes spatial-temporal parameters for any walking condition
@@ -6,24 +6,23 @@ function [StrideLength, StepLength,StrideWidth] = SpatialParameters(FS1,FS2,FS3)
 % Gait & Posture 23 (2006) Huxham et al.
 %
 % ARGUMENTS
-% FS1            ... coordinates of 1st ipsilateral foot strike
-% FS2            ... coordinates of 1st contraleral foot strike
-% FS3            ... coordinates of 2nd ipsilateral foot strike
+%   FS1            ... coordinates of 1st ipsilateral foot strike
+%   FS2            ... coordinates of 1st contraleral foot strike
+%   FS3            ... coordinates of 2nd ipsilateral foot strike
+%   leg_length     ... optional. Length of leg, used to normalize paramters
 %
 % RETURNS
-% StrideLength  ... Stride Length in same units as input units
-% StepLength    ... Step Length in same units as input units
-% StrideWidth   ... Stride width in same units as input units
+%   StrideLength  ... Stride Length in same units as input units
+%   StepLength    ... Step Length in same units as input units
+%   StrideWidth   ... Stride width in same units as input units
 
 
+% Created by Philippe C. Dixon November 24th 2011
+%
+% Updated by Philippe C. Dixon April 12th, 2023
+% - option to normalze parameters according to Huxham
 
 
-% Created by Phil Dixon November 24th 2011
-
-
-% Part of the Zoosystem Biomechanics Toolbox v1.2 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt
 
 
 %----COMPUTE SPATIAL COORDINATES--
@@ -36,4 +35,14 @@ StrideLength = c;
 StepLength =  (b^2 + c^2  - a^2)/(2*c);
 
 StrideWidth = sqrt(b^2 - StepLength^2);
+
+
+%--- Normalize parameters by leg length if available-----
+if nargin == 4
+    StrideLength = StrideLength/LegLength;
+    StrideWidth = StrideWidth/LegLength;
+    StepLength = StepLength/LegLength;
+end
+
+
 

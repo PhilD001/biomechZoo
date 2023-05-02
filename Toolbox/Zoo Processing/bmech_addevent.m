@@ -1,4 +1,4 @@
-function bmech_addevent(fld,ch,ename,type,sfld)
+function bmech_addevent(fld,ch,ename,type,sfld,constant)
 
 % BMECH_ADDEVENT(fld,ch,ename,type,sfld) batch process of event addition
 %
@@ -9,6 +9,7 @@ function bmech_addevent(fld,ch,ename,type,sfld)
 %  ename    ... The name of new event branch in zoo file as string
 %  type     ... See line 47 ('max' 'min' 'toe off' heel strike'...) string
 %  sfld     ... Subfolder of files not to include in addevent algorithm. Default ''
+%  constant ...  a constant value to be used by a specific case.
 %
 % NOTES:
 % - adding events can be done at any point during processing and can be called numerous times
@@ -35,10 +36,17 @@ function bmech_addevent(fld,ch,ename,type,sfld)
 % - Bug fix for option 'all' for ch (github bug report #4)
 
 
-if nargin==4
+% Some settings
+%
+if nargin == 4
     sfld = '';
+    constant = NaN;       
 end
 
+
+if nargin == 5
+    constant = NaN;       
+end
 
 % Get files to process
 %
@@ -58,7 +66,7 @@ cd(fld)
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisp( fl{i},['adding event ',ename])
-    data = addevent_data(data,ch,ename,type);
+    data = addevent_data(data,ch,ename,type, constant);
     if strcmp(ch,'all')
         zsave(fl{i},data,['added ',type,' to all channels'])
     else

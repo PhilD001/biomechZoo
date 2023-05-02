@@ -1,4 +1,4 @@
-function data = addevent_data(data,ch,ename,type)
+function data = addevent_data(data,ch,ename,type, constant)
 
 % data = ADDEVENT_DATA(data,ch,ename,type) called by bmech_addevent to add data to event branches.
 %
@@ -7,6 +7,7 @@ function data = addevent_data(data,ch,ename,type)
 %  ch       ...  Channels to add event to (cell arrray of strings). 
 %  ename    ...  The name of the new event branch in zoo file as string
 %  type     ...  See line 47 ('max' 'min' 'toe off' heel strike'...) string
+%  constant ...  a constant value to be used by a specific case.
 %
 % RETURNS
 %  data     ...  Zoo data with new event data appended
@@ -34,12 +35,6 @@ function data = addevent_data(data,ch,ename,type)
 %
 % Updated by Philippe C. Dixon Nov 2017
 % - Bug fix for reaction force check
-
-
-% Some settings
-%
-FP_thresh = 0;         % threshold (Newtons) for finding force plate events
-delta = 150;           % threshold for Zeni event detection
 
 
 if ~iscell(ch)
@@ -94,6 +89,12 @@ for i = 1:length(ch)
             exd = 1;
             
         case {'fs_fp','fo_fp'}
+            
+            if isnan(constant)
+                warning('A constant for the force plate threshold was not set by the user, constant will be set to 0. If the user requires a different setting, add a 5th argument to the addevent_data call')
+                constant = 0;
+            end
+            
             AVR = data.zoosystem.AVR;
             if AVR ~=1
                 error('Video and Analog channels must be at same sampling rate, use bmech_resample')
@@ -114,17 +115,21 @@ for i = 1:length(ch)
             peak = peakSign(yd);
             
             if strfind(type,'FS')
-                exd = find(peak*yd*m>FP_thresh,1,'first');
+                exd = find(peak*yd*m>constant,1,'first');
                 exd = exd-1;
             else
-                exd = find(peak*yd*m>FP_thresh,1,'last');
+                exd = find(peak*yd*m>constant,1,'last');
                 exd = exd+1;
             end
             
             eyd = yd(exd);
          
         case {'rfs','rfo','lfs','lfo'}
-            exd = ZeniEventDetect(data,type(1),type(2:end), delta);
+            if isnan(constant)
+                warning('A constant for the zeni threshold was not set by the user, constant will be set to 10. If the user requires a different setting, add a 5th argument to the addevent_data call')
+                constant = 10;
+            end
+            exd = ZeniEventDetect(data,type(1),type(2:end), constant);
             
             if isnan(exd)
                 eyd = NaN;
@@ -144,8 +149,12 @@ for i = 1:length(ch)
             eyd = 0;
         
         case 'first_fs'
-             exd_r = ZeniEventDetect(data, 'R', 'FS', delta);
-             exd_l = ZeniEventDetect(data, 'L', 'FS', delta);
+            if isnan(constant)
+                warning('A constant for the zeni threshold was not set by the user, constant will be set to 10. If the user requires a different setting, add a 5th argument to the addevent_data call')
+                constant = 10;
+            end
+             exd_r = ZeniEventDetect(data, 'R', 'FS', constant);
+             exd_l = ZeniEventDetect(data, 'L', 'FS', constant);
              
              if exd_r(1) < exd_l(1)
                 exd = exd_r;

@@ -1,10 +1,11 @@
 function r = nrmse(a,b)
 
 % r = NRMSE(a,b) computes the  root mean squared error between two vectors
-% normalised to the range of signal a
+% normalised to the range of signal a. It is assumed signal a is the
+% reference signal
 %
 % ARGUMENTS
-%  a   ...  1st vector of data
+%  a   ...  1st vector of data (reference signal)
 %  b   ...  2nd vector of data
 %
 % RETURN
