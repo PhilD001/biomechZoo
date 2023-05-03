@@ -43,9 +43,11 @@ s = filesep;
 e=which('engine'); % returns path to engine
 indx = strfind(e, s);
 fld_root = e(1:indx(end-3));
-fld_m2html = [fld_root, s, 'm2html'];
+fld_m2html = [fld_root, 'm2html'];
 if ~exist(fld_m2html, 'dir')
     error(['you must have the m2html repo installed at ', fld_m2html])
 end
-addpath(fld_m2html)  
+addpath(fld_m2html) 
+
+% update documentation
 Biomechzoo_documentation
