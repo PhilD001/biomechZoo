@@ -104,7 +104,7 @@ for i = 1:length(tsubs)
     fl = engine('fld',tsubs{i},'extension','zoo');
     
     if length(fl)>1
-        %batchdisp(tsubs{i},['building rep trial from ',num2str(length(fl)),' trials '])
+        batchdisp(tsubs{i},['building rep trial from ',num2str(length(fl)),' trials '])
         r = zload(fl{1});
         gdata = struct;
         
@@ -119,7 +119,7 @@ for i = 1:length(tsubs)
         [data,file_indx] = reptrial(gdata,chrp, method);
         
         % delete old files
-        % delfile(fl)
+        delfile(fl)
         
         if strcmp(method, 'mean')
             fl_rep = strrep(fl{1}, '.zoo', '_mean.zoo');
@@ -129,12 +129,12 @@ for i = 1:length(tsubs)
             error(['method ', method, ' not implemented'])
         end
         disp(['saving representative trial ', fl_rep])
-        %zsave(fl_rep, data);
+        zsave(fl_rep, data);
   
     elseif length(fl)==1
-        %batchdisp(tsubs{i},'only 1 trial, keeping single trial ')
+        batchdisp(tsubs{i},'only 1 trial, keeping single trial ')
     else
-        %batchdisp(tsubs{i},'no trials found ')
+        batchdisp(tsubs{i},'no trials found ')
     end
     
     tstk(i) = length(fl);
