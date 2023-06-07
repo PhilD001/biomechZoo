@@ -59,7 +59,7 @@ switch nargin
         data2 = [44.6 37.8 31.9 29.7  50.3];
         type = 'unpaired';
         alpha = 0.05;
-        thresh = 0.01;
+        thresh = 0.05;
         tail = 'both';
         mode = 'full';
         bonf = 1;
@@ -69,13 +69,13 @@ switch nargin
         
     case 3
         alpha = 0.05;
-        thresh = 0.01;
+        thresh = 0.05;
         tail = 'both';
         mode = 'full';
         bonf = 1;
         
     case 4
-        thresh = 0.01;
+        thresh = 0.05;
         tail = 'both';
         mode = 'full';
         bonf = 1;
@@ -195,6 +195,8 @@ switch type
             t = STATS.tstat;
             df = n1-1;
             md = mean(data1-data2);
+            sd_c = nanstd(data1);
+            sd_nc = nanstd(data2);
             sd =  sqrt( ( (std(data1).^2) + (std(data2).^2) )/2 );      % SD pooled
             e = abs(md)/sd;                                             % Cohen's d
             
@@ -208,6 +210,7 @@ switch type
             df = n2-1;
             md = median(data1-data2);
             sd_c = nanstd(data1);                                       % std of control
+            sd_nc = nanstd(data2); 
             e = abs(mean(data1-data2))/sd_c;                            % Glass's delta
             
             [lo,hi] = bmech_CI(data1-data2,'median',alpha,'no');
@@ -227,6 +230,8 @@ switch type
             t = STATS.tstat;
             df = STATS.df;
             md = xbar1-xbar2;
+            sd_c = nanstd(data1);
+            sd_nc = nanstd(data2);
             sd =  sqrt( ( (nanstd(data1).^2) + (nanstd(data2).^2) )/2 ); % SD pooled
             e = abs(md)/sd;                                              % Cohen's d
             
@@ -241,6 +246,7 @@ switch type
             df = NaN;
             
             sd_c = nanstd(data1);                                        % std of control
+            sd_nc = nanstd(data2);     
             e = abs(  nanmean(data1)- nanmean(data2) )/sd_c;                          % Glass's delta
             
             
@@ -328,7 +334,7 @@ disp('Summary info')
 disp(' ')
 
 
-if p_lil_all <=thresh %|| p_lev < alpha
+if p_lil_all <=thresh || p_lev < alpha
     disp(['Combined groups: median CI = ',num2str(sprintf('%.3f',xbar_all)),' (',num2str(sprintf('%.3f',CIlo_all)),',',num2str(sprintf('%.3f',CIhi_all)),')'])
 else
     disp(['Combined groups: mean CI = ',num2str(sprintf('%.3f',xbar_all)),' [',num2str(sprintf('%.3f',CIlo_all)),',',num2str(sprintf('%.3f',CIhi_all)),']'])
@@ -336,23 +342,23 @@ end
 
 
 if strcmp(type,'paired t-test')
-    disp(['Group1: mean CI = ',num2str(xbar1),' [',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),']'])
-    disp(['Group2: mean CI = ',num2str(xbar2),' [',num2str(CIlo2),',',num2str(CIhi2),']'])
+    disp(['Group1: mean [CI] SD = ',num2str(xbar1),' [',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),'] ',num2str(sprintf('%.3f',sd_c))])
+    disp(['Group2: mean [CI] SD = ',num2str(xbar2),' [',num2str(CIlo2),',',num2str(CIhi2),'] ',num2str(sprintf('%.3f',sd_nc))])
     disp([m,' difference CI = ',num2str(md),' [',num2str(CIdiff(1)),',',num2str(CIdiff(2)),']'])
     
 else
     
     
-    if p_lil1 <=thresh %|| p_lev < alpha
+    if p_lil1 <=thresh || p_lev < alpha
         disp(['Group1: median CI = ',num2str(sprintf('%.3f',xbar1)),' (',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),')'])
     else
-        disp(['Group1: mean CI = ',num2str(sprintf('%.3f',xbar1)),' [',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),']'])
+        disp(['Group1: mean [CI] SD = ',num2str(sprintf('%.3f',xbar1)),' [',num2str(sprintf('%.3f',CIlo1)),',',num2str(sprintf('%.3f',CIhi1)),'] ',num2str(sprintf('%.3f',sd_c))])
     end
     
-    if p_lil2 <=thresh %|| p_lev < alpha
+    if p_lil2 <=thresh || p_lev < alpha
         disp(['Group2: median CI = ',num2str(sprintf('%.3f',xbar2)),' (',num2str(sprintf('%.3f',CIlo2)),',',num2str(sprintf('%.3f',CIhi2)),')'])
     else
-        disp(['Group2: mean CI = ',num2str(sprintf('%.3f',xbar2)),' [',num2str(sprintf('%.3f',CIlo2)),',',num2str(sprintf('%.3f',CIhi2)),']'])
+        disp(['Group2: mean [CI] SD = ',num2str(sprintf('%.3f',xbar2)),' [',num2str(sprintf('%.3f',CIlo2)),',',num2str(sprintf('%.3f',CIhi2)),'] ',num2str(sprintf('%.3f',sd_nc))])
     end
     
     disp([m,' difference CI = ',num2str(sprintf('%.3f',md)),' (',num2str(sprintf('%.3f',CIdiff(1))),...
