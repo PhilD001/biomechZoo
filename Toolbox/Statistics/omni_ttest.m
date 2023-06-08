@@ -10,6 +10,7 @@ function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,tail,mo
 %  alpha    ...  significance level. Default '0.05'
 %  thresh   ...  threshold for failure of parametric assumptions and use of
 %                nonparametric tests. Default '0.05'
+%  tail     ...  one or two sided test. Default 'both'.
 %  mode     ...  display information 'full'
 %  bonf     ...  apply bonferroni correction based on n tests. default n = 1
 
@@ -43,11 +44,9 @@ function [P,t,df,e,md,CIdiff] = omni_ttest(data1,data2,type,alpha,thresh,tail,mo
 % - improved interface
 % - removed option to run 'right' or 'left' sided
 %
-%
-% Part of the biomechZoo toolbox v1.3 Copyright (c) 2006-2016
-% Main contributors: Philippe C. Dixon, Yannick Michaud-Paquette, and J.J Loh
-% More info: type 'zooinfo' in the command prompt or visit
-% http://www.biomechzoo.com
+% Updated by Philippe C. Dixon June 2023 (thanks to Cloe Dussault-Picard)
+% - reconciled argument comments and default values
+
 
 % Set Defaults
 %
@@ -59,7 +58,7 @@ switch nargin
         data2 = [44.6 37.8 31.9 29.7  50.3];
         type = 'unpaired';
         alpha = 0.05;
-        thresh = 0.01;
+        thresh = 0.05;
         tail = 'both';
         mode = 'full';
         bonf = 1;
@@ -69,13 +68,13 @@ switch nargin
         
     case 3
         alpha = 0.05;
-        thresh = 0.01;
+        thresh = 0.05;
         tail = 'both';
         mode = 'full';
         bonf = 1;
         
     case 4
-        thresh = 0.01;
+        thresh = 0.05;
         tail = 'both';
         mode = 'full';
         bonf = 1;

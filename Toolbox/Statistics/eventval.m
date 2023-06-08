@@ -171,9 +171,8 @@ elseif strcmp(excelserver,'off') && ~strcmp(ext,'.xls')
     ext = '.xls';
 end
 
-if isin(computer,'MACI')
-    disp('Full excel server functionality not available on Mac platforms')
-    disp('using java...')
+if strfind(computer,'MACI') && strfind(excelserver, 'on')
+    disp('Full excel server functionality not available on Mac platforms, closing excel server and using java...')
     excelserver = 'off';
     ext = '.xls';
 end
