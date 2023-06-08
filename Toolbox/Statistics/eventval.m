@@ -608,7 +608,7 @@ function xls_write(file_name,sheet_data,sheet_name, cell_name, excelserver)
 
 if nargin == 4
     
-    if isin(computer,'MACI')
+    if strfind(computer,'MACI')
         excelserver = 'off';
     end
 end
