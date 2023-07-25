@@ -793,7 +793,11 @@ switch action
     case 'bar graph'
         makebar
         ensembler_msgbox(fld,'Bar graphs created')
-        
+    
+    case 'box whisker'
+        make_box_whisker
+        ensembler_msgbox(fld,'Box and whisker graphs created')
+
     case 'normative PiG Kinematics'
         normdata('Schwartz Kinematics');
         

@@ -106,6 +106,7 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','quick style','callback','ensembler(''quick style'')','separator','on');
     
     mn = uimenu(gcf,'label','Bar Graph');
+    uimenu(mn,'label','box whisker','callback','ensembler(''box whisker'')');
     uimenu(mn,'label','bar graph','callback','ensembler(''bar graph'')');
     uimenu(mn,'label','bar color','callback','ensembler(''bar color'')');
     uimenu(mn,'label','reorder bars','callback','ensembler(''reorder bars'')');
