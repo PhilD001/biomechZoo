@@ -1,10 +1,12 @@
-function bmech_NaNpartition(fld)
+function bmech_NaNpartition(fld, chns_search)
 
 % bmech_NaNpartition(fld) parititons all channels based on NaNs. All channels are
 % partitionned over the range of frames where all channels contain numbers
 %
 % ARGUMENTS
-% fld  ...   folder to operate on
+% fld          ...   folder to operate on
+% chns_search  ...  optional. List of channels to consider in the NaN search
+
 %
 % NOTES
 % - Algorithm search all channels for the last NaN at the start of the data
@@ -31,7 +33,13 @@ function bmech_NaNpartition(fld)
 % set defaults
 if nargin==0
     fld = uigetfolder;
+    chns_search = 'all';
 end
+
+if nargin==1
+    chns_search = 'all';
+end
+
 
 % Batch process
 %
@@ -41,35 +49,6 @@ fl = engine('fld',fld,'extension','zoo');
 for i = 1:length(fl)
     data = zload(fl{i});
     batchdisp(fl{i},'NaNpartition');
-    data = NaNpartition(data);
-    data = partition_data(data,'data_start','data_end');
+    data = NaNpartition_data(data, chns_search);
     zsave(fl{i},data);
 end
-
-
-function data = NaNpartition(data)
-
-ch = setdiff(fieldnames(data),{'zoosystem'});
-
-str_stk = zeros(length(ch),1);
-end_stk = zeros(length(ch),1);
-
-for i = 1:length(ch)
-    r = data.(ch{i}).line;
-    r = r(:,1);
-    indx = isnan(r);
-    str_stk(i) = find(indx==0,1,'first');
-    end_stk(i) = find(indx==0,1,'last');
-end
-
-frm_str = max(str_stk);
-frm_end = min(end_stk);
-
-% add partition events
-data.(ch{1}).event.data_start = [frm_str 0 0 ];
-data.(ch{1}).event.data_end = [frm_end 0 0 ];
-
-% save to zoosystem
-data.zoosystem.Video.ORIGINAL_NAN_START_FRAME = data.zoosystem.Video.ORIGINAL_START_FRAME(1) + frm_str;
-data.zoosystem.Video.NAN_END_FRAME = data.zoosystem.Video.ORIGINAL_END_FRAME(1) - (data.zoosystem.Video.CURRENT_END_FRAME(1) - frm_end);
-
