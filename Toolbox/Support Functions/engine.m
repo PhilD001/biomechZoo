@@ -40,6 +40,7 @@ for i = 1:2:nargin
     properties.(propName) = propValue;
 end
 
+
 % update for different input options
 properties = clean_properties(properties);
 
@@ -47,6 +48,14 @@ properties = clean_properties(properties);
 if ~isfield(properties, 'path')
     error('The ''path'' property is required.');
 end
+
+% check extension input
+if isfield(properties, 'extension')
+    if isempty(strfind(properties.extension, '.'))
+        properties.extension = ['.', properties.extension];
+    end
+end
+
 
 % Convert all property values to strings
 properties = structfun(@convertToString, properties, 'UniformOutput', false);
