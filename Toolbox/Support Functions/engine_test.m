@@ -4,7 +4,7 @@ fld = 'D:\Lab\Thesis\chapters'
 tic
 % Record the current memory usage
 memory_before = whos;
-% fl = engine('path',fld, 'extension', 'pptx', 'search path', 'results')/
+% fl = engine('path',fld, 'extension', 'pptx', 'search path', 'results')
 fl = engine_improved('path',fld, 'extension', 'pptx', 'search path', 'results')
 % Stop timer
 elapsed_time = toc;
