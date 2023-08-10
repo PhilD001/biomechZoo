@@ -378,11 +378,16 @@ fseek(fid,pblock*512+3,'bof');
 r = fread(fid,1,'uint8');
 fclose(fid);
 
+% function r = findzeros(data)
+% indx = find(data(:,1)==0);
+% for i = 2:3
+%     nindx = find(data(:,i)==0);
+%     indx = intersect(indx,nindx);
+% end
+% 
+% r = indx;
 function r = findzeros(data)
-indx = find(data(:,1)==0);
-for i = 2:3
-    nindx = find(data(:,i)==0);
-    indx = intersect(indx,nindx);
-end
-
-r = indx;
+% Find indices of rows where all columns have zero values
+allZeroRows = all(data == 0, 2);
+%Get indices of the rows with all zeros
+r = find(allZeroRows);
