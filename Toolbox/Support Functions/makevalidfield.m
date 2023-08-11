@@ -51,7 +51,6 @@ else
     ch = strrep(ch,'#','numbersign');
     ch = strrep(ch,'%','percent');
     ch = strrep(ch,'$','dollarsign');
-%   ch = strrep(ch,'/','per');
     ch = strrep(ch,filesep,'per');
     
     if ~isempty(strfind(ch,'*'))
