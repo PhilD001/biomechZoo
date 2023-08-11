@@ -31,122 +31,50 @@ function ch = makevalidfield(ch)
 % - Added '^,=' as invalid fields
 % - Truncates any field that exceeds MATLAB's maximum name length
 % - Converts numeric channel names x to nx
-
-if isnumeric(ch)
-    ch = ['n',num2str(ch)];
-    ch = makevalidfield(ch);
-end
-
-if length(ch)>63
-    ch = ch(1:63);
-    ch = makevalidfield(ch);
-end
-
-if ~isempty(strfind(ch,' '))
-    ch = strrep(ch,' ','_');
-    ch = makevalidfield(ch);
-
-elseif isempty(ch)
+if isempty(ch)
     ch = 'empty';
-    
-elseif ~isempty(strfind(ch,'-'))
-    ch = strrep(ch,'-','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'['))
-    ch = strrep(ch,'[','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,']'))
-    ch = strrep(ch,']','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'^'))
-    ch = strrep(ch,'^','');
-    ch = makevalidfield(ch);
+else
 
-elseif ~isempty(strfind(ch,'='))
-    ch = strrep(ch,'=','');
-    ch = makevalidfield(ch);
+%     if isnumeric(ch)
+%         ch = ['n',num2str(ch)];
+%     end
 
-elseif ~isempty(strfind(ch,'('))
-    ch = strrep(ch,'(','');
-    ch = makevalidfield(ch);
+    if length(ch)>namelengthmax
+        ch = ch(1:namelengthmax);
+    end
+    characters_to_replace = {'-', '[', ']', '^', '=', '(', ')', '+', '.', '\', '?', ',', ':', ''''};
 
-elseif ~isempty(strfind(ch,')'))
-    ch = strrep(ch,')','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'+'))
-    ch = strrep(ch,'+','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'.'))
-    ch = strrep(ch,'.','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'\'))
-    ch = strrep(ch,'\','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'?'))
-    ch = strrep(ch,'?','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,','))
-    ch = strrep(ch,',','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'*'))
-    ch = 'star';
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'#'))
+    for i = 1:length(characters_to_replace)
+        ch = strrep(ch, characters_to_replace{i}, '');
+    end
+    ch = strrep(ch,' ','_');
     ch = strrep(ch,'#','numbersign');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,':'))
-    ch = strrep(ch,':','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'%'))
-    indx = strfind(ch,'%');
-    ch = [ch(1:indx-1),'percent',ch(indx+1:end)];
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'$'))
+    ch = strrep(ch,'%','percent');
     ch = strrep(ch,'$','dollarsign');
-    ch = makevalidfield(ch);
+%   ch = strrep(ch,'/','per');
+    ch = strrep(ch,filesep,'per');
     
-elseif ~isempty(strfind(ch,'/'))
-    indx = strfind(ch,'/');
-    ch = [ch(1:indx-1),'per',ch(indx+1:end)];
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(str2num(ch)) && length(ch) ==1  %#ok<ST2NM> % don't change
-    ch = ['marker',ch];
-    ch = makevalidfield(ch);
+    if ~isempty(strfind(ch,'*'))
+        ch = 'star';
+    end
+    if ~isempty(ch) && isnumeric(ch(1)) && length(ch) == 1
+        ch = ['marker', ch];
+    end
 
-elseif ~isempty(str2num(ch(1))) && length(ch) ~=1 %#ok<ST2NM> % don't change
-    ch = ch(2:end);
-    ch = makevalidfield(ch);
+    if ~isempty(ch) && isnumeric(ch(1)) && length(ch) ~= 1
+        ch = ch(2:end);
+    end
 
-elseif strfind(ch(1),'_')
-    ch = ch(2:end);
-    ch = makevalidfield(ch);
-    
-elseif strfind(ch,'''')
-    ch = strrep(ch,'''','');
-    ch = makevalidfield(ch);  
+    if strfind(ch(1),'_')
+        ch = ch(2:end);
+    end
 
+    % if anything is still bad deal with it
+    a = struct;
+    try
+       a.(ch) = 3;
+    catch 
+        disp(['invalid field name ', ch, ' ...ignoring'])
+        ch = 'invalid_field_name';
+    end
 end
-
-% if anything is still bad deal with it
-a = struct;
-try
-   a.(ch) = 3;
-catch 
-    disp(['invalid field name ', ch, ' ...ignoring'])
-    ch = 'invalid_field_name';
-end 
-

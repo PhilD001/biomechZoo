@@ -141,3 +141,9 @@ function str = convertToString(input)
         error('Input must be a string.');
     end
 end
+if isfield(properties, 'fld')
+    properties.path = properties.fld;
+end
+if isfield(properties, 'ext')
+    properties.extension = properties.ext;
+end
