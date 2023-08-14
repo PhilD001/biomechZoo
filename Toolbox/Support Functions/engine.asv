@@ -6,15 +6,15 @@ function file_list = engine(varargin)
 % The 'path' property is required.  All other properties are optional. All arguments must be strings.
 %
 % ARGUMENTS
-%  'path', 'pth' or 'fld'       ...  root folder path to begin the search as string
+%  'path', 'pth' or 'fld'        ...  folder path to begin the search as string
 %  'extension' or 'ext'         ...  type of file to search as string. ex. '.c3d' or 'csv' ('.' not necessary)
 %  'file' or 'search file'      ...  return only files containing specific string ex. '_g_'
-%  'substring' , 'search path'  ...  search for a particular string in the path name ex 'hello' in data/helloworld and data/worldhello
-%  'subfolder' or 'folder'      ...  search only in folders of a specific name located downstream from the root path (string)
+%  'substring' , 'search path'  ...  search for a particular string in the path name ex 'hello' in data/helloworld and data/hellobaby
+%  'subfolder' or 'folder'      ...  search only in folders of a specific name located downstream from the path (string)
 %                                    ex 'helloworld' searches only in folders called 'helloworld'
 %
 % RETURNS
-%  fl                           ...  list of files as cell array of strings
+%  fl                     ...  list of files as cell array of strings
 %
 % e.g. #1 Return all files in the root folder C:/Users/Public which contain the
 % string 'imba':

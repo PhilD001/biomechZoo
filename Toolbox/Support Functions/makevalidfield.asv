@@ -51,23 +51,23 @@ else
         ch = strrep(ch, characters_to_replace{i}, '');
     end
 
-    replacements = {
-        ' ', '_';
-        '#', 'numbersign';
-        '%', 'percent';
-        '$', 'dollarsign'
-    };
+    % replacements = {
+    %     ' ', '_';
+    %     '#', 'numbersign';
+    %     '%', 'percent';
+    %     '$', 'dollarsign'
+    % };
+    % 
+    % for i = 1:size(replacements, 1)
+    %     ch = strrep(ch, replacements{i, 1}, replacements{i, 2});
+    % end
 
-    for i = 1:size(replacements, 1)
-        ch = strrep(ch, replacements{i, 1}, replacements{i, 2});
-    end
 
-
-    % ch = strrep(ch,' ','_');
-    % ch = strrep(ch,'#','numbersign');
-    % ch = strrep(ch,'%','percent');
-    % ch = strrep(ch,'$','dollarsign');
-    % ch = strrep(ch,filesep,'per');
+    ch = strrep(ch,' ','_');
+    ch = strrep(ch,'#','numbersign');
+    ch = strrep(ch,'%','percent');
+    ch = strrep(ch,'$','dollarsign');
+    ch = strrep(ch,filesep,'per');
     
     % if ~isempty(strfind(ch,'*'))
     if contains(ch,'*')
@@ -86,27 +86,11 @@ else
         ch = ch(2:end);
     end
 
-    if length(ch)>namelengthmax
-        ch = ch(1:namelengthmax);
-    end
-    % % if anything is still bad deal with it
-    % a = struct;
-    % try
-    %    a.(ch) = 3;
-    % catch 
-    %     disp(['invalid field name ', ch, ' ...ignoring'])
-    %     ch = 'invalid_field_name';
-    % end
     % if anything is still bad deal with it
-    % Check if the string starts with a letter (A-Z or a-z)
-    isValid = isletter(ch(1));
-
-    if isValid
-        % Check if the string contains only ASCII letters, digits, and underscores
-        isValid = all(isletter(ch) | ismember(ch, '0123456789_'));
-    end
-
-    if ~isValid
+    a = struct;
+    try
+       a.(ch) = 3;
+    catch 
         disp(['invalid field name ', ch, ' ...ignoring'])
         ch = 'invalid_field_name';
     end

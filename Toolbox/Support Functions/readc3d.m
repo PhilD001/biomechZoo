@@ -60,6 +60,9 @@ function data =readc3d(fname)
 % Updated by Philippe C. Dixon March 2022
 % - updated reading of header to deal with long trials. See: 
 % https://www.mathworks.com/matlabcentral/answers/79368-use-of-the-fread-function
+%
+% Updated by Oussama Jlassi Aug 2023
+% -Reduce the function findzeros' run time
 % -------------------------------------------
 
 mtype = getmachinecode(fname);
