@@ -195,32 +195,6 @@ else
     error('Input must be a string.');
 end
 
-
-
-% function properties = clean_properties(properties)
-% 
-% 
-% if isfield(properties, 'pth')
-%     properties.path = properties.pth;
-% end
-% if isfield(properties, 'fld')
-%     properties.path = properties.fld;
-% end
-% if isfield(properties, 'ext')
-%     properties.extension = properties.ext;
-% end
-% 
-% if isfield(properties, 'search_file')
-%     properties.file = properties.search_file;
-% end
-% 
-% if isfield(properties, 'folder')
-%     properties.subfolder = properties.folder;
-% end
-% 
-% if isfield(properties, 'search_path')
-%     properties.substring = properties.search_path;
-% end
 function properties = clean_properties(properties)
 
 fieldsToMap = {

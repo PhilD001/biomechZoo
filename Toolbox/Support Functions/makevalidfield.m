@@ -40,11 +40,6 @@ if isempty(ch)
     ch = 'empty';
 else
 
-%     if isnumeric(ch)
-%         ch = ['n',num2str(ch)];
-%     end
-
-
     characters_to_replace = {'-', '[', ']', '^', '=', '(', ')', '+', '.', '\', '?', ',', ':', ''''};
 
     for i = 1:length(characters_to_replace)
@@ -62,14 +57,6 @@ else
         ch = strrep(ch, replacements{i, 1}, replacements{i, 2});
     end
 
-
-    % ch = strrep(ch,' ','_');
-    % ch = strrep(ch,'#','numbersign');
-    % ch = strrep(ch,'%','percent');
-    % ch = strrep(ch,'$','dollarsign');
-    % ch = strrep(ch,filesep,'per');
-    
-    % if ~isempty(strfind(ch,'*'))
     if contains(ch,'*')
         ch = 'star';
     end
@@ -81,23 +68,10 @@ else
         ch = ch(2:end);
     end
 
-    % if strfind(ch(1),'_')
     if strcmp(ch(1), '_')
         ch = ch(2:end);
     end
 
-    if length(ch)>namelengthmax
-        ch = ch(1:namelengthmax);
-    end
-    % % if anything is still bad deal with it
-    % a = struct;
-    % try
-    %    a.(ch) = 3;
-    % catch 
-    %     disp(['invalid field name ', ch, ' ...ignoring'])
-    %     ch = 'invalid_field_name';
-    % end
-    % if anything is still bad deal with it
     % Check if the string starts with a letter (A-Z or a-z)
     isValid = isletter(ch(1));
 
@@ -105,9 +79,13 @@ else
         % Check if the string contains only ASCII letters, digits, and underscores
         isValid = all(isletter(ch) | ismember(ch, '0123456789_'));
     end
-
     if ~isValid
-        disp(['invalid field name ', ch, ' ...ignoring'])
-        ch = 'invalid_field_name';
+        disp(['invalid field name ', ch, ' ...converting it to its hexadecimal representation'])
+        ch = dec2hex(uint16(ch));
+    end
+    
+    % Truncate the channel name if it exceeds the maximum allowed length
+    if length(ch)>namelengthmax
+        ch = ch(1:namelengthmax);
     end
 end
