@@ -16,7 +16,8 @@ https://phild001.github.io/biomechZoo-help/
 Matlab (The Mathworks Inc., Natick, USA) v2014b or newer software running, at minimum, the following toolboxes:
 - Signal processing and Statistics
 - Deep Learning
-- Statistics and Machine Learning 
+- Statistics and Machine Learning
+ 
 Older Matlab versions are not supported. 
 
 ## Summary:
