@@ -76,7 +76,7 @@ for j = 1:length(axs)
              'color',settings.regularLineColor);
 
         middleXIick = floor(length(data.(ch).line) / 2);
-        xticks(ax, 0:middleXIick:length(data.(ch).line)-1)
+        xticks(ax, 0:length(data.(ch).line)-1)
 
         evt = fieldnames(data.(ch).event);
         for e = 1:length(evt)

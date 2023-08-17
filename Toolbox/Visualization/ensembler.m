@@ -713,6 +713,10 @@ switch action
         
         legend(hnd,val,'interpreter','none','units','inches')
         
+    case 'line graph'
+        update_ensembler_lines(p,f,fld,settings)
+        ensembler_msgbox(fld,'Line chart updated')
+
     case 'line style'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
@@ -795,7 +799,7 @@ switch action
         ensembler_msgbox(fld,'Bar graphs created')
     
     case 'box whisker'
-        make_box_whisker
+        make_box_whisker(p,f,fld,settings)
         ensembler_msgbox(fld,'Box and whisker graphs created')
 
     case 'normative PiG Kinematics'

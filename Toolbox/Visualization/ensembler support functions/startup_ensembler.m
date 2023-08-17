@@ -98,6 +98,7 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','clear prompt','callback','ensembler(''clear prompt'')');
     
     mn = uimenu(gcf,'label','Line');
+    uimenu(mn,'label','line graph','callback','ensembler(''line graph'')');
     uimenu(mn,'label','line style','callback','ensembler(''line style'')');
     uimenu(mn,'label','line style within','callback','ensembler(''line style within'')');
     uimenu(mn,'label','line width','callback','ensembler(''line width'')');
