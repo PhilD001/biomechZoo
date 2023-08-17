@@ -1,4 +1,4 @@
-function fl = engine(varargin)
+function file_list = engine(varargin)
 
 % fl = ENGINE(varargin) is a file searching algorithm
 %
@@ -6,222 +6,184 @@ function fl = engine(varargin)
 % The 'path' property is required.  All other properties are optional. All arguments must be strings.
 %
 % ARGUMENTS
-%  'pth, 'path' or 'fld'  ...  folder path to begin the search as string
-%  'extension' or 'ext'   ...  type of file to search as string. ex. '.c3d' or 'csv' ('.' not necessary)
-%  'search file'          ...  return only files containing specific string ex. '_g_'
-%  'search path'          ...  search for a particular string in the path name ex 'hello' in data/hello
-%  'folder'               ...  search only in folders of a specific name located downstream from the path (string)
+%  'pth, 'path' or 'fld'        ...  folder path to begin the search as string
+%  'extension' or 'ext'         ...  type of file to search as string. ex. '.c3d' or 'csv' ('.' not necessary)
+%  'file' or 'search file'      ...  return only files containing specific string ex. '_g_'
+%  'substring' , 'search path'  ...  search for a particular string in the path name ex 'hello' in data/helloworld and data/hellobaby
+%  'subfolder' or 'folder'      ...  search only in folders of a specific name located downstream from the path (string)
+%                                    ex 'helloworld' searches only in folders called 'helloworld'
 %
 % RETURNS
-%  fl                     ...  list of files as cell array of strings  
+%  fl                     ...  list of files as cell array of strings
 %
 % e.g. #1 Return all files in the root folder C:/Users/Public which contain the
 % string 'imba':
 % fl = engine('path','C:/Users/Public','search file','imba')
 %
 % e.g. #2 Return all files in the root folder C:/Users/Public which are
-% located in the subfolder Sample Music: 
+% located in the subfolder Sample Music:
 % fld = 'C:/Users/Public';
 % fl = engine('path',fld,'search path','Sample Music')
 
-
-% Revision History
-%
-% Created by JJ Loh  2006/09/20
-% Departement of Kinesiology
-% McGill University, Montreal, Quebec Canada
-%
-% Updated by JJ Loh 2006/10/23
-% - function now searches for partners.
-%   the search function will search in the path and not the filename.
-%
-% Updated by Phil Dixon 2008/02/05
-% - engine can now be used on mac intel. functionality on older mac has not
-%   been tested
-%
-% Updated by Phil Dixon 2011/05/03
-% - updated help menu. It is now clear that you can limit search to files
-%   containing a specific string
-% - multiple options can fit into 'options', but only 1 will work currently
-%
-% Updated by Phil Dixon 05.02.2015
-% -fixed bug when 'option' contains 2 options
-% - argument 'folder' not tested
-% - use off both options and search path does not work
-%
-% Updated by Philippe C. Dixon April 2015
-% - fixed small bug on MAC platform
-% - Users can select 'extension' and 'search file' simultaneously
-% - extra error checking added
-%
-% Updated by Philippe C. Dixon June 2015
-% - improved help with examples
-%
-% Updated by Philippe C. Dixon Jan 2016
-% - replaced call to function 'slash' with Matlab embedded 
-%   function 'filesep'
-
-
-
-% Set arguments
-%
-pth = '';
-fld = 'all';
-src = 'all';
-other = [];
-
-if ~iseven(nargin)
-    error('missing argument pair')
+% Check if the number of input arguments is even
+if mod(nargin, 2) ~= 0
+    error('Invalid input arguments. Each property name must have a corresponding value.');
 end
 
+% Parse and store input arguments in a struct
+properties = struct();
 for i = 1:2:nargin
+    propName = varargin{i};
+    propValue = varargin{i + 1};
+    % Replace spaces with underscores in property names
+    propName = strrep(propName, ' ', '_');
+    properties.(propName) = propValue;
+end
 
-    switch varargin{i}
-          
-        case {'pth','path','fld'}
-            pth = varargin{i+1};
-        
-        case 'folder'
-            fld = varargin{i+1};
-            
-        case {'search','search path'}
-            src = varargin{i+1};
-  
-        otherwise
-            other = [other; varargin(i),varargin(i+1)];
+
+% update for different input options
+properties = clean_properties(properties);
+
+% Check if the 'path' property is provided
+if ~isfield(properties, 'path')
+    error('The ''path'' property is required.');
+end
+
+% check extension input
+if isfield(properties, 'extension')
+    if isempty(strfind(properties.extension, '.'))
+        properties.extension = ['.', properties.extension];
     end
 end
 
 
-if isempty(pth)
-    fl = {};
-    return
+% Convert all property values to strings
+properties = structfun(@convertToString, properties, 'UniformOutput', false);
+
+% Start recursive file search
+file_list = search_files(properties.path, properties);
+
+% Convert the cell array of file paths to a 1-column array (to match
+% the previous function output)
+file_list = file_list(:);
+
+% If the result is an empty 1-column array, return an empty cell array
+if isempty(file_list)
+    file_list = {};
 end
 
 
-% Check for use of 2 'other' cases
-%
-[r,~] = size(other);
+function file_list = search_files(path, properties)
+% Initialize an empty cell array to store the file paths
+file_list = {};
 
-if r <=1
-    fl = fldengine(pth,fld,src,other);
-elseif r==2    
-    fl1 = fldengine(pth,fld,src,other(1,:));
-    fl2 = fldengine(pth,fld,src,other(2,:));
-    fl = intersect(fl1,fl2);
-else
-    error('too many arguments for other input')
-end
+% Get a list of all files and folders in the current path
+filesAndFolders = dir(path);
 
+% Loop through each item in the current path
+for i = 1:length(filesAndFolders)
+    item = filesAndFolders(i);
 
+    % Skip '.' and '..' directories (an extreme use case)
+    if strcmp(item.name, '.') || strcmp(item.name, '..')
+        continue;
+    end
 
-% == EMBEDDED FUNCTIONS ========================================================
-
-
-function fl =fldengine(pth,fld,src,other)
-
-s = filesep;    % determine slash direction based on computer type
-
-if ~strcmp(pth(end),s)
-    pth = [pth,s];
-end
-
-fl = {};
-if strcmp(fld,'all')  %if true, doesn't recurse, goes to src engine
-    fl = srcengine(pth,src,other);
-    
-else
-    [~,p] = directory(pth);
-    
-    for i = 1:length(p)
-        if strcmp(p{i},fld)
-            plate = srcengine([pth,p{i}],src,other);
-        else
-            plate = fldengine([pth,p{i}],fld,src,other);
+    % Check if the item is a file
+    if item.isdir == 0
+        % Check if the file matches the search criteria
+        if check_file_match(item, path, properties)
+            file_list{end+1} = fullfile(path, item.name);
         end
-        fl = [fl;plate];
+    else
+        % Recursively search subfolders
+        subfolder_path = fullfile(path, item.name);
+        subfolder_files = search_files(subfolder_path, properties);
+        file_list = [file_list, subfolder_files];
     end
 end
 
 
-function fl = srcengine(pth,src,other)
-
-s = filesep;
-
-if ~strcmp(pth(end),s)
-    pth = [pth,s];
-end
-
-fl = {};
-[f,p] = directory(pth);    %if pth is terminal folder f contains files p is empty
-
-
-if strcmp(src,'all') %if you specify no folder, defaults 'all';see if there are any of the spec files in the folder
-    fl = initiatefxn(pth,f,other); % change
-    
-elseif ~isempty(strfind(pth,src))
-    fl = initiatefxn(pth,f,other);
-end
-
-for i = 1:length(p)%this recursive step will occur downstream from the folder
-    plate = srcengine([pth,p{i}],src,other);            %recurse, but now the path is now the subfolder
-    fl = [fl;plate];
-end
-
-if isin(computer, 'MACI') %searches for anymore weird '\' in mac intel
-    for i = 1:length(fl)
-        indx  = strfind(fl{i},'\');
-        if ~isempty(indx)
-            fl{i} = [fl{i}(1:indx-1), fl{i}(indx+1:end)];
-        end
+function match = check_file_match(item, current_folder, properties)
+% Check if the file has the specified extension (if 'extension' property is provided)
+if isfield(properties, 'extension')
+    ext = convertToString(properties.extension);
+    [~, ~, fileext] = fileparts(item.name);
+    if ~strcmp(fileext, ext)
+        match = false;
+        return;
     end
 end
 
+% Check if the file name contains the specified search string (if 'search_file' property is provided)
+if isfield(properties, 'file')
+    searchString = convertToString(properties.search_file);
+    if isempty(strfind(item.name, searchString))
+        match = false;
+        return;
+    end
+end
 
-function fl = initiatefxn(pth,filename,other)
+% Check if the file's path contains the specified search string (if 'search_path' property is provided)
+if isfield(properties, 'substring')
+    searchString = convertToString(properties.search_path);
+    if isempty(strfind(current_folder, searchString))
+        match = false;
+        return;
+    end
+end
+
+% Check if the file is in the specified folder (if 'folder' property is provided)
+if isfield(properties, 'subfolder')
+    folderName = convertToString(properties.folder);
+    folderPathParts = strsplit(current_folder, filesep);
+    if ~any(strcmp(folderName, folderPathParts))
+        match = false;
+        return;
+    end
+end
+
+% If none of the conditions above are met, the file matches the criteria
+match = true;
 
 
-if isempty(other)
-    fl = concatfiles(pth,filename);
+function str = convertToString(input)
+if isstring(input) || ischar(input)
+    str = char(input);
 else
-    
-    switch other{1,1}
-        
-        case {'extension', 'ext'}
-            fl = findextension(pth,filename,other{1,2});                 %filename can be a cell array of filenames
-            
-        case 'search file'
-            fl = searchfile(pth,filename,other{1,2}); 
-    end
+    error('Input must be a string.');
 end
 
 
-function r = concatfiles(pth,fls)
-r = [];
-for i = 1:length(fls)
-    r = [r;{concatfile(pth,fls{i})}];
+
+function properties = clean_properties(properties)
+
+
+if isfield(properties, 'pth')
+    properties.path = properties.pth;
+end
+if isfield(properties, 'fld')
+    properties.path = properties.fld;
+end
+if isfield(properties, 'ext')
+    properties.extension = properties.ext;
+end
+
+if isfield(properties, 'search_file')
+    properties.file = properties.search_file;
+end
+
+if isfield(properties, 'folder')
+    properties.subfolder = properties.folder;
+end
+
+if isfield(properties, 'search_path')
+    properties.substring = properties.search_path;
 end
 
 
-function r = findextension(pth,fl,ext)
-r = [];
-ext = strrep(ext,'.','');
-
-for i = 1:length(fl)
-    indx = max(findstr(fl{i},'.'));
-    if isempty(indx)
-        continue
-    elseif strcmpi(fl{i}(indx+1:end),ext)
-        r = [r;{concatfile(pth,fl{i})}];
-    end
-end
 
 
-function r = searchfile(pth,fl,src)
 
-r = [];
-for i = 1:length(fl)
-    if ~isempty(findstr(fl{i},src))
-        r = [r;{concatfile(pth,fl{i})}];
-    end
-end
+
+
