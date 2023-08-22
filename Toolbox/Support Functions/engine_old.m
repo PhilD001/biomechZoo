@@ -1,6 +1,6 @@
-function fl = engine(varargin)
+function fl = engine_old(varargin)
 
-% fl = ENGINE(varargin) is a file searching algorithm
+% fl = ENGINE_OLD(varargin) is a file searching algorithm
 %
 % inputs are in pairs where the first element is the property name and the second is a property value
 % The 'path' property is required.  All other properties are optional. All arguments must be strings.
