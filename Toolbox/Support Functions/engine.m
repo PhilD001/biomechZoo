@@ -158,7 +158,7 @@ end
 
 % Check if the file name contains the specified search string (if 'search_file' property is provided)
 if isfield(properties, 'file')
-    searchString = convertToString(properties.search_file);
+    searchString = convertToString(properties.file);
     if isempty(strfind(item.name, searchString))
         match = false;
         return;
@@ -167,7 +167,7 @@ end
 
 % Check if the file's path contains the specified search string (if 'search_path' property is provided)
 if isfield(properties, 'substring')
-    searchString = convertToString(properties.search_path);
+    searchString = convertToString(properties.substring);
     if ~contains(current_folder, searchString)
         match = false;
         return;
@@ -176,7 +176,7 @@ end
 
 % Check if the file is in the specified folder (if 'folder' property is provided)
 if isfield(properties, 'subfolder')
-    folderName = convertToString(properties.folder);
+    folderName = convertToString(properties.subfolder);
     folderPathParts = strsplit(current_folder, filesep);
     if ~any(strcmp(folderName, folderPathParts))
         match = false;
