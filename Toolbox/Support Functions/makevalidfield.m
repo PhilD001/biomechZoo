@@ -31,122 +31,61 @@ function ch = makevalidfield(ch)
 % - Added '^,=' as invalid fields
 % - Truncates any field that exceeds MATLAB's maximum name length
 % - Converts numeric channel names x to nx
+%
+% Updated by Oussama Jlassi and Philippe C. Dixon Aug 2023
+% - Improved code execution speed
+% -------------------------------------------
 
-if isnumeric(ch)
-    ch = ['n',num2str(ch)];
-    ch = makevalidfield(ch);
-end
-
-if length(ch)>63
-    ch = ch(1:63);
-    ch = makevalidfield(ch);
-end
-
-if ~isempty(strfind(ch,' '))
-    ch = strrep(ch,' ','_');
-    ch = makevalidfield(ch);
-
-elseif isempty(ch)
+if isempty(ch)
     ch = 'empty';
+else
+
+    characters_to_replace = {'-', '[', ']', '^', '=', '(', ')', '+', '.', '\', '?', ',', ':', ''''};
+
+    for i = 1:length(characters_to_replace)
+        ch = strrep(ch, characters_to_replace{i}, '');
+    end
+
+    replacements = {
+        ' ', '_';
+        '#', 'numbersign';
+        '%', 'percent';
+        '$', 'dollarsign'
+    };
+
+    for i = 1:size(replacements, 1)
+        ch = strrep(ch, replacements{i, 1}, replacements{i, 2});
+    end
+
+    if contains(ch,'*')
+        ch = 'star';
+    end
+    if ~isempty(ch) && isnumeric(ch(1)) && length(ch) == 1
+        ch = ['marker', ch];
+    end
+
+    if ~isempty(ch) && isnumeric(ch(1)) && length(ch) ~= 1
+        ch = ch(2:end);
+    end
+
+    if strcmp(ch(1), '_')
+        ch = ch(2:end);
+    end
+
+    % Check if the string starts with a letter (A-Z or a-z)
+    isValid = isletter(ch(1));
+
+    if isValid
+        % Check if the string contains only ASCII letters, digits, and underscores
+        isValid = all(isletter(ch) | ismember(ch, '0123456789_'));
+    end
+    if ~isValid
+        disp(['invalid field name ', ch, ' ...converting it to its hexadecimal representation'])
+        ch = dec2hex(uint16(ch));
+    end
     
-elseif ~isempty(strfind(ch,'-'))
-    ch = strrep(ch,'-','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'['))
-    ch = strrep(ch,'[','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,']'))
-    ch = strrep(ch,']','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'^'))
-    ch = strrep(ch,'^','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'='))
-    ch = strrep(ch,'=','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'('))
-    ch = strrep(ch,'(','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,')'))
-    ch = strrep(ch,')','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'+'))
-    ch = strrep(ch,'+','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'.'))
-    ch = strrep(ch,'.','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'\'))
-    ch = strrep(ch,'\','');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'?'))
-    ch = strrep(ch,'?','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,','))
-    ch = strrep(ch,',','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'*'))
-    ch = 'star';
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,'#'))
-    ch = strrep(ch,'#','numbersign');
-    ch = makevalidfield(ch);
-
-elseif ~isempty(strfind(ch,':'))
-    ch = strrep(ch,':','');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'%'))
-    indx = strfind(ch,'%');
-    ch = [ch(1:indx-1),'percent',ch(indx+1:end)];
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'$'))
-    ch = strrep(ch,'$','dollarsign');
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(strfind(ch,'/'))
-    indx = strfind(ch,'/');
-    ch = [ch(1:indx-1),'per',ch(indx+1:end)];
-    ch = makevalidfield(ch);
-    
-elseif ~isempty(str2num(ch)) && length(ch) ==1  %#ok<ST2NM> % don't change
-    ch = ['marker',ch];
-    ch = makevalidfield(ch);
-
-elseif ~isempty(str2num(ch(1))) && length(ch) ~=1 %#ok<ST2NM> % don't change
-    ch = ch(2:end);
-    ch = makevalidfield(ch);
-
-elseif strfind(ch(1),'_')
-    ch = ch(2:end);
-    ch = makevalidfield(ch);
-    
-elseif strfind(ch,'''')
-    ch = strrep(ch,'''','');
-    ch = makevalidfield(ch);  
-
+    % Truncate the channel name if it exceeds the maximum allowed length
+    if length(ch)>namelengthmax
+        ch = ch(1:namelengthmax);
+    end
 end
-
-% if anything is still bad deal with it
-a = struct;
-try
-   a.(ch) = 3;
-catch 
-    disp(['invalid field name ', ch, ' ...ignoring'])
-    ch = 'invalid_field_name';
-end 
-

@@ -1,4 +1,4 @@
-function fl = engine_old(varargin)
+function fl = engine(varargin)
 
 % fl = ENGINE(varargin) is a file searching algorithm
 %

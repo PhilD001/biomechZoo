@@ -60,6 +60,9 @@ function data =readc3d(fname)
 % Updated by Philippe C. Dixon March 2022
 % - updated reading of header to deal with long trials. See: 
 % https://www.mathworks.com/matlabcentral/answers/79368-use-of-the-fread-function
+%
+% Updated by Oussama Jlassi Aug 2023
+% -Reduce the function findzeros' run time
 % -------------------------------------------
 
 mtype = getmachinecode(fname);
@@ -379,10 +382,7 @@ r = fread(fid,1,'uint8');
 fclose(fid);
 
 function r = findzeros(data)
-indx = find(data(:,1)==0);
-for i = 2:3
-    nindx = find(data(:,i)==0);
-    indx = intersect(indx,nindx);
-end
-
-r = indx;
+% Find indices of rows where all columns have zero values
+allZeroRows = all(data == 0, 2);
+%Get indices of the rows with all zeros
+r = find(allZeroRows);

@@ -6,15 +6,15 @@ function file_list = engine(varargin)
 % The 'path' property is required.  All other properties are optional. All arguments must be strings.
 %
 % ARGUMENTS
-%  'pth, 'path' or 'fld'        ...  folder path to begin the search as string
+%  'path', 'pth' or 'fld'       ...  root folder path to begin the search as string
 %  'extension' or 'ext'         ...  type of file to search as string. ex. '.c3d' or 'csv' ('.' not necessary)
 %  'file' or 'search file'      ...  return only files containing specific string ex. '_g_'
-%  'substring' , 'search path'  ...  search for a particular string in the path name ex 'hello' in data/helloworld and data/hellobaby
-%  'subfolder' or 'folder'      ...  search only in folders of a specific name located downstream from the path (string)
+%  'substring' , 'search path'  ...  search for a particular string in the path name ex 'hello' in data/helloworld and data/worldhello
+%  'subfolder' or 'folder'      ...  search only in folders of a specific name located downstream from the root path (string)
 %                                    ex 'helloworld' searches only in folders called 'helloworld'
 %
 % RETURNS
-%  fl                     ...  list of files as cell array of strings
+%  fl                           ...  list of files as cell array of strings
 %
 % e.g. #1 Return all files in the root folder C:/Users/Public which contain the
 % string 'imba':
@@ -24,6 +24,48 @@ function file_list = engine(varargin)
 % located in the subfolder Sample Music:
 % fld = 'C:/Users/Public';
 % fl = engine('path',fld,'search path','Sample Music')
+
+
+% Revision History
+%
+% Created by JJ Loh  2006/09/20
+% Departement of Kinesiology
+% McGill University, Montreal, Quebec Canada
+%
+% Updated by JJ Loh 2006/10/23
+% - function now searches for partners.
+%   the search function will search in the path and not the filename.
+%
+% Updated by Phil Dixon 2008/02/05
+% - engine can now be used on mac intel. functionality on older mac has not
+%   been tested
+%
+% Updated by Phil Dixon 2011/05/03
+% - updated help menu. It is now clear that you can limit search to files
+%   containing a specific string
+% - multiple options can fit into 'options', but only 1 will work currently
+%
+% Updated by Phil Dixon 05.02.2015
+% -fixed bug when 'option' contains 2 options
+% - argument 'folder' not tested
+% - use off both options and search path does not work
+%
+% Updated by Philippe C. Dixon April 2015
+% - fixed small bug on MAC platform
+% - Users can select 'extension' and 'search file' simultaneously
+% - extra error checking added
+%
+% Updated by Philippe C. Dixon June 2015
+% - improved help with examples
+%
+% Updated by Philippe C. Dixon Jan 2016
+% - replaced call to function 'slash' with Matlab embedded 
+%   function 'filesep'
+%
+% Updated by Oussama Jlassi Aug 2023
+% - improve code readability and performance (speed and memory consumption)
+% -------------------------------------------
+ 
 
 % Check if the number of input arguments is even
 if mod(nargin, 2) ~= 0
@@ -49,7 +91,7 @@ if ~isfield(properties, 'path')
     error('The ''path'' property is required.');
 end
 
-% check extension input
+% check extension input (make it work with extension with and without .)  
 if isfield(properties, 'extension')
     if isempty(strfind(properties.extension, '.'))
         properties.extension = ['.', properties.extension];
@@ -64,7 +106,7 @@ properties = structfun(@convertToString, properties, 'UniformOutput', false);
 file_list = search_files(properties.path, properties);
 
 % Convert the cell array of file paths to a 1-column array (to match
-% the previous function output)
+% the old function output)
 file_list = file_list(:);
 
 % If the result is an empty 1-column array, return an empty cell array
@@ -74,7 +116,6 @@ end
 
 
 function file_list = search_files(path, properties)
-% Initialize an empty cell array to store the file paths
 file_list = {};
 
 % Get a list of all files and folders in the current path
@@ -117,7 +158,7 @@ end
 
 % Check if the file name contains the specified search string (if 'search_file' property is provided)
 if isfield(properties, 'file')
-    searchString = convertToString(properties.search_file);
+    searchString = convertToString(properties.file);
     if isempty(strfind(item.name, searchString))
         match = false;
         return;
@@ -126,8 +167,8 @@ end
 
 % Check if the file's path contains the specified search string (if 'search_path' property is provided)
 if isfield(properties, 'substring')
-    searchString = convertToString(properties.search_path);
-    if isempty(strfind(current_folder, searchString))
+    searchString = convertToString(properties.substring);
+    if ~contains(current_folder, searchString)
         match = false;
         return;
     end
@@ -135,7 +176,7 @@ end
 
 % Check if the file is in the specified folder (if 'folder' property is provided)
 if isfield(properties, 'subfolder')
-    folderName = convertToString(properties.folder);
+    folderName = convertToString(properties.subfolder);
     folderPathParts = strsplit(current_folder, filesep);
     if ~any(strcmp(folderName, folderPathParts))
         match = false;
@@ -154,36 +195,19 @@ else
     error('Input must be a string.');
 end
 
-
-
 function properties = clean_properties(properties)
 
+fieldsToMap = {
+    'pth', 'path';
+    'fld', 'path';
+    'ext', 'extension';
+    'search_file', 'file';
+    'folder', 'subfolder';
+    'search_path', 'substring';
+};
 
-if isfield(properties, 'pth')
-    properties.path = properties.pth;
+for i = 1:size(fieldsToMap, 1)
+    if isfield(properties, fieldsToMap{i, 1})
+        properties.(fieldsToMap{i, 2}) = properties.(fieldsToMap{i, 1});
+    end
 end
-if isfield(properties, 'fld')
-    properties.path = properties.fld;
-end
-if isfield(properties, 'ext')
-    properties.extension = properties.ext;
-end
-
-if isfield(properties, 'search_file')
-    properties.file = properties.search_file;
-end
-
-if isfield(properties, 'folder')
-    properties.subfolder = properties.folder;
-end
-
-if isfield(properties, 'search_path')
-    properties.substring = properties.search_path;
-end
-
-
-
-
-
-
-
