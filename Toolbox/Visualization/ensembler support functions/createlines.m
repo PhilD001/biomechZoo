@@ -70,14 +70,14 @@ for j = 1:length(axs)
             stop_load = true;
             return
         end
-        
+
+        set(ax,'XLim',[-inf inf]);
+        set(ax,'YLim',[-inf inf]);
+     
         ln = line('parent',ax,'ydata',ydata,'xdata',xdata,'userdata',fl,...
             'buttondownfcn',get(ax,'buttondownfcn'),'LineWidth',settings.regularLineWidth,...
              'color',settings.regularLineColor);
-
-        middleXIick = floor(length(data.(ch).line) / 2);
-        xticks(ax, 0:middleXIick:length(data.(ch).line)-1)
-
+      
         evt = fieldnames(data.(ch).event);
         for e = 1:length(evt)
             text('parent',ax,'position',[data.(ch).event.(evt{e})(1)+offset data.(ch).event.(evt{e})(2)],...

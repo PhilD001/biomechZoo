@@ -795,11 +795,15 @@ switch action
         ensembler_msgbox(fld,[f,' loaded'])
         
     case 'bar graph'
-        makebar
+        make_box_whisker(p,f,fld,settings,'bar')
         ensembler_msgbox(fld,'Bar graphs created')
     
+    case 'violin graph'
+        make_box_whisker(p,f,fld,settings,'violin')
+        ensembler_msgbox(fld,'Violin graphs created')
+
     case 'box whisker'
-        make_box_whisker(p,f,fld,settings)
+        make_box_whisker(p,f,fld,settings,'whisker')
         ensembler_msgbox(fld,'Box and whisker graphs created')
 
     case 'normative PiG Kinematics'
