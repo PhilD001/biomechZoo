@@ -31,24 +31,46 @@ for i = 1:size(figs, 1)
     for j = 1:length(axs)
         ch = get(axs(j),'tag');
         if ~isempty(ch) && isempty(strfind(ch,' '))
+            ydata = ydataForZooFiles(i).(ch);
             ax = findobj(fig,'type','axes','tag',ch);
             figure(fig.Number)
             axes(ax)
             if strcmp(chartType, 'whisker')
-                bplot(ydataForZooFiles(i).(ch));
+                bplot(ydata);
             elseif strcmp(chartType, 'violin')
                 hold on
-                violin(ydataForZooFiles(i).(ch));
+                violin(ydata);
                 hold off
-            elseif strcmp(chartType, 'bar')
-                meanVal = mean(ydataForZooFiles(i).(ch));
+            elseif strcmp(chartType, 'bar(SD)')
+                meanVal = mean(ydata);
+                stdVal = std(ydata);                  
                 if meanVal < 0
-                    set(ax,'YLim',[-inf 0]);
+                    set(ax,'YLim',[meanVal-100-(1.2*stdVal) 0]);
                 else
-                    set(ax,'YLim',[0 inf]);
+                    set(ax,'YLim',[0 meanVal+100+(1.2*stdVal)]);
                 end
+                set(ax,'XLim',[0 2]);
                 hold on
                 bar(meanVal);
+                er = errorbar(meanVal, stdVal, '.');
+                er.Color = [0 0 0];         
+                er.LineStyle = 'none';
+                hold off
+            elseif strcmp(chartType, 'bar(CI)')
+                meanVal = mean(ydata);
+                stdVal = std(ydata);  
+                ciVal = 1.96*stdVal./sqrt(length(ydata));
+                if meanVal < 0
+                    set(ax,'YLim',[meanVal-100-(1.2*ciVal) 0]);
+                else
+                    set(ax,'YLim',[0 meanVal+100+(1.2*ciVal)]);
+                end
+                set(ax,'XLim',[0 2]);
+                hold on
+                bar(meanVal);
+                er = errorbar(meanVal, ciVal, '.');
+                er.Color = [0 0 0];         
+                er.LineStyle = 'none';
                 hold off
             end
         end

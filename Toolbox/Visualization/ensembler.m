@@ -226,7 +226,7 @@ switch action
     case 'axisid'
         axisid
         
-    case 'bar color'
+    case 'color'
         ax = findobj(gcf,'type','axes');
         lg = findobj(gcf,'type','axes','tag','legend');
         ax = setdiff(ax,lg);
@@ -794,10 +794,13 @@ switch action
         loadfile(f,p,findobj('type','figure'));
         ensembler_msgbox(fld,[f,' loaded'])
         
-    case 'bar graph'
-        make_box_whisker(p,f,fld,settings,'bar')
+    case 'bar graph (SD)'
+        make_box_whisker(p,f,fld,settings,'bar(SD)')
         ensembler_msgbox(fld,'Bar graphs created')
     
+    case 'bar graph (CI)'
+        make_box_whisker(p,f,fld,settings,'bar(CI)')
+        ensembler_msgbox(fld,'Bar graphs created')
     case 'violin graph'
         make_box_whisker(p,f,fld,settings,'violin')
         ensembler_msgbox(fld,'Violin graphs created')
