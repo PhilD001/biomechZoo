@@ -1,4 +1,4 @@
-function loaddata(fld,figs,settings)
+function loaddata(fld,figs,settings,color)
 
 % LOADDATA(fld,figs,settings) loads line and event data into ensembler
 
@@ -23,7 +23,7 @@ for i = 1:length(fl)
     data = zload(fl{i});                             % load zoo data
     fig = findfigure(fl{i},figs);                    % find in which figure it belongs
     batchdisp(fl{i},'loading')                       % keep old version also
-    stop_load = createlines(fig,data,fl{i},settings);           % draw line
+    stop_load = createlines(fig,data,fl{i},settings,color);           % draw line
     
     if stop_load
         break

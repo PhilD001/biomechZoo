@@ -1,4 +1,4 @@
-function updatedata(fld,settings)
+function updatedata(fld,settings,color)
 % UPDATADATA is a stand-alone support function for ensembler
 
 delete(findobj('type','line'));
@@ -9,5 +9,5 @@ delete(findobj('type','bar'));
 delete(findobj('type','ErrorBar'));
 delete(findobj('string','\bullet'));
 %--reload-----
-loaddata(fld,findobj('type','figure'),settings);
+loaddata(fld,findobj('type','figure'),settings,color);
 clear999

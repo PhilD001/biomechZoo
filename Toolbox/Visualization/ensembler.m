@@ -142,7 +142,7 @@ settings = ensembler_settings;
 
 curAx = ensembler_axis_highlight(false);       % reset axis highlight
 
-
+global combine chartType chartColor
 
 ensembler_msgbox(fld)                 % print message to user
 
@@ -227,40 +227,13 @@ switch action
         axisid
         
     case 'color'
-        ax = findobj(gcf,'type','axes');
-        lg = findobj(gcf,'type','axes','tag','legend');
-        ax = setdiff(ax,lg);
-        
-        if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
-            tg = get(findobj(ax,'type','hggroup'),'tag');
-        else
-            tg = get(findobj('type','bar'),'tag');
-        end
-        
-        tg = setdiff(tg,'ebar');
-        
         col = colorlist;
-        a = associatedlg(tg,col(:,1)');
-        
-        for i = 1:length(a(:,1))
-            
-            if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
-                br = findobj(ax,'type','hggroup','tag',a{i,1});
-            else
-                br = findobj(ax,'type','bar','tag',a{i,1});
-            end
-            
-            
-            if length(a{i,2})==1
-                set(br,'FaceColor',a{i,2});
-            else
-                indx = ismember(col(:,1),a{i,2})==1;
-                ccol = col(indx,2);
-                ccol = ccol{1};
-                set(br,'FaceColor',ccol)
-            end
-            
-        end
+        a = associatedlg({},col(:,1)');
+
+        indx = ismember(col(:,1),a{1,2})==1;
+        ccol = col(indx,2);
+        chartColor = ccol{1};
+        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
         
     case 'buttondown'
         buttondown(settings)
@@ -355,7 +328,8 @@ switch action
         end
         
     case 'combine'
-        combine(settings)
+        combine = 1;
+        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
         ensembler_msgbox(fld,'Data combined')
         
     case 'combine all'
@@ -714,7 +688,7 @@ switch action
         legend(hnd,val,'interpreter','none','units','inches')
         
     case 'line graph'
-        update_ensembler_lines(p,f,fld,settings)
+        update_ensembler_lines(p,f,fld,settings,chartColor)
         ensembler_msgbox(fld,'Line chart updated')
 
     case 'line style'
@@ -753,11 +727,12 @@ switch action
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
         col = colorlist;
-        a = associatedlg(tg,col(:,1)');
+        a = associatedlg(tg,col(:,1));
         for i = 1:length(a(:,1))
             ln = findobj('type','line','tag',a{i,1});
             [~,indx] = ismember(a{i,2},col(:,1));
             set(ln,'color',col{indx,2});
+            chartColor = col{indx, 2};
         end
         ensembler_msgbox(fld,'Line properties updated')
         
@@ -781,7 +756,7 @@ switch action
             ensembler('set working directory')
         end
         
-        loaddata(fld,findobj('type','figure'),settings);
+        loaddata(fld,findobj('type','figure'),settings,chartColor);
         zoom out
         resize_ensembler
         
@@ -795,18 +770,22 @@ switch action
         ensembler_msgbox(fld,[f,' loaded'])
         
     case 'bar graph (SD)'
-        make_box_whisker(p,f,fld,settings,'bar(SD)')
+        chartType = 'bar(SD)';
+        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
         ensembler_msgbox(fld,'Bar graphs created')
     
     case 'bar graph (CI)'
-        make_box_whisker(p,f,fld,settings,'bar(CI)')
+        chartType = 'bar(CI)';
+        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
         ensembler_msgbox(fld,'Bar graphs created')
     case 'violin graph'
-        make_box_whisker(p,f,fld,settings,'violin')
+        chartType = 'violin';
+        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
         ensembler_msgbox(fld,'Violin graphs created')
 
     case 'box whisker'
-        make_box_whisker(p,f,fld,settings,'whisker')
+        chartType = 'whisker';
+        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
         ensembler_msgbox(fld,'Box and whisker graphs created')
 
     case 'normative PiG Kinematics'

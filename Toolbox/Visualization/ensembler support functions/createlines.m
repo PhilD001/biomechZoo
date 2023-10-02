@@ -1,4 +1,4 @@
-function stop_load = createlines(fig,data,fl,settings)
+function stop_load = createlines(fig,data,fl,settings,color)
 
 % stop_load = CREATELINES(fig,data,fl,settings) used by ensembler GUI to 
 % plot lines in each axis
@@ -73,10 +73,14 @@ for j = 1:length(axs)
 
         set(ax,'XLim',[-inf inf]);
         set(ax,'YLim',[-inf inf]);
-     
+    
+        if isempty(color)
+            color = settings.regularLineColor;
+        end
+
         ln = line('parent',ax,'ydata',ydata,'xdata',xdata,'userdata',fl,...
             'buttondownfcn',get(ax,'buttondownfcn'),'LineWidth',settings.regularLineWidth,...
-             'color',settings.regularLineColor);
+             'color',color);
       
         evt = fieldnames(data.(ch).event);
         for e = 1:length(evt)

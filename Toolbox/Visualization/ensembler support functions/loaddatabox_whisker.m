@@ -1,4 +1,4 @@
-function loaddatabox_whisker(fld,figs,settings,chartType)
+function loaddatabox_whisker(fld,figs,settings, combine, chartType,color)
 
 % LOADDATABOX_WHISKER(fld,figs,settings) loads box and whisker data into ensembler
 
@@ -31,43 +31,91 @@ for i = 1:size(figs, 1)
     for j = 1:length(axs)
         ch = get(axs(j),'tag');
         if ~isempty(ch) && isempty(strfind(ch,' '))
-            ydata = ydataForZooFiles(i).(ch);
+            if(combine)
+                ydata = [];
+                for k = 1:size(figs, 1)
+                    figYdata = findfigure(fl{k},figs);
+                    ydata = cat(k, ydata, ydataForZooFiles(figYdata.Number).(ch));
+                end
+            else
+                ydata = ydataForZooFiles(i).(ch);
+            end
             ax = findobj(fig,'type','axes','tag',ch);
             figure(fig.Number)
             axes(ax)
+            set(ax,'XLim',[-inf inf]);
+            if(combine)
+                set(ax,'YLim',[-inf inf])
+            end
             if strcmp(chartType, 'whisker')
-                bplot(ydata);
+                if ~isempty(color)
+                    bplot(ydata,'color',color);
+                else
+                    bplot(ydata);
+                end
             elseif strcmp(chartType, 'violin')
                 hold on
-                violin(ydata);
+                if ~isempty(color)
+                    violin(ydata,'facecolor', color);
+                else
+                    violin(ydata);
+                end
                 hold off
             elseif strcmp(chartType, 'bar(SD)')
-                meanVal = mean(ydata);
-                stdVal = std(ydata);                  
-                if meanVal < 0
-                    set(ax,'YLim',[meanVal-100-(1.2*stdVal) 0]);
+                meanVal = [];
+                stdVal = [];
+                if(combine)
+                    for k = 1:ndims(ydata)
+                        meanVal = cat(k, meanVal, mean(ydata(:, k)));
+                        stdVal = cat(k, stdVal, std(ydata(:, k)));
+                    end
                 else
-                    set(ax,'YLim',[0 meanVal+100+(1.2*stdVal)]);
+                    meanVal = mean(ydata);
+                    stdVal = std(ydata);  
+                    set(ax,'XLim',[0 2]);
+                end                 
+                if min(meanVal) < 0
+                    set(ax,'YLim',[max(meanVal)-100-(1.2*max(stdVal)) 0]);
+                else
+                    set(ax,'YLim',[0 max(meanVal)+100+(1.2*max(stdVal))]);
                 end
-                set(ax,'XLim',[0 2]);
                 hold on
-                bar(meanVal);
+                if ~isempty(color)
+                    bar(meanVal,'FaceColor', color);
+                else
+                    bar(meanVal);
+                end
                 er = errorbar(meanVal, stdVal, '.');
                 er.Color = [0 0 0];         
                 er.LineStyle = 'none';
                 hold off
             elseif strcmp(chartType, 'bar(CI)')
-                meanVal = mean(ydata);
-                stdVal = std(ydata);  
-                ciVal = 1.96*stdVal./sqrt(length(ydata));
-                if meanVal < 0
-                    set(ax,'YLim',[meanVal-100-(1.2*ciVal) 0]);
+                meanVal = [];
+                stdVal = [];
+                ciVal = [];
+                if(combine)
+                    for k = 1:ndims(ydata)
+                        meanVal = cat(k, meanVal, mean(ydata(:, k)));
+                        stdVal = cat(k, stdVal, std(ydata(:, k)));
+                        ciVal = cat(k, ciVal, 1.96*stdVal(k)./sqrt(length(ydata(:, k))));
+                    end
                 else
-                    set(ax,'YLim',[0 meanVal+100+(1.2*ciVal)]);
+                    meanVal = mean(ydata);
+                    stdVal = std(ydata);  
+                    ciVal = 1.96*stdVal./sqrt(length(ydata));
+                    set(ax,'XLim',[0 2]);
                 end
-                set(ax,'XLim',[0 2]);
+                if min(meanVal) < 0
+                    set(ax,'YLim',[max(meanVal)-100-(1.2*max(ciVal)) 0]);
+                else
+                    set(ax,'YLim',[0 max(meanVal)+100+(1.2*max(ciVal))]);
+                end
                 hold on
-                bar(meanVal);
+                if ~isempty(color)
+                    bar(meanVal,'FaceColor', color);
+                else
+                    bar(meanVal);
+                end
                 er = errorbar(meanVal, ciVal, '.');
                 er.Color = [0 0 0];         
                 er.LineStyle = 'none';
