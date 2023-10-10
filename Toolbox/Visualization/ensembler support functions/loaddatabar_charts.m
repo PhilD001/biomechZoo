@@ -1,4 +1,4 @@
-function loaddatabox_whisker(fld,figs,settings, combine, chartType,color)
+function loaddatabar_charts(fld,figs,settings,combine,chartType,color)
 
 % LOADDATABOX_WHISKER(fld,figs,settings) loads box and whisker data into ensembler
 
@@ -25,9 +25,10 @@ for i = 1:length(fl)
             end
         end
     end
-end
+end  
 for i = 1:size(figs, 1)
     fig = findfigure(fl{i},figs);
+    axs = findobj(fig,'type','axes');
     for j = 1:length(axs)
         ch = get(axs(j),'tag');
         if ~isempty(ch) && isempty(strfind(ch,' '))
@@ -82,6 +83,7 @@ for i = 1:size(figs, 1)
                 hold on
                 if ~isempty(color)
                     bar(meanVal,'FaceColor', color);
+                    
                 else
                     bar(meanVal);
                 end

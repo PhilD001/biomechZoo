@@ -66,6 +66,7 @@ if i == nfigs % only the master gets uimenu
     uimenu(mn,'label','combine data','callback','ensembler(''combine'')','separator','on');
     uimenu(mn,'label','combine all','callback','ensembler(''combine custom'')');
     uimenu(mn,'label','combine within','callback','ensembler(''combine within'')');
+    uimenu(mn,'label','uncombine','callback','ensembler(''uncombine'')')
     uimenu(mn,'label','clear outliers','callback','ensembler(''clear outliers'')','separator','on');
     uimenu(mn,'label','clear all','callback','ensembler(''clear all'')');
     

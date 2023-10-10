@@ -1,4 +1,4 @@
-function make_box_whisker(p,f,fld,settings,isCombine,chartType,color)
+function make_bar_charts(p,f,fld,settings,isCombine,chartType,color)
 
 % MAKE_BOX_WHISKER creates box and whisker from ensembler figures
 
@@ -19,7 +19,7 @@ function make_box_whisker(p,f,fld,settings,isCombine,chartType,color)
 % boxplot(x)
 
 
-updatedatabox_whisker(fld,settings,isCombine,chartType,color)
+updatedatabar_charts(fld,settings,isCombine,chartType,color)
     
 end
 

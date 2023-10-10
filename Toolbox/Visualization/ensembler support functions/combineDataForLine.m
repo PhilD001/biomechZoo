@@ -1,4 +1,4 @@
-function combine(settings)
+function combineDataForLine(settings)
 %
 % COMBINE is main function for combining ensembled graphs for different condition windows
 % The following 'objects' will be combined: 
@@ -47,21 +47,5 @@ end
 
 % Update figure names
 %
-figs = findobj('type','figure');
-name = ' ';
-for i = 1:length(figs)
-    n = get(figs(i),'name');
-    if i == 1
-        name = n;
-    else
-        name = [name ' and ',n];
-        delete(figs(i))
-    end
-    
-    
-end
 
-set(gcf,'name',name)
-
-
-
+combineData();

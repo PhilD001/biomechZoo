@@ -227,13 +227,41 @@ switch action
         axisid
         
     case 'color'
+        ax = findobj(gcf,'type','axes');
+        lg = findobj(gcf,'type','axes','tag','legend');
+        ax = setdiff(ax,lg);
+        
+        if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
+            tg = get(findobj(ax,'type','hggroup'),'tag');
+        else
+            if strcmp(chartType, 'whisker')
+                tg = get(findobj('type','rectangle'),'tag');
+            elseif strcmp(chartType, 'violin')
+                tg = get(findobj('type','patch'),'tag');
+            else
+                tg = get(findobj('type','bar'),'tag');
+            end
+        end
+        
+        tg = setdiff(tg,'ebar');
+        
         col = colorlist;
-        a = associatedlg({},col(:,1)');
-
-        indx = ismember(col(:,1),a{1,2})==1;
-        ccol = col(indx,2);
-        chartColor = ccol{1};
-        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
+        a = associatedlg(tg,col(:,1)');
+        
+        for i = 1:length(a(:,1)) 
+            indx = ismember(col(:,1),a{i,2})==1;
+            ccol = col(indx,2);
+            ccol = ccol{1};
+            chartColor = ccol;
+        end
+        if combine
+            uncombineData();
+            combine = 1;
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            combineData();
+        else
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+        end
         
     case 'buttondown'
         buttondown(settings)
@@ -245,6 +273,15 @@ switch action
         clear999outliers(settings)
         resize_ensembler
         ensembler_msgbox(fld,'Outliers cleared')
+
+    case 'uncombine'
+        combine = 0;
+        uncombineData();
+        if strcmp(chartType, 'line')
+            update_ensembler_lines(p,f,fld,settings,chartColor)
+        else
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+        end
         
     case 'clear all'
         lg = findobj('type','axes','tag','legend');
@@ -328,8 +365,17 @@ switch action
         end
         
     case 'combine'
-        combine = 1;
-        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
+        if strcmp(chartType, 'line')
+            uncombineData();
+            combine = 1;
+            update_ensembler_lines(p,f,fld,settings,chartColor)
+            combineDataForLine(settings);
+        else
+            uncombineData();
+            combine = 1;
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            combineData();
+        end
         ensembler_msgbox(fld,'Data combined')
         
     case 'combine all'
@@ -688,7 +734,15 @@ switch action
         legend(hnd,val,'interpreter','none','units','inches')
         
     case 'line graph'
-        update_ensembler_lines(p,f,fld,settings,chartColor)
+        chartType = 'line';
+         if combine
+            uncombineData();
+            combine = 1;
+            update_ensembler_lines(p,f,fld,settings,chartColor)
+            combineDataForLine(settings);
+        else
+            update_ensembler_lines(p,f,fld,settings,chartColor)
+         end
         ensembler_msgbox(fld,'Line chart updated')
 
     case 'line style'
@@ -755,8 +809,8 @@ switch action
         elseif isempty(fld)
             ensembler('set working directory')
         end
-        
-        loaddata(fld,findobj('type','figure'),settings,chartColor);
+        chartType = 'line';
+        update_ensembler_lines(p,f,fld,settings,chartColor)
         zoom out
         resize_ensembler
         
@@ -771,21 +825,50 @@ switch action
         
     case 'bar graph (SD)'
         chartType = 'bar(SD)';
-        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
+        if combine
+            uncombineData();
+            combine = 1;
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            combineData();
+        else
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+        end
         ensembler_msgbox(fld,'Bar graphs created')
     
     case 'bar graph (CI)'
         chartType = 'bar(CI)';
-        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
+        if combine
+            uncombineData();
+            combine = 1;
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            combineData();
+        else
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+        end
         ensembler_msgbox(fld,'Bar graphs created')
+
     case 'violin graph'
         chartType = 'violin';
-        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
+        if combine
+            uncombineData();
+            combine = 1;
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            combineData();
+        else
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+        end
         ensembler_msgbox(fld,'Violin graphs created')
 
     case 'box whisker'
         chartType = 'whisker';
-        make_box_whisker(p,f,fld,settings,combine,chartType,chartColor)
+        if combine
+            uncombineData();
+            combine = 1;
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            combineData();
+        else
+            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+        end
         ensembler_msgbox(fld,'Box and whisker graphs created')
 
     case 'normative PiG Kinematics'
