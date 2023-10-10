@@ -1,4 +1,5 @@
 function uncombineData()      
+% This function is used to uncombine the axes
 figs = findobj('type','figure');
 axesNames = [];
 otherAxes = [];
