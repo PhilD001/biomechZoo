@@ -17,7 +17,16 @@ function combineDataForLine(settings)
 % - Bug fix to search for 'average_line' field instead of exact line width
 %   (see ensembledata)
 
-ax = findensobj('axes',gcf);
+figs = findobj('type','figure');
+for i = 1:length(figs)
+    figObj = findobj(get(figs(i), 'Children'), 'Type', 'uimenu');
+    if ~isempty(figObj)
+        mainObj = figs(i);
+    end
+end
+
+
+ax = findensobj('axes',mainObj);
 
 for i = 1:length(ax)
     tg = get(ax(i),'tag');

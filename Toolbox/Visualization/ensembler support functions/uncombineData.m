@@ -1,14 +1,29 @@
 function uncombineData()      
 figs = findobj('type','figure');
+axesNames = [];
+otherAxes = [];
 for i = 1:length(figs)
     n = get(figs(i),'name');
-    if i == 1
-        name = extractBefore(n, ' and');
-        if isempty(name)
-            name = n;
-        end
-        set(gcf,'name',name)
+    axesNamesForCurrentFig = [];
+    figObj = findobj(get(figs(i), 'Children'), 'Type', 'uimenu');
+    if ~isempty(figObj)
+        mainObj = figs(i);
+    end
+    if contains(n,'and')
+        removeAndStr = replace(n, ' and ', ' ');
+        axesNamesForCurrentFig = split(removeAndStr);
+    end
+    if length(axesNamesForCurrentFig) > 1
+        axesNames = axesNamesForCurrentFig;
     else
         set(figs(i),'visible','on')
+        otherAxes = cat(1, otherAxes, {n});
     end  
+end
+for i = 1:length(otherAxes)
+    axesNames(strcmp(axesNames,otherAxes(i))) = [];
+end
+
+if length(axesNames) == 1
+    set(mainObj,'name',string(axesNames(1)))
 end
