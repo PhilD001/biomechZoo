@@ -452,7 +452,7 @@ switch action
         ch = get(get(curAx,'Title'),'String');
         lines = findobj('type','line','LineWidth',0.5);
         nlines = length(lines);
-        evthnd = findobj('string',settings.textstring);
+        evthnd = findobj('string',settings.string);
         evts =unique(get(evthnd,'Tag'));
         indx = listdlg('promptstring','choose your event type to delete','liststring',evts);
         
@@ -956,6 +956,7 @@ switch action
                 set(txt,'string',a{i,2},'interpreter','none') % interpreter set to none to show underscore
             end
         end
+        
         
     case 'resize axis'
         resize_ensembler

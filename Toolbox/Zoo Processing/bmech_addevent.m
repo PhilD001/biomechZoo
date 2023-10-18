@@ -65,7 +65,7 @@ cd(fld)
 %
 for i = 1:length(fl)
     data = zload(fl{i});
-    batchdisp( fl{i},['adding event ',ename])
+    batchdisp( fl{i},['adding event ',ename, ' for channel ', ch])
     data = addevent_data(data,ch,ename,type, constant);
     if strcmp(ch,'all')
         zsave(fl{i},data,['added ',type,' to all channels'])
