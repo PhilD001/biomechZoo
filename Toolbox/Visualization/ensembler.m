@@ -320,6 +320,7 @@ switch action
         % reset xaxis label
         %
         for i = 1:length(ax)
+            set(ax(i), 'XAxis', matlab.graphics.axis.decorator.NumericRuler)
             set(ax(i),'XTick',[0 0.5 1])
             set(ax(i),'XTickLabel',[0 0.5 1]')
             set(ax(i),'XLim',[0 1])

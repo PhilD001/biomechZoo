@@ -53,13 +53,32 @@ for i = 1:length(fl)
     end
 end
 
-% extract struct to create graphs
+% sort figure the same way each run
+figs = findobj('type','figure');
+other_figs = [];
 for i = 1:length(figs)
-    fig = figs(i);
+    figObj = findobj(get(figs(i), 'Children'), 'Type', 'uimenu');
+    if ~isempty(figObj)
+        mainObj = figs(i);
+    else
+        other_figs = figs(i);
+    end
+end
+
+ordered_figs = [other_figs; mainObj];
+
+
+% extract struct to create graphs
+disp(ordered_figs)
+for i = 1:length(ordered_figs)
+    fig = ordered_figs(i);
     figName = fig.Name;
-    axs = findobj(fig,'type','axes');                        % assumes all figures have the same axes
+    axs = findobj(fig,'type','axes');                       
     
     for j = 1:length(axs)    
+         set(axs(j),'XAxis', matlab.graphics.axis.decorator.NumericRuler); % remove categorital x ticks
+         set(axs(j),'XLim',[-inf inf]);
+
         % Extract matrix of events trials x event type
         ch = get(axs(j),'tag');        
         evts = fieldnames(edataForZooFiles.(figName).(ch).event);
@@ -72,9 +91,9 @@ for i = 1:length(figs)
             if ~isempty(ch) && isempty(strfind(ch,' '))
                 if(combine)
                     edata = [];
-                    for k = 1:length(figs)
+                    for k = 1:length(ordered_figs)
                         edata = cat(k, edata, edataForZooFiles.(figName).(ch).event.(evt));
-                        xpos{count} = [figs(k).Name, ' ', evts{e}];
+                        xpos{count} = [ordered_figs(k).Name, ' ', evts{e}];
                         count = count + 1;
                     end
                 else
@@ -86,12 +105,8 @@ for i = 1:length(figs)
             end
         end
         
-
         % plot event matrices
-        % set(fig, 'CurrentAxes', axs(j))
         axes(axs(j))
-        set(axs(j),'XAxis', matlab.graphics.axis.decorator.NumericRuler); % remove categorital x ticks
-        set(axs(j),'XLim',[-inf inf]);
         if(combine)
             set(axs(j),'YLim',[-inf inf])
         end
@@ -125,12 +140,14 @@ for i = 1:length(figs)
             % plot bar graph
             X = categorical(xpos);
             X = reordercats(X, xpos);
+            % X = 1:1:length(meanVal);
             bar(X, meanVal, 'FaceColor', color);
        
             % Add corresponding error bars
+            %errorbar(X, hb(1).YData, stdVal,'.k');
             er = errorbar(X, meanVal, stdVal, '.');
             er.Color = [0 0 0];
-            er.LineStyle = 'none';
+            er.LineStyle = 'none';           
             hold off
         else
             error(['unknown chart type', chartType])
