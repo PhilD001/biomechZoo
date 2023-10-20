@@ -35,6 +35,7 @@ if nargin==0
     settings.ensembledLineWidth = 1.5;
     settings.ensembledEventWidth = 1.12;
     
-    
+    % for bar charts
+    settings.BarChartColor = [0 0 1];
     
 end

@@ -12,7 +12,7 @@ if isempty(fl)
 end
 
 if isempty(color)
-    color = [0 0 1];
+    color = settings.BarChartColor;
 end
 
 % gather events by type in a struct

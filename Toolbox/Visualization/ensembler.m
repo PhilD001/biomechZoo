@@ -276,8 +276,9 @@ switch action
 
     case 'uncombine'
         combine = 0;
-        uncombineData();
+        uncombineData(combine, chartType);
         if strcmp(chartType, 'line')
+              
             update_ensembler_lines(p,f,fld,settings,chartColor)
         else
             make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
@@ -369,7 +370,6 @@ switch action
         if strcmp(chartType, 'line')
             uncombineData();
             combine = 1;
-            update_ensembler_lines(p,f,fld,settings,chartColor)
             combineDataForLine(settings);
         else
             uncombineData();
