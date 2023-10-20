@@ -70,7 +70,8 @@ for j = 1:length(axs)
             stop_load = true;
             return
         end
-
+        
+        % set(axs,'XAxis', matlab.graphics.axis.decorator.NumericRuler);    % in case we have categorital x ticks
         set(ax,'XLim',[-inf inf]);
         set(ax,'YLim',[-inf inf]);
     

@@ -11,11 +11,19 @@ if isempty(fl)
     ensembler_msgbox(fld,'No zoo files found')
 end
 
+if isempty(color)
+    color = [0 0 1];
+end
+
 % gather events by type in a struct
-ydataForZooFiles(size(figs, 1)) = struct();
+edataForZooFiles = struct();
 for i = 1:length(fl)
     data = zload(fl{i});                                       % load zoo data
     fig = findfigure(fl{i},figs);                              % find in which figure it belongs
+    figName = fig.Name;
+    if ~isfield(edataForZooFiles, figName)
+        edataForZooFiles.(figName) = struct;
+    end
     batchdisp(fl{i},'loading')                                 % keep old version also
     axs = findobj(fig,'type','axes');
     for j = 1:length(axs)
@@ -26,19 +34,19 @@ for i = 1:length(fl)
             if ~isempty(ch) && isempty(strfind(ch,' '))
                 evt_val = data.(ch).event.(evt);
                 evt_val = evt_val(2); % 2 is event value
-                if isfield(ydataForZooFiles(fig.Number), ch)
+                if isfield(edataForZooFiles.(figName), ch)
                     
-                    if ~isfield(ydataForZooFiles(fig.Number).(ch), 'event')
-                        ydataForZooFiles(fig.Number).(ch).event = struct;
+                    if ~isfield(edataForZooFiles.(figName).(ch), 'event')
+                        edataForZooFiles.(figName).(ch).event = struct;
                     end
                     
-                    if isfield(ydataForZooFiles(fig.Number).(ch).event, evt)
-                        ydataForZooFiles(fig.Number).(ch).event.(evt) = cat(1, ydataForZooFiles(fig.Number).(ch).event.(evt), evt_val);
+                    if isfield(edataForZooFiles.(figName).(ch).event, evt)
+                        edataForZooFiles.(figName).(ch).event.(evt) = cat(1, edataForZooFiles.(figName).(ch).event.(evt), evt_val);
                     else
-                        ydataForZooFiles(fig.Number).(ch).event.(evt) = evt_val;
+                        edataForZooFiles.(figName).(ch).event.(evt) = evt_val;
                     end
                 else
-                    ydataForZooFiles(fig.Number).(ch).event.(evt) = evt_val;
+                    edataForZooFiles.(figName).(ch).event.(evt) = evt_val;
                 end
             end
         end
@@ -46,109 +54,85 @@ for i = 1:length(fl)
 end
 
 % extract struct to create graphs
-for i = 1:size(figs, 1)
-    fig = findfigure(fl{i},figs);
-    axs = findobj(fig,'type','axes');
-    for j = 1:length(axs)
-        ch = get(axs(j),'tag');
+for i = 1:length(figs)
+    fig = figs(i);
+    figName = fig.Name;
+    axs = findobj(fig,'type','axes');                        % assumes all figures have the same axes
+    
+    for j = 1:length(axs)    
+        % Extract matrix of events trials x event type
+        ch = get(axs(j),'tag');        
+        evts = fieldnames(edataForZooFiles.(figName).(ch).event);
         
-        evts = fieldnames(data.(ch).event);
+        evt_val_stk = [];
+        xpos = {};
+        count = 1;
         for e = 1:length(evts)
             evt = evts{e};
-            
             if ~isempty(ch) && isempty(strfind(ch,' '))
                 if(combine)
-                    ydata = [];
-                    for k = 1:size(figs, 1)
-                        figYdata = findfigure(fl{k},figs);
-                        ydata = cat(k, ydata, ydataForZooFiles(figYdata.Number).(ch).event.(evt));
+                    edata = [];
+                    for k = 1:length(figs)
+                        edata = cat(k, edata, edataForZooFiles.(figName).(ch).event.(evt));
+                        xpos{count} = [figs(k).Name, '_', evts{e}];
+                        count = count + 1;
                     end
                 else
-                    ydata = ydataForZooFiles(i).(ch).event.(evt);
-                end
-                ax = findobj(fig,'type','axes','tag',ch);
-                figure(fig.Number)
-                axes(ax)
-                set(ax,'XLim',[-inf inf]);
-                if(combine)
-                    set(ax,'YLim',[-inf inf])
-                end
-                if strcmp(chartType, 'whisker')
-                    if ~isempty(color)
-                        bplot(ydata,'color',color);
-                    else
-                        bplot(ydata);
-                    end
-                elseif strcmp(chartType, 'violin')
-                    hold on
-                    if ~isempty(color)
-                        violin(ydata,'facecolor', color);
-                    else
-                        violin(ydata);
-                    end
-                    hold off
-                elseif strcmp(chartType, 'bar(SD)')
-                    meanVal = [];
-                    stdVal = [];
-                    if(combine)
-                        for k = 1:ndims(ydata)
-                            meanVal = cat(k, meanVal, mean(ydata(:, k)));
-                            stdVal = cat(k, stdVal, std(ydata(:, k)));
-                        end
-                    else
-                        meanVal = mean(ydata);
-                        stdVal = std(ydata);
-                        set(ax,'XLim',[0 2]);
-                    end
-                    if min(meanVal) < 0
-                        set(ax,'YLim',[max(meanVal)-100-(1.2*max(stdVal)) 0]);
-                    else
-                        set(ax,'YLim',[0 max(meanVal)+100+(1.2*max(stdVal))]);
-                    end
-                    hold on
-                    if ~isempty(color)
-                        bar(meanVal,'FaceColor', color);
-                        
-                    else
-                        bar(meanVal);
-                    end
-                    er = errorbar(meanVal, stdVal, '.');
-                    er.Color = [0 0 0];
-                    er.LineStyle = 'none';
-                    hold off
-                elseif strcmp(chartType, 'bar(CI)')
-                    meanVal = [];
-                    stdVal = [];
-                    ciVal = [];
-                    if(combine)
-                        for k = 1:ndims(ydata)
-                            meanVal = cat(k, meanVal, mean(ydata(:, k)));
-                            stdVal = cat(k, stdVal, std(ydata(:, k)));
-                            ciVal = cat(k, ciVal, 1.96*stdVal(k)./sqrt(length(ydata(:, k))));
-                        end
-                    else
-                        meanVal = mean(ydata);
-                        stdVal = std(ydata);
-                        ciVal = 1.96*stdVal./sqrt(length(ydata));
-                        set(ax,'XLim',[0 2]);
-                    end
-                    if min(meanVal) < 0
-                        set(ax,'YLim',[max(meanVal)-100-(1.2*max(ciVal)) 0]);
-                    else
-                        set(ax,'YLim',[0 max(meanVal)+100+(1.2*max(ciVal))]);
-                    end
-                    hold on
-                    if ~isempty(color)
-                        bar(meanVal,'FaceColor', color);
-                    else
-                        bar(meanVal);
-                    end
-                    er = errorbar(meanVal, ciVal, '.');
-                    er.Color = [0 0 0];
-                    er.LineStyle = 'none';
-                    hold off
+                    edata = edataForZooFiles.(figName).(ch).event.(evt);
+                    xpos{count} = evts{e};
                 end
             end
+            evt_val_stk = [evt_val_stk edata];
+        end
+        
+
+        % plot event matrices
+        % set(fig, 'CurrentAxes', axs(j))
+        axes(axs(j))
+        set(axs(j),'XAxis', matlab.graphics.axis.decorator.NumericRuler); % remove categorital x ticks
+        set(axs(j),'XLim',[-inf inf]);
+        if(combine)
+            set(axs(j),'YLim',[-inf inf])
+        end
+        if strcmp(chartType, 'whisker')
+           bplot(evt_val_stk,'color',color);  % If ydata is a matrix, there is one box per column
+          
+            
+        elseif strcmp(chartType, 'violin')
+            hold on
+            violin(evt_val_stk,'facecolor', color);
+            
+            hold off
+            
+        elseif contains(chartType, 'bar')
+            
+            meanVal = mean(evt_val_stk, 1);
+            stdVal = std(evt_val_stk, 1);
+                        
+            if strcmp(chartType, 'bar(CI)')
+                stdVal = 1.96*stdVal./sqrt(length(evt_val_stk));
+            end
+                        
+            if min(meanVal) < 0
+                set(axs(j),'YLim',[max(meanVal)-100-(1.2*max(stdVal)) 0]);
+            else
+                set(axs(j),'YLim',[0 max(meanVal)+100+(1.2*max(stdVal))]);
+            end
+            hold on
+          
+            % plot bar graph
+            X = categorical(xpos);
+            X = reordercats(X, xpos);
+            bar(X, meanVal, 'FaceColor', color);
+            % set(get(axs(j), 'XLabel'), 'Interpreter', 'latex')
+            
+            % Add corresponding error bars
+            er = errorbar(X, meanVal, stdVal, '.');
+            er.Color = [0 0 0];
+            er.LineStyle = 'none';
+            hold off
+        else
+            error(['unknown chart type', chartType])
         end
     end
 end
