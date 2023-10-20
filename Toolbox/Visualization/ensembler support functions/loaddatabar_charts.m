@@ -74,15 +74,16 @@ for i = 1:length(figs)
                     edata = [];
                     for k = 1:length(figs)
                         edata = cat(k, edata, edataForZooFiles.(figName).(ch).event.(evt));
-                        xpos{count} = [figs(k).Name, '_', evts{e}];
+                        xpos{count} = [figs(k).Name, ' ', evts{e}];
                         count = count + 1;
                     end
                 else
                     edata = edataForZooFiles.(figName).(ch).event.(evt);
                     xpos{count} = evts{e};
+                    count = count + 1;
                 end
+               evt_val_stk = [evt_val_stk edata];
             end
-            evt_val_stk = [evt_val_stk edata];
         end
         
 
@@ -94,6 +95,7 @@ for i = 1:length(figs)
         if(combine)
             set(axs(j),'YLim',[-inf inf])
         end
+        
         if strcmp(chartType, 'whisker')
            bplot(evt_val_stk,'color',color);  % If ydata is a matrix, there is one box per column
           
@@ -124,8 +126,7 @@ for i = 1:length(figs)
             X = categorical(xpos);
             X = reordercats(X, xpos);
             bar(X, meanVal, 'FaceColor', color);
-            % set(get(axs(j), 'XLabel'), 'Interpreter', 'latex')
-            
+       
             % Add corresponding error bars
             er = errorbar(X, meanVal, stdVal, '.');
             er.Color = [0 0 0];
