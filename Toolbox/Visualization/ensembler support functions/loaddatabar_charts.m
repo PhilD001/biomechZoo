@@ -105,6 +105,10 @@ for i = 1:length(ordered_figs)
             end
         end
         
+        % make x categorical 
+        X = categorical(xpos);
+        X = reordercats(X, xpos);
+        
         % plot event matrices
         axes(axs(j))
         if(combine)
@@ -112,13 +116,13 @@ for i = 1:length(ordered_figs)
         end
         
         if strcmp(chartType, 'whisker')
-           bplot(evt_val_stk,'color',color);  % If ydata is a matrix, there is one box per column
-          
+           bplot(evt_val_stk, X, 'color',color);  % If ydata is a matrix, there is one box per column
             
         elseif strcmp(chartType, 'violin')
             hold on
-            violin(evt_val_stk,'facecolor', color);
-            
+            set(axs(j), 'XTick', 1:1:length(xpos))
+            violin(evt_val_stk); 
+            set(axs(j), 'XTickLabel', xpos, 'XTickLabelRotation', 45)
             hold off
             
         elseif contains(chartType, 'bar')
@@ -138,13 +142,9 @@ for i = 1:length(ordered_figs)
             hold on
           
             % plot bar graph
-            X = categorical(xpos);
-            X = reordercats(X, xpos);
-            % X = 1:1:length(meanVal);
             bar(X, meanVal, 'FaceColor', color);
        
             % Add corresponding error bars
-            %errorbar(X, hb(1).YData, stdVal,'.k');
             er = errorbar(X, meanVal, stdVal, '.');
             er.Color = [0 0 0];
             er.LineStyle = 'none';           
