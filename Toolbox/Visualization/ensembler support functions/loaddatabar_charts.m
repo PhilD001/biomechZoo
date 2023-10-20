@@ -116,8 +116,10 @@ for i = 1:length(ordered_figs)
         end
         
         if strcmp(chartType, 'whisker')
-           bplot(evt_val_stk, X, 'color',color);  % If ydata is a matrix, there is one box per column
-            
+           set(axs(j), 'XTick', 1:1:length(xpos))
+           bplot(evt_val_stk, 'color',color);  % If ydata is a matrix, there is one box per column
+           set(axs(j), 'XTickLabel', xpos, 'XTickLabelRotation', 45)
+           
         elseif strcmp(chartType, 'violin')
             hold on
             set(axs(j), 'XTick', 1:1:length(xpos))
