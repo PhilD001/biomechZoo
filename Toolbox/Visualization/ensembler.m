@@ -135,10 +135,8 @@ global fld                              % give every case access to fld
 global f p                              % give every case acces to [p,f]
 global combine chartType chartColor
 
-
 % default settings look for ensembler objects
-%
-settings = ensembler_settings;       
+settings = ensembler_settings; 
 
 curAx = ensembler_axis_highlight(false);       % reset axis highlight
 
@@ -232,11 +230,12 @@ switch action
         if verLessThan('matlab','8.4.0')    % execute code for R2014a or earlier
             tg = get(findobj(ax,'type','hggroup'),'tag');
         else
-            if strcmp(chartType, 'whisker')
-                tg = get(findobj('type','rectangle'),'tag');
-            elseif strcmp(chartType, 'violin')
+            if contains(chartType, 'whisker')
+                % tg = get(findobj('type','rectangle'),'tag');
+                tg = {'BarChart'};
+            elseif contains(chartType, 'violin')
                 tg = get(findobj('type','patch'),'tag');
-            else
+            elseif contains(chartType, 'bar')
                 tg = get(findobj('type','bar'),'tag');
             end
         end
@@ -746,13 +745,14 @@ switch action
         
     case 'line graph'
         chartType = 'line';
+        LineColor = settings.regularLineColor;
          if combine
             uncombineData();
             combine = 1;
-            update_ensembler_lines(p,f,fld,settings,chartColor)
+            update_ensembler_lines(p,f,fld,settings, LineColor)
             combineDataForLine(settings);
         else
-            update_ensembler_lines(p,f,fld,settings,chartColor)
+            update_ensembler_lines(p,f,fld,settings, LineColor)
          end
         ensembler_msgbox(fld,'Line chart updated')
 

@@ -127,9 +127,14 @@ for i = 1:length(ordered_figs)
         elseif contains(chartType, 'violin')
             hold on
             set(axs(j), 'XTick', 1:1:length(xpos))
-            violin(evt_val_stk);
+            bhnd = violin(evt_val_stk, 'facecolor', color);
             set(axs(j), 'XTickLabel', xpos, 'XTickLabelRotation', 45)
             hold off
+            
+            % generic handles for now
+            for b = 1:length(bhnd)
+                set(bhnd(b), 'Tag', 'BarChart')
+            end
             
         elseif contains(chartType, 'bar')
             
@@ -148,7 +153,9 @@ for i = 1:length(ordered_figs)
             hold on
             
             % plot bar graph
-            bar(X, meanVal, 'FaceColor', color);
+            bhnd = bar(X, meanVal, 'FaceColor', color);
+            % generic handles for now
+            set(bhnd, 'Tag', 'BarChart')
             
             % Add corresponding error bars
             er = errorbar(X, meanVal, stdVal, '.');
