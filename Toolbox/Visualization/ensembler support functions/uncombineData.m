@@ -23,10 +23,17 @@ for i = 1:length(figs)
         otherAxes = cat(1, otherAxes, {n});
     end  
 end
+
 for i = 1:length(otherAxes)
     axesNames(strcmp(axesNames,otherAxes(i))) = [];
 end
 
 if length(axesNames) == 1
     set(mainObj,'name',string(axesNames(1)))
+end
+
+% remove objects from main figure that belong to other figures
+for i = 1:length(otherAxes)
+    objs = findobj(mainObj, 'tag', otherAxes{i});
+    delete(objs)
 end

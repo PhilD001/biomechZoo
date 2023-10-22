@@ -132,8 +132,8 @@ if nargin == 0
 end
 
 global fld                              % give every case access to fld
-
 global f p                              % give every case acces to [p,f]
+global combine chartType chartColor
 
 
 % default settings look for ensembler objects
@@ -141,8 +141,6 @@ global f p                              % give every case acces to [p,f]
 settings = ensembler_settings;       
 
 curAx = ensembler_axis_highlight(false);       % reset axis highlight
-
-global combine chartType chartColor
 
 ensembler_msgbox(fld)                 % print message to user
 
@@ -254,13 +252,14 @@ switch action
             ccol = ccol{1};
             chartColor = ccol;
         end
+        
         if combine
             uncombineData();
             combine = 1;
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            updatedatabar_charts(fld,settings,combine, chartType, chartColor)
             combineData();
         else
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            updatedatabar_charts(fld,settings,combine, chartType, chartColor)
         end
         
     case 'buttondown'
@@ -273,16 +272,6 @@ switch action
         clear999outliers(settings)
         resize_ensembler
         ensembler_msgbox(fld,'Outliers cleared')
-
-    case 'uncombine'
-        combine = 0;
-        uncombineData(combine, chartType);
-        if strcmp(chartType, 'line')
-              
-            update_ensembler_lines(p,f,fld,settings,chartColor)
-        else
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-        end
         
     case 'clear all'
         lg = findobj('type','axes','tag','legend');
@@ -318,8 +307,8 @@ switch action
             delete(lhnd)
             return
         end
+        
         % reset xaxis label
-        %
         for i = 1:length(ax)
             set(ax(i), 'XAxis', matlab.graphics.axis.decorator.NumericRuler)
             set(ax(i),'XTick',[0 0.5 1])
@@ -330,11 +319,9 @@ switch action
             set(ax(i),'XTickMode','auto')
             set(get(ax(i),'XLabel'),'String','')
             set(get(ax(i),'YLabel'),'String','')
-            
         end
         
         ensembler_msgbox(fld,'Data cleared')
-        
         
     case 'clear colorbars'
         clearcolorbars
@@ -349,11 +336,8 @@ switch action
         indx = listdlg('promptstring','choose your event type to clear','liststring',evts);
         
         evt = evts(indx);
-        
         for i = 1:length(evthnd)
-            
             ename = get(evthnd(i),'Tag');
-            
             if ismember(ename,evt)
                 delete(evthnd(i))
             end
@@ -365,16 +349,44 @@ switch action
         if ~isempty(prmt)
             set(prmt,'string','')
         end
+    
+        
+     case {'bar graph (SD)', 'bar graph (CI)', 'violin graph', 'box whisker'}
+        chartType = action;        
+        
+        if combine
+            uncombineData();
+            combine = 1;
+            updatedatabar_charts(fld, settings, combine, chartType, chartColor)
+            combineData();
+        else
+            updatedatabar_charts(fld, settings, combine, chartType, chartColor)
+        end
+        ensembler_msgbox(fld,[charType, ' created'])    
+        
+    case 'uncombine'
+        combine = 0;
+        uncombineData();
+        if ~strcmp(chartType, 'line')
+            updatedatabar_charts(fld, settings, combine, chartType, chartColor)
+        end
         
     case 'combine'
         if strcmp(chartType, 'line')
-            uncombineData();
-            combine = 1;
-            combineDataForLine(settings);
+            
+            % error check for combining without ensembling first
+            if isempty(findobj('LineWidth', settings.ensembledLineWidth))
+                ensembler_msgbox(fld, 'ERROR: Ensemble lines before combining')
+                error('Ensemble lines before combining')
+            else
+                combine = 1;
+                combineDataForLine(settings);
+                combineData();
+            end
         else
             uncombineData();
             combine = 1;
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
+            updatedatabar_charts(fld, settings, combine, chartType, chartColor)
             combineData();
         end
         ensembler_msgbox(fld,'Data combined')
@@ -682,11 +694,9 @@ switch action
         end
         
         % find existing axes
-        %
         ax = findobj(gcf,'type','axes');
         
         % find lines
-        %
         ln = findobj(ax(1),'type','line');
         badln = findobj(ax(1),'type','line','tag','hline');
         ln = setdiff(ln,badln);
@@ -777,7 +787,6 @@ switch action
         end
         ensembler_msgbox(fld,'Line properties updated')
         
-        
     case 'line color'
         tg = get(findobj(gcf,'type','line'),'tag');
         tg = setdiff(tg,{''});
@@ -824,54 +833,6 @@ switch action
         loadfile(f,p,findobj('type','figure'));
         ensembler_msgbox(fld,[f,' loaded'])
         
-    case 'bar graph (SD)'
-        chartType = 'bar(SD)';
-        if combine
-            uncombineData();
-            combine = 1;
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-            combineData();
-        else
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-        end
-        ensembler_msgbox(fld,'Bar graphs created')
-    
-    case 'bar graph (CI)'
-        chartType = 'bar(CI)';
-        if combine
-            uncombineData();
-            combine = 1;
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-            combineData();
-        else
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-        end
-        ensembler_msgbox(fld,'Bar graphs created')
-
-    case 'violin graph'
-        chartType = 'violin';
-        if combine
-            uncombineData();
-            combine = 1;
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-            combineData();
-        else
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-        end
-        ensembler_msgbox(fld,'Violin graphs created')
-
-    case 'box whisker'
-        chartType = 'whisker';
-        if combine
-            uncombineData();
-            combine = 1;
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-            combineData();
-        else
-            make_bar_charts(p,f,fld,settings,combine,chartType,chartColor)
-        end
-        ensembler_msgbox(fld,'Box and whisker graphs created')
-
     case 'normative PiG Kinematics'
         normdata('Schwartz Kinematics');
         

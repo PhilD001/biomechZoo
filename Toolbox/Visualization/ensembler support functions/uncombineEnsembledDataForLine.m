@@ -1,21 +1,11 @@
-function combineDataForLine(settings)
+function uncombineEnsembledDataForLine()
 %
-% COMBINE is main function for combining ensembled graphs for different condition windows
-% The following 'objects' will be combined: 
-% - average lines
-% - variability clouds
-% - event error bars
+% UNCOMBINEENSEMBLEDDATAFORLINE() is used to uncombine lines which whave previously been 
+% ensembled. 
+% 
+% Notes: 
+% - The following 'objects' will be combined: average lines, variability clouds
 
-
-% Updated by Philippe C. Dixon March 2016
-% - compatible with r2014b + 
-%
-% Updated by Philippe C. Dixon July 2016
-% - Fixed bug with ordering of ensemble elements
-%
-% Updated by Philippe C. Dixon July 2016
-% - Bug fix to search for 'average_line' field instead of exact line width
-%   (see ensembledata)
 
 figs = findobj('type','figure');
 for i = 1:length(figs)
@@ -60,3 +50,7 @@ for i = 1:length(ax)
     bottomhnd(pch);
 end
 
+% Update figure names
+%
+
+combineData();

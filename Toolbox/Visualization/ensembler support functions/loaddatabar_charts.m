@@ -29,24 +29,29 @@ for i = 1:length(fl)
     for j = 1:length(axs)
         ch = get(axs(j),'tag');
         evts = fieldnames(data.(ch).event);
-        for e = 1:length(evts)
-            evt = evts{e};
-            if ~isempty(ch) && isempty(strfind(ch,' '))
-                evt_val = data.(ch).event.(evt);
-                evt_val = evt_val(2); % 2 is event value
-                if isfield(edataForZooFiles.(figName), ch)
-                    
-                    if ~isfield(edataForZooFiles.(figName).(ch), 'event')
-                        edataForZooFiles.(figName).(ch).event = struct;
-                    end
-                    
-                    if isfield(edataForZooFiles.(figName).(ch).event, evt)
-                        edataForZooFiles.(figName).(ch).event.(evt) = cat(1, edataForZooFiles.(figName).(ch).event.(evt), evt_val);
+        if isempty(evts)
+           ensembler_msgbox(fld,['WARNING : no events found for channel ', ch, ' remove axes'])
+           warning(['no events found for channel ', ch]);
+        else
+            for e = 1:length(evts)
+                evt = evts{e};
+                if ~isempty(ch) && isempty(strfind(ch,' '))
+                    evt_val = data.(ch).event.(evt);
+                    evt_val = evt_val(2); % 2 is event value
+                    if isfield(edataForZooFiles.(figName), ch)
+                        
+                        if ~isfield(edataForZooFiles.(figName).(ch), 'event')
+                            edataForZooFiles.(figName).(ch).event = struct;
+                        end
+                        
+                        if isfield(edataForZooFiles.(figName).(ch).event, evt)
+                            edataForZooFiles.(figName).(ch).event.(evt) = cat(1, edataForZooFiles.(figName).(ch).event.(evt), evt_val);
+                        else
+                            edataForZooFiles.(figName).(ch).event.(evt) = evt_val;
+                        end
                     else
                         edataForZooFiles.(figName).(ch).event.(evt) = evt_val;
                     end
-                else
-                    edataForZooFiles.(figName).(ch).event.(evt) = evt_val;
                 end
             end
         end
@@ -73,16 +78,15 @@ disp(ordered_figs)
 for i = 1:length(ordered_figs)
     fig = ordered_figs(i);
     figName = fig.Name;
-    axs = findobj(fig,'type','axes');                       
+    axs = findobj(fig,'type','axes');
     
-    for j = 1:length(axs)    
-         set(axs(j),'XAxis', matlab.graphics.axis.decorator.NumericRuler); % remove categorital x ticks
-         set(axs(j),'XLim',[-inf inf]);
-
-        % Extract matrix of events trials x event type
-        ch = get(axs(j),'tag');        
-        evts = fieldnames(edataForZooFiles.(figName).(ch).event);
+    for j = 1:length(axs)
+        set(axs(j),'XAxis', matlab.graphics.axis.decorator.NumericRuler); % remove categorital x ticks
+        set(axs(j),'XLim',[-inf inf]);
         
+        % Extract matrix of events trials x event type
+        ch = get(axs(j),'tag');
+        evts = fieldnames(edataForZooFiles.(figName).(ch).event);
         evt_val_stk = [];
         xpos = {};
         count = 1;
@@ -101,11 +105,11 @@ for i = 1:length(ordered_figs)
                     xpos{count} = evts{e};
                     count = count + 1;
                 end
-               evt_val_stk = [evt_val_stk edata];
+                evt_val_stk = [evt_val_stk edata];
             end
         end
         
-        % make x categorical 
+        % make x categorical
         X = categorical(xpos);
         X = reordercats(X, xpos);
         
@@ -115,15 +119,15 @@ for i = 1:length(ordered_figs)
             set(axs(j),'YLim',[-inf inf])
         end
         
-        if strcmp(chartType, 'whisker')
-           set(axs(j), 'XTick', 1:1:length(xpos))
-           bplot(evt_val_stk, 'color',color);  % If ydata is a matrix, there is one box per column
-           set(axs(j), 'XTickLabel', xpos, 'XTickLabelRotation', 45)
-           
-        elseif strcmp(chartType, 'violin')
+        if contains(chartType, 'box whisker')
+            set(axs(j), 'XTick', 1:1:length(xpos))
+            bplot(evt_val_stk, 'color',color);  % If ydata is a matrix, there is one box per column
+            set(axs(j), 'XTickLabel', xpos, 'XTickLabelRotation', 45)
+            
+        elseif contains(chartType, 'violin')
             hold on
             set(axs(j), 'XTick', 1:1:length(xpos))
-            violin(evt_val_stk); 
+            violin(evt_val_stk);
             set(axs(j), 'XTickLabel', xpos, 'XTickLabelRotation', 45)
             hold off
             
@@ -131,28 +135,28 @@ for i = 1:length(ordered_figs)
             
             meanVal = mean(evt_val_stk, 1);
             stdVal = std(evt_val_stk, 1);
-                        
-            if strcmp(chartType, 'bar(CI)')
+            
+            if contains(chartType, '(CI)')
                 stdVal = 1.96*stdVal./sqrt(length(evt_val_stk));
             end
-                        
+            
             if min(meanVal) < 0
                 set(axs(j),'YLim',[max(meanVal)-100-(1.2*max(stdVal)) 0]);
             else
                 set(axs(j),'YLim',[0 max(meanVal)+100+(1.2*max(stdVal))]);
             end
             hold on
-          
+            
             % plot bar graph
             bar(X, meanVal, 'FaceColor', color);
-       
+            
             % Add corresponding error bars
             er = errorbar(X, meanVal, stdVal, '.');
             er.Color = [0 0 0];
-            er.LineStyle = 'none';           
+            er.LineStyle = 'none';
             hold off
         else
-            error(['unknown chart type', chartType])
+            error(['unknown chart type ', chartType])
         end
     end
 end
