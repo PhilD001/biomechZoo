@@ -1,9 +1,14 @@
 function Q_outdoor= quaternion_line_v2(data,s_pos,parameters)
 % computes quaternion based on acceleration, gyroscope, and magnotometer
-% for sensor s_pos
+% Arguments
+%  data             ...   Struct, zoo file data struct
+%  s_pos            ...   String, sensor position string
+%  parameters       ...   Struct, with the complementary filter parameters setttings
+% 
+% Return
+% Q_outdoor         ...   Quaternion, Quaternion position for sensor
+%
 
-
-%FUSE = ahrsfilter();
 if parameters.HasMagnetometer==true
     g_x= s_pos+"_Gyr_X";
     g_y= s_pos+"_Gyr_Y";

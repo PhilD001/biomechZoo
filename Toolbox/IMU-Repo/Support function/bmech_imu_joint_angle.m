@@ -1,5 +1,13 @@
 function bmech_imu_joint_angle(fld,parameters,segment_pairs)
 
+% ARGUMENTS
+%  fld              ...   root folder to operate on
+%  parameters       ...   Struct, with the complementary filter parameters setttings
+%  segment_pairs    ...   Cell Array, combination of the sensors used for calculating joint angle
+% RETURNS
+%  zoo file with new added channels hipR_flex, hipL_flex, kneeR_flex, kneeL_flex
+% Also see, quaternion_line_v2
+
 if nargin==2
     segment_pairs = { {'trunk', 'thighR'}, {'thighR', 'shankR'},{'trunk', 'thighL'},{'thighL', 'shankL'}};
 end
