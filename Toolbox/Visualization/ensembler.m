@@ -361,7 +361,7 @@ switch action
         else
             updatedatabar_charts(fld, settings, combine, chartType, chartColor)
         end
-        ensembler_msgbox(fld,[charType, ' created'])    
+        ensembler_msgbox(fld,[chartType, ' created'])    
         
     case 'uncombine'
         combine = 0;
