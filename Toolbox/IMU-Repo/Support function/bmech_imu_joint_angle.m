@@ -17,7 +17,7 @@ if nargin==1
     parameters.AccelerometerGain=0.01;
     parameters.MagnetometerGain=0.01;
     parameters.HasMagnetometer=True;
-    parameters.OrientationFormat="quaternion";
+    parameters.OrientationFormat='quaternion';
 end
 
 if nargin==0
@@ -26,7 +26,7 @@ if nargin==0
     parameters.AccelerometerGain=0.01;
     parameters.MagnetometerGain=0.01;
     parameters.HasMagnetometer=True;
-    parameters.OrientationFormat="quaternion";
+    parameters.OrientationFormat='quaternion';
     fld=uigetfolder;
 end
 
@@ -53,7 +53,7 @@ for i = 1:length(segment_pairs)
         QhipR=quat2eul(QhipR);
         hipR_flex= -rad2deg(QhipR);
         
-        data = addchannel_data(data,"hipR_flex",hipR_flex(:,2),'Video');
+        data = addchannel_data(data,'hipR_flex',hipR_flex(:,2),'Video');
     end
     
     % right knee
@@ -63,7 +63,7 @@ for i = 1:length(segment_pairs)
         QkneeR =conj(QthighR) .*QshankR;
         QkneeR=quat2eul(QkneeR);
         kneeR_flex = -rad2deg(QkneeR);
-        data = addchannel_data(data,"kneeR_flex",kneeR_flex(:,1),'Video');
+        data = addchannel_data(data,'kneeR_flex',kneeR_flex(:,1),'Video');
     end
     
     % left hip
@@ -75,7 +75,7 @@ for i = 1:length(segment_pairs)
         hipL_flex= rad2deg(QhipL);
         
         
-        data = addchannel_data(data,"hipL_flex",hipL_flex(:,2),'Video');
+        data = addchannel_data(data,'hipL_flex',hipL_flex(:,2),'Video');
     end
     % right knee
     if ismember({'thighL', 'shankL'}, segment_pair)
@@ -84,6 +84,6 @@ for i = 1:length(segment_pairs)
         QkneeL =conj(QthighL) .*QshankL;
         QkneeL=quat2eul(QkneeL);
         kneeL_flex = rad2deg(QkneeL);
-        data = addchannel_data(data,"kneeL_flex",kneeL_flex(:,1),'Video');
+        data = addchannel_data(data,'kneeL_flex',kneeL_flex(:,1),'Video');
     end
 end
