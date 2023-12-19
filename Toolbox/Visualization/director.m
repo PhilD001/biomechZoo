@@ -301,7 +301,8 @@ switch action
         [~,phnd] = finddobj('figure');
         director('clear all objects')
         director('load bones');       % loads the bone props
-        
+        foundProps = findobj('Type', 'axes', 'Tag', 'space')
+
         [f,p] = uigetfile({'*.zoo;*.c3d'},'Pick a file');   % default is c3d or zoo file
         cd(p);
         
@@ -444,6 +445,8 @@ switch action
         
         bones = [path,'Cinema objects',s,'bones',s,'golembones'];
         openall(bones);
+
+        
         
         % director('first position');
         
