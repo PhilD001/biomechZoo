@@ -1,4 +1,4 @@
-function DirectorV4_4()
+function DirectorV5()
 
 global Show_Bones markerList3 markerList4 markerList5 markerList6 markerList7 AnglesName ForcesName MomentsName PowersName ScalarsName playing data current_frame searchStr textNames color searchBox reset filepath stopLoop n_frames size_factor speedSlider Markers Markers_names progressBar frameLabel activeMarkers;
 
@@ -50,12 +50,15 @@ end
 %%%%%%% Creation of UI %%%%%%%
 function createUI()
     % Create figure and axes
-    fig = figure('Position', [200, 50, 1100, 800], 'Color', [0 0 0], 'Name', 'Director', 'NumberTitle', 'off','tag','space');
-    ax = axes('Parent', fig, 'Position', [0.136, 0.001, 0.99, 0.99], 'XLim', [-3100, 3100], 'YLim', [-3100, 3100], 'ZLim', [-600, 2100],'Tag', '3Dspace');
+    fig = figure('Position', [200, 50, 1100, 800], 'Color', [0 0 0], 'Name', 'Director', 'NumberTitle', 'off','tag','space','MenuBar', 'none', 'ToolBar', 'none');
+    ax = axes('Parent', fig, 'Position', [0.11, 0.001, 0.99, 0.95], 'XLim', [-3100, 3100], 'YLim', [-3100, 3100], 'ZLim', [-300, 2100],'Tag', '3Dspace');
     grid on; view(3); set(ax, 'Box', 'off'); set(ax,'visible','off');
     hline = line('parent',ax,'xdata',nxd,'ydata',nyd,'zdata',nzd,'color',[.44 .44 .44],'LineStyle','-');
     set(hline, 'PickableParts', 'none');
     camlight; lighting gouraud;
+    axis(ax, 'equal');
+    zoomLevelDefault = 1.6; % Niveau de zoom par défaut, 1 étant le zoom normal
+camzoom(ax, zoomLevelDefault);
 
     % Create additional axes for orientation window
     ax2 = axes('parent',fig,'unit','normalized','position',[0.001 0.001 .4 .4],'cameraviewangle', 40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],'visible','off','tag','orientation window');
@@ -76,17 +79,10 @@ function createUI()
 
 
 % Get the current view angle of 'ax'
-[az, el] = view(ax); 
+az = -45;
+el = 22;
+view(ax, az, el);
 view(ax2, az, el); % Update the orientation window with the same angle
-
-% Create a listener for camera position changes in 'ax'
-addlistener(ax, 'View', 'PostSet', @(~,~) updateOrientationWindow(ax, ax2));
-
-% Define the update function
-function updateOrientationWindow(ax, ax2)
-    [az, el] = view(ax); 
-    view(ax2, az, el);
-end
 
 % Reset button
 reset = uicontrol(fig, 'Style', 'pushbutton', 'String', 'reset', 'FontSize', 10, 'Position', [489 785 40 17], 'Callback', @resetCallback);
@@ -153,11 +149,71 @@ markerList6.Visible = 'off';
 markerList7.Visible = 'off';
 
         
+zoomArea = [-2500 2500 -2500 2500]; % Spécifiez les coordonnées de la zone de zoom
+set(fig, 'WindowScrollWheelFcn', @(src, event) zoomFcn(event, ax, zoomArea));
+
+
+    % Activer la rotation 3D avec la souris
+    set(fig, 'WindowButtonDownFcn', @(src, event) rotateStart(src, ax, ax2));
+    set(fig, 'WindowButtonMotionFcn', @(src, event) rotating(src, ax, ax2));
+    set(fig, 'WindowButtonUpFcn', @(src, event) rotateEnd(src));
+
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fonction pour le zoom
+function zoomFcn(event, ax, zoomArea)
+    zoomLevel = 1.1; % Niveau de zoom
+    
+    % Obtenez les coordonnées de la souris par rapport à la figure
+    currentPoint = ax.CurrentPoint;
+    x = currentPoint(1, 1);
+    y = currentPoint(1, 2);
+    
+    % Définissez les coordonnées minimales et maximales de la zone de zoom
+    xMin = zoomArea(1);
+    xMax = zoomArea(2);
+    yMin = zoomArea(3);
+    yMax = zoomArea(4);
+    
+    % Vérifiez si la souris est dans la zone de zoom
+    if x >= xMin && x <= xMax && y >= yMin && y <= yMax
+        if event.VerticalScrollCount > 0
+            % Zoom arrière
+            camzoom(ax, 1/zoomLevel);
+        elseif event.VerticalScrollCount < 0
+            % Zoom avant
+            camzoom(ax, zoomLevel);
+        end
+    end
+end
 
+% Fonctions pour la rotation
+function rotateStart(fig, ax,ax2)
+    global isRotating;
+    global lastPoint;
+    isRotating = true;
+    lastPoint = fig.CurrentPoint;
+end
 
-   
+function rotating(fig, ax, ax2)
+    global isRotating;
+    global lastPoint;
+    if isRotating
+        currentPoint = fig.CurrentPoint;
+        dx = currentPoint(1) - lastPoint(1);
+        dy = currentPoint(2) - lastPoint(2);
+         sensitivity = 0.2; 
+        viewAngle = [dx * sensitivity, dy * sensitivity];
+        camorbit(ax, -viewAngle(1), -viewAngle(2), 'data', [0 0 1]);
+         camorbit(ax2, -viewAngle(1), -viewAngle(2), 'data', [0 0 1]);
+        lastPoint = currentPoint;
+    end
+end
+
+function rotateEnd(fig)
+    global isRotating;
+    isRotating = false;
+end
 
 
 %%%%%%% Callbacks %%%%%%%
@@ -468,6 +524,8 @@ s = filesep;    % determine slash direction based on computer type
         DisplayBones;
         end
 
+        zoomArea = [-10000 10000 -10000 10000]; % Spécifiez les coordonnées de la zone de zoom
+set(fig, 'WindowScrollWheelFcn', @(src, event) zoomFcn(event, ax, zoomArea));
 
         ListName1 = Markers_names;
         ListName2 = AnalogName;
@@ -1179,7 +1237,7 @@ hold(ax, 'on');
     if ~isempty(xFP)
         if zF1_actuel ~= 0
             if isempty(my3DArrow) || ~isvalid(my3DArrow)
-                my3DArrow = quiver3(ax, OxF1, OyF1, OzF1, u, v, w, 'r', 'LineWidth', 1.5);
+                my3DArrow = quiver3(ax, OxF1, OyF1, OzF1, u, v, w,'Color', [1, 0.5, 0], 'LineWidth', 3.2);
             else
                 if ~isequal([u, v, w], get(my3DArrow, {'UData', 'VData', 'WData'}))
                 set(my3DArrow, 'UData', u, 'VData', v, 'WData', w);
@@ -1203,7 +1261,7 @@ hold(ax, 'on');
     if ~isempty(xFP2)
         if zF2_actuel ~= 0
             if isempty(my3DArrow2) || ~isvalid(my3DArrow2)
-                my3DArrow2 = quiver3(ax, OxF2, OyF2, OzF2, u2, v2, w2, 'r', 'LineWidth', 1.5);
+                my3DArrow2 = quiver3(ax, OxF2, OyF2, OzF2, u2, v2, w2, 'Color',[1, 0.5, 0], 'LineWidth', 3.2);
             else
                 if ~isequal([u2, v2, w2], get(my3DArrow2, {'UData', 'VData', 'WData'}))
                 set(my3DArrow2, 'UData', u2, 'VData', v2, 'WData', w2);
@@ -1472,7 +1530,7 @@ function editAppearanceCallback(~, ~)
 
     % Marker Size controls
     uicontrol(h, 'Style', 'text', 'Position', [10 160 100 20], 'String', 'Marker Size:');
-    markerSizeEdit = uicontrol(h, 'Style', 'slider', 'Position', [120 160 120 25], 'Backgroundcolor', [1 1 1], 'Min', 0, 'Max', 30, 'Value', 8, 'SliderStep', [1/(30-1) 2/(30-1)], 'Callback', @sizeCallback);
+    markerSizeEdit = uicontrol(h, 'Style', 'slider', 'Position', [120 160 120 25], 'Backgroundcolor', [1 1 1], 'Min', 0, 'Max', 30, 'Value', size_factor, 'SliderStep', [1/(31-1) 2/(31-1)], 'Callback', @sizeCallback);
     sizeLabel = uicontrol(h, 'Style', 'text', 'Position', [245 160 30 25], 'String', num2str(floor(get(markerSizeEdit, 'Value'))), 'FontSize', 11);
     
     function sizeCallback(~, ~)
@@ -1481,7 +1539,7 @@ function editAppearanceCallback(~, ~)
 
     % Marker Color controls
     uicontrol(h, 'Style', 'text', 'Position', [10 120 100 20], 'String', 'Marker Color:');
-    markerColorEdit = uicontrol(h, 'Style', 'edit', 'Position', [120 120 160 25]);
+    markerColorEdit = uicontrol(h, 'Style', 'edit', 'Position', [120 120 160 25],'String', color);
 
     % Apply button
     uicontrol(h, 'Style', 'pushbutton', 'Position', [100 20 100 40], 'String', 'Apply', 'Callback', @applyAppearance);

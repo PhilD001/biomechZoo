@@ -9,9 +9,9 @@ if  isempty(X)
    
    [~,~,ext] = fileparts(filepath);
     if strcmp(ext,'.c3d')
-       data = c3d2zoo(filepath); % Convert c3d to zoo format
+       data = c3d2zoo(filepath); 
     else
-        data = zload(filepath); % Load zoo format
+        data = zload(filepath); 
     end
 end
 
@@ -37,11 +37,11 @@ amat = {'PEL','Pelvis';...
     'RHN','RightHand'};
 
 
-    abbreviation = ''; % Initialiser la variable de retour
+    abbreviation = ''; 
     for i = 1:size(amat, 1)
         if strcmp(amat{i, 2}, boneName)
             abbreviation = amat{i, 1};
-            break; % Quitter la boucle une fois trouvé
+            break; 
         end
     end
 
