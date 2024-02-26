@@ -18,7 +18,7 @@ end
 
 fl = [fl;dataf];
 for i = 1:length(fl)
-    filename = fl{i}
+    filename = fl{i};
     [f,p] = partitionfile(fl{i});
     switch lower(extension(filename))
          case '.prop'
