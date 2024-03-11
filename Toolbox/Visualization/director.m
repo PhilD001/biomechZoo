@@ -1,973 +1,1564 @@
-function director(action,varargin)
+function director()
 
-% director(action,varargin) is a three-dimensional virtual environment that can be used
-% to visualize motion capture data within MatLab. Current version is able to read
-% files in which standard Plug-in Gait (lower or full) marker set is used
-% and display body using 'bones'. Otherwise, only markers will show
-%
-%
-% NOTES
-% - If trials contain force plate data, force plates and ground reaction
-%   force vectors (for up to three plates) will appear in the virtual space
-% - Additional objects ('props') can be loaded (see 'cinema objects' sub-folder
-%   of 'Visualization' folder. Limited functionality currently exists for
-%   these additional objects.  User is encouraged to modify or add objects
-%   by studying the method used to display force plates
-% - Step 3 in the director instructions from the manuscript (appendix C) is
-%   automatically done in current version of director
+global Show_Bones markerList3 markerList4 markerList5 markerList6 markerList7 AnglesName ForcesName MomentsName PowersName ScalarsName playing data current_frame searchStr textNames color searchBox reset filepath stopLoop n_frames size_factor speedSlider Markers Markers_names progressBar frameLabel activeMarkers;
 
-% Revision History
-%
-% Created by JJ Loh 2005-2007
-%
-% Updated by Yannick Michaud-Paquette 2013-2014
-% - Major improvements to GUI including improved graphing capabilities and the slide bar
-%
-% Updated by Philippe C. Dixon February 2014
-% - Any data can be graphed (Video or Analog).
-% - Except for CentreOfMass, markers are expected to be less than 6 characters long
-% - Force plate COP and GRF vectors fully functiona
-% - Full compatibility with zoosystem v1.2 (no backwards compatibility)
-% - c3d files rely on zoo functions. They are loaded as struct and then
-%   no longer follow their own processes
-%
-% Updated by Philippe C. Dixon May 2015
-% - Further compatibility with mac platforms added
+global lbl xd yd nxd nyd nzd hline ax ax2 ax3 OyF1 OxF1 OzF1 xFP  xF1  yF1  zF1  xF2  yF2  zF2 yFP zFP OyF2 OxF2 OzF2 xFP2 yFP2 zFP2 xcol my3DArrow Force_arrow_sampled Force_arrow my3DArrow2 Force_arrow_sampled2 Force_arrow2 ycol zcol str lineHandles ListName3 ListName1 ListName2 ListName4 ListName5 ListName6 ListName7 textHandles AnalogName popMenu markerList selectedData selectionMode selectedCellsData;
 
-% Updated by JJ Loh and Philippe C. Dixon May 2015
-% - Subjects with footwear can be visualized in director. So far the only footwear type
-%   is 'skates'. Subjects with the field data.zoosystem.Anthro.Feet = 'skates' will be
-%   rendered wearing 'skates' props (found in ~\the zoosystem\Toolbox\Visualization\Cinema objects\skate)
-%   The function bmech_footwear should be run to record the footwear type in the zoo file.
-%   Alternatively, the user can add the following code in the 'loadfile' function embedded
-%   in 'marker.m' after the loading section (near line 125): data.zoosystem.Anthro.Feet = 'skates'
-%   The handling of the prop is performed in the embedded function 'skate'
-%   of 'props.m'.
-% - New footwear types can be created by following this example
-%
-% Updated by Philippe C. Dixon March 2016
-% - fixed bug with slider mark not updating graph mark (*)
-%
-% Updated by Philippe C. Dixon May 2017
-% - Solved 'stop' button issue (nonresponsive or delayed on certain platforms)
-%
-% Updated by Philippe C. Dixon Oct 2017
-% - fixed axis color code mismatch between global axes and graph window
-% - fixed bug where global grid layout disappeared when using graphing
-%   window
-%
-% Updated by Philippe C. Dixon Dec 2017
-% - improved usability with 'close file' button
-%
-% Updated by Philippe C. Dixon April 2018
-% - Major improvements to GUI layout including: 
-% (1) selectable file tree to choose which markers/graph to display
-% (2) normalization of object positionning to improve resizing
-%
-% Updated by Philippe C. Dixon April 2019
-% - added speed button
+% Initialize variables
+xFP = []; yFP = []; zFP = []; xFP2 = []; yFP2 = []; zFP2 = [];
+xF1 = []; yF1 = []; zF1 = []; xF2 = []; yF2 = []; zF2 = [];
+OxF1 = []; OyF1 = []; OyF1 = []; OxF2 = []; OyF2 = []; OyF2 = [];
 
-global producer;
-global p;
-global f;
-global data;
+% Define grid lines
+lbl = (-3100:330:3100);
+xd = [lbl,lbl];
+xd(1:2:end) = lbl;
+xd(2:2:end) = lbl;
+yd = xd;
+yd(1:4:end) = max(lbl);
+yd(2:4:end) = min(lbl);
+yd(3:4:end) = min(lbl);
+yd(4:4:end) = max(lbl);
+nyd = [yd,fliplr(xd)];
+nxd = [xd,yd];
+nzd = zeros(size(nyd));
+nzd(:) = -9;
 
+% Define axis colors
+xcol = [1 0 0]; % Red color for x axis arrow
+ycol = [0 1 0]; % Green color for y axis arrows
+zcol = [0 0 1]; % Blue color for z axis arrows
 
-% default settings
-%
-xcol = [1 0 0]; % red color for x axis arrow
-ycol = [0 1 0]; % green color for y axis arrows
-zcol = [0 0 1]; % blue color for z axis arrows
-y_baseline = 0.03; % normalized offset from bottom of director for objects
-x_baseline = 0.18;
+% Initialize UI components
+fig = []; markerList = []; markerList2 = []; markerList3 = []; markerList4 = [];
+markerList5 = []; markerList6 = []; markerList7 = []; searchBox = []; fileDisplayName = [];
+axBar = []; ax=[]; initGlobals(); createUI(); hline=[]; ax2 = [];
+selectionMode = 'single'; selectedCellsData = {}; str = [];
+previous_size_factor = []; previous_colors = []; textNames ={};
 
-button_col = [18/255 99/255 150/255];  % color from website
-panel_col =  [18/255 99/255 150/255]; %[0.90 0.90 0.90];   % gray
-lbl_col = 'w';                  % color for graph window text
-
-% Data graph embedded in director window
-%
-% bkg_col = 'w';         % background color for graph window
-%graph_legend = false;  % show a legend for the graph (boolean)
-
-units = 'normalized';
-ud = struct;                   % set up user data struct
-ud.mark = [];
-
-lbl = (-1000:100:1000);
-
-director_color = [0 0 0];       % color of director background
-xlim = [-1000 1000];
-ylim = [-1000 1000];
-zlim = [0 500];
-initial_camera_pos = [200 200 250]*5;
-
-if nargin ==0
-    action = 'start director';
+% Initialize global variables
+function initGlobals()
+    playing = false;
+    current_frame = 1;
+    size_factor = 8;
+    color = 'w';
+    stopLoop = false;
+    activeMarkers = [];
+    Show_Bones = 0;
 end
 
-switch action
+%%%%%%% Creation of UI %%%%%%%
+function createUI()
+    % Create figure and axes
+    fig = figure('Position', [200, 50, 1100, 800], 'Color', [0 0 0], 'Name', 'Director', 'NumberTitle', 'off','tag','space','MenuBar', 'none', 'ToolBar', 'none');
+    ax = axes('Parent', fig, 'Position', [0.11, 0.001, 0.99, 0.95], 'XLim', [-3100, 3100], 'YLim', [-3100, 3100], 'ZLim', [-300, 2100],'Tag', '3Dspace');
+    grid on; view(3); set(ax, 'Box', 'off'); set(ax,'visible','off');
+    hline = line('parent',ax,'xdata',nxd,'ydata',nyd,'zdata',nzd,'color',[.44 .44 .44],'LineStyle','-');
+    set(hline, 'PickableParts', 'none');
+    camlight; lighting gouraud;
+    axis(ax, 'equal');
+    zoomLevelDefault = 1.6; % Niveau de zoom par défaut, 1 étant le zoom normal
+camzoom(ax, zoomLevelDefault);
+
+    % Create additional axes for orientation window
+    ax2 = axes('parent',fig,'unit','normalized','position',[0.001 0.001 .4 .4],'cameraviewangle', 40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],'visible','off','tag','orientation window');
+    set(ax2, 'hitTest', 'off');
+
+    % Add arrows and labels for orientation window
+    [x,y,z] = arrow([0 0 0],[1 0 0],4);
+    surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',xcol,'edgecolor','none','facelighting','gouraud','tag','x');
+    text(1.1 , 0 , 0, 'x','Color',[1 1 1]);
+
+    [x,y,z] = arrow([0 0 0],[0 1 0],4);
+    surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',ycol,'edgecolor','none','facelighting','gouraud', 'tag','y');
+    text(0 , 1.2 , 0, 'y','Color',[1 1 1]);
+
+    [x,y,z] = arrow([0 0 0],[0 0 1],4);
+    surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',zcol,'edgecolor','none','facelighting','gouraud','tag','z');
+    text(0 , 0 , 1.1, 'z','Color',[1 1 1]);
+
+
+% Get the current view angle of 'ax'
+az = -45;
+el = 22;
+view(ax, az, el);
+view(ax2, az, el); % Update the orientation window with the same angle
+
+% Reset button
+reset = uicontrol(fig, 'Style', 'pushbutton', 'String', 'reset', 'FontSize', 10, 'Position', [489 785 40 17], 'Callback', @resetCallback);
+set(reset, 'visible', 'off');
+
+% Main control panel
+controlPanel = uipanel('Position', [0.155, 0.01, 0.84, 0.12], 'BackgroundColor', [.95 .95 .95], 'BorderWidth', 2, 'BorderColor', 'black');
+uicontrol(controlPanel, 'Style', 'pushbutton', 'String', 'Play', 'FontSize', 15, 'Position', [32 15 65 45], 'Callback', @playCallback);
+speedSlider = uicontrol(controlPanel, 'Style', 'slider', 'Position', [801 16 90 19], 'backgroundcolor', [1 1 1], 'Min', 1, 'Max', 3, 'Value', 1, 'SliderStep', [0.1, 0.2], 'Callback', @speedCallback);
+uicontrol(controlPanel, 'Style', 'text', 'Position', [749 16 55 20], 'String', 'Speed:', 'FontSize', 10);
+uicontrol(controlPanel, 'Style', 'pushbutton', 'String', 'Option', 'FontSize', 10, 'Position', [830 45 70 30], 'Callback', @editAppearanceCallback);
+uicontrol(controlPanel, 'Style', 'text', 'Position', [135 55 10 15], 'String', '1', 'FontSize', 12);
+uicontrol(controlPanel, 'Style', 'pushbutton', 'String', 'Update', 'Position', [32 60 50 25], 'Callback', @checkBoxCallback);
+uicontrol(controlPanel, 'Style', 'togglebutton', 'String', 'Show Bones', 'FontSize', 10, 'Position', [740 45 90 30], 'Callback', @BonesCallback);
+
+% Progress bar
+progressBar = uicontrol(controlPanel, 'Style', 'slider', 'Position', [138 25 491 23], 'backgroundcolor', [1 1 1], 'Min', 1, 'Max', 100, 'Value', 1, 'sliderstep', [1/(100-1) 10/(100-1)], 'Callback', @progressBarCallback);
+frameLabel = uicontrol(controlPanel, 'Style', 'text', 'Position', [627.5 23 83 23], 'String', 'Frame: 1', 'FontSize', 11,'tag','frame');
+
+% Event bar
+axBar = axes('Parent', controlPanel, 'Position', [0.162, 0.2, 0.5085, 0.57], 'Visible', 'off', 'XLim', [0, 1], 'YLim', [-2, 5]);
+set(axBar, 'HitTest', 'off');
+
+for i = 0:0.1:1
+    line([i i], [-2 5], 'Color', 'k', 'Parent', axBar);
+end
+
+% Secondary control panel
+controlPanel2 = uipanel('Position', [0.004, 0.01, 0.15, 0.985], 'BackgroundColor', [.95 .95 .95], 'BorderWidth', 2, 'BorderColor', 'black');
+uicontrol(controlPanel2, 'Style', 'pushbutton', 'String', 'Close', 'Position', [85 15 55 30], 'Callback', @closeCallback);
+uicontrol(controlPanel2, 'Style', 'pushbutton', 'String', 'Load', 'Position', [20 15 55 30], 'Callback', @loadCallback);
+uicontrol(controlPanel2, 'Style', 'togglebutton', 'String', 'Show Graph', 'Position', [89 88 65 25], 'Callback', @toggleGraphCallback);
+uicontrol(controlPanel2, 'Style', 'togglebutton', 'String', 'Compare off', 'Position', [8 88 68 25], 'Callback', @toggleSelectionMode);
+uicontrol(controlPanel2, 'Style', 'pushbutton', 'Position', [80 55 60 25], 'String', 'Delete event', 'Callback', @showDeleteEventWindow);
+
+% Marker lists
+markerList = ListCheckBox(fig, [15 125 146.35 530], {});
+markerList2 = ListCheckBox(fig, [15 125 146.35 530], {});
+markerList3 = ListCheckBox(fig, [15 125 146.35 530], {});
+markerList4 = ListCheckBox(fig, [15 125 146.35 530], {});
+markerList5 = ListCheckBox(fig, [15 125 146.35 530], {});
+markerList6 = ListCheckBox(fig, [15 125 146.35 530], {});
+markerList7 = ListCheckBox(fig, [15 125 146.35 530], {});
+
+% Add CellSelectionCallback to markerList
+set(markerList, 'CellSelectionCallback', {@cellSelected, markerList.Data});
+
+uicontrol(controlPanel2, 'Style', 'pushbutton', 'String', 'Deselect All', 'Position', [83 670 65 25], 'Callback', @selectAllCallback);
+uicontrol(controlPanel2, 'Style', 'pushbutton', 'String', 'Add event', 'Position', [20 55 60 25], 'Callback', @showAddEventWindow);
+searchBox = uicontrol(controlPanel2, 'Style', 'edit', 'Position', [10 700 140 25], 'Callback', {@updateTable, ListName1, ListName2, ListName3, ListName4, ListName5, ListName6, ListName7}, 'Tag', 'searchBox');
+uicontrol(controlPanel2, 'Style', 'pushbutton', 'String', 'Search', 'Position', [12 670 65 25], 'Callback', {@updateTable, ListName1, ListName2, ListName3, ListName4, ListName5, ListName6, ListName7});
+fileDisplayName = uicontrol(controlPanel2, 'Style', 'text', 'String', 'No file loaded', 'Units', 'normalized', 'Position', [0 0.95 1 0.05], 'FontSize', 11, 'BackgroundColor', [0.9 0.9 0.9]);
+
+% Popup menu for options
+menuOptions = {'Markers','Analog','Angles','Forces','Powers','Moments','Scalars'};
+popMenu = uicontrol(controlPanel2, 'Style', 'popupmenu', 'String', menuOptions, 'Position', [8 635 146 25], 'Callback', @popMenuCallback);
+markerList.Visible = 'on';
+markerList2.Visible = 'off';
+markerList3.Visible = 'off';
+markerList4.Visible = 'off';
+markerList5.Visible = 'off';
+markerList6.Visible = 'off';
+markerList7.Visible = 'off';
+   
+zoomArea = [-2500 2500 -2500 2500]; % specify the coordinates in the zooming zone 
+set(fig, 'WindowScrollWheelFcn', @(src, event) zoomFcn(event, ax, zoomArea));
+
+
+    % Activate 3D rotation with the mouse 
+    set(fig, 'WindowButtonDownFcn', @(src, event) rotateStart(src, ax, ax2));
+    set(fig, 'WindowButtonMotionFcn', @(src, event) rotating(src, ax, ax2));
+    set(fig, 'WindowButtonUpFcn', @(src, event) rotateEnd(src));
+
+    end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Fonction for zooming
+function zoomFcn(event, ax, zoomArea)
+    zoomLevel = 1.1; % zoom level
     
-    case 'start director'
-        director('set space')
-        director('set ui')
-        
-    case 'set space'
-        [~,phnd] = finddobj('figure');
-        if isempty(phnd)
-            phnd = figure('tag','space','color',[0 0 0],'name','director','menubar','none','numbertitle','off',...
-                'keypressfcn','dkeypress','buttondownfcn','director(''buttondown'')','doublebuffer','on',...
-                'units','normalized','resizefcn','director(''resize'')','position',[0.1 0.1 0.8 0.8]);
-        end
-        
-        % create main panel (director space)
-        %
-        ax = axes('parent',phnd,'units',units,'position',[0 0 1 1],'dataaspectratio',[1 1 1],...
-            'color',director_color,'xcolor',[0 0 0],'ycolor',[0 0 0],'zcolor',[0 0 0],'xtick',[],...
-            'ytick',[],'ztick',[],'buttondownfcn','cameraman(''buttondown'');','view',[114 25],...
-            'visible','on','userdata',ud,'tag','space','cameraviewanglemode','manual','xlim',xlim,...
-            'ylim',ylim,'zlim',zlim,'xtickmode','auto','ytickmode','auto','xgrid','off',...
-            'ygrid','off','cameraposition',initial_camera_pos,'cameratarget',[0 0 0],'xtick',lbl,...
-            'ytick',lbl,'xticklabel',[],'yticklabel',[],'gridlinestyle','-','cameraviewangle',10);
-        
-        light('position',get(ax,'cameraposition'),'buttondownfcn','cameraman(''buttondown'')',...
-            'parent',ax,'tag','camera light','style','local');
-        
-        xd = [lbl,lbl];
-        xd(1:2:end) = lbl;
-        xd(2:2:end) = lbl;
-        yd = xd;
-        yd(1:4:end) = max(lbl);
-        yd(2:4:end) = min(lbl);
-        yd(3:4:end) = min(lbl);
-        yd(4:4:end) = max(lbl);
-        
-        nyd = [yd,fliplr(xd)];
-        nxd = [xd,yd];
-        
-        line('parent',ax,'xdata',nxd,'ydata',nyd,'zdata',zeros(size(nyd)),'color',[0 0 0],...
-            'buttondownfcn','cameraman(''buttondown'');','tag','camera grid');
-        
-        ax2 = axes('parent',phnd,'unit','normalized','position',[0.75 0.75 .25 .25],'cameraviewangle',...
-            40,'cameraposition',[2 2 2],'cameratarget',[0 0 0],'color',[.8 .8 .8],'visible','off','tag','orientation window');
-        
-        [x,y,z] = arrow([0 0 0],[1 0 0],10);
-        surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',xcol,'edgecolor','none','facelighting','gouraud',...
-            'tag','x','buttondownfcn','director(''orientation_buttondown'')');
-        
-        [x,y,z] = arrow([0 0 0],[0 1 0],10);
-        surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',ycol,'edgecolor','none','facelighting','gouraud',...
-            'tag','y','buttondownfcn','director(''orientation buttondown'')');
-        
-        [x,y,z] = arrow([0 0 0],[0 0 1],10);
-        surface('parent',ax2,'xdata',x,'ydata',y,'zdata',z,'facecolor',zcol,'edgecolor','none','facelighting','gouraud',...
-            'tag','z','buttondownfcn','director (''orientation buttondown'')');
-        
-        light('parent',ax2,'position',[3 0 0]);
-        director('units load');
-        producer.mov = [];
-        producer.cut = 0;
-        producer.gravity = 1;
-        producer.grips = struct;
-        producer.speed = 2;
-        director('person','director');
-        warning off;
-        set(findobj('type','uicontrol'),'units','normalized');
-        
-    case 'set ui'
-        
-        [~,phnd]  = finddobj('figure');
-        cm = uicontextmenu('tag','main','callback','director(''contextmenu'')');
-        
-        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
-            'tag','load zoo','position',[x_baseline y_baseline 0.05 0.05],'string','Load File','callback','director(''open'')');
-        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
-            'tag','load zoo','position',[x_baseline y_baseline 0.05 0.05],'string','Close File','callback','director(''close'')','visible','off');
-        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
-            'tag','first position','position',[x_baseline+0.12 y_baseline 0.08 0.05],'string','First Frame','callback','director(''first position'')','visible','off');
-        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
-            'tag','play','position',[x_baseline+0.06 y_baseline 0.05 0.05],'string','Play','callback','director(''preview'')','visible','off');
-        uicontrol('parent',phnd,'style','pushbutton','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
-            'tag','button stop','position',[x_baseline+0.06 y_baseline 0.05 0.05],'string','Stop','callback','director(''button stop'')','visible','off');
-        uicontrol('parent',phnd,'style','text','units','normalized','backgroundcolor',button_col,'foregroundcolor',[0 0 0],...
-            'tag','frame','position',[x_baseline+0.68 y_baseline 0.035 0.05],'string','1','FontSize',14);
-         
-        % -----------------    uicontrol turned off ---------------
-        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
-            'foregroundcolor',[0 0 0],'tag','displacement','position',[x_baseline+0.72 y_baseline 0.05 0.05],'string','5 cm','userdata',5,...
-            'callback','director(''units'')','deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
-        
-        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
-            'foregroundcolor',[0 0 0],'tag','speed','position',[x_baseline+0.68 y_baseline+0.06 0.08 0.05],'string','speed = 2x','userdata',5,...
-            'callback','director(''units'')','deletefcn','director(''units delete'')','value',1,'uicontextmenu',cm,'visible','on');
-        
-        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
-            'foregroundcolor',[0 0 0],'tag','angle','position',[0.6 0.1 1.2 .5],'string','1 deg','userdata',1,...
-            'callback','director(''units'')','deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
-        uicontrol('parent',phnd,'style','togglebutton','units','normalized','backgroundcolor',button_col,...
-            'foregroundcolor',[0 0 0],'tag','volume','position',[0.9 0.1 1.2 .5],'string','1 cm3','userdata',1,...
-            'callback','director(''units'')','deletefcn','director(''units delete'')','uicontextmenu',cm,'visible','off');
-       
-        % -------------
-        
-        % view options panel
-        %
-        panel_hnd =  uipanel('parent',phnd,'Title','File info','FontSize',12,'Tag','spacer',...
-            'BackgroundColor',panel_col,'Position',[0 0.9 0.15 0.1]);
-        
-        uicontrol('parent',panel_hnd,'style','text','units','normalized','backgroundcolor',[1 1 1],'foregroundcolor',[0 0 0],...
-            'tag','file info','position',[0.02 0.3 0.9 0.5],'string','none','FontSize',12);
-       
-        uipanel('parent',phnd,'Title','','FontSize',12,'Tag','options panel',...
-            'BackgroundColor','white','Position',[0 0 0.15 0.9]);
-        
-%         uicontrol('parent',settings_hnd ,'style','pushbutton','units','normalized','backgroundcolor',[0.8 0.8 0.8],'foregroundcolor',[0 0 0],...
-%             'tag','data','position',[0.01 0.85 0.2 0.05],'string','data','callback','director(''data tree'')');
-        
-%         uicontrol('parent',settings_hnd ,'style','text','units','normalized','backgroundcolor',[1 1 1],'foregroundcolor',[0.1 0.1 0.1],...
-%             'position',[0.6 0.9 0.2 0.05],'string','Model');
-        
-%         uicontrol('parent',settings_hnd ,'style','text','units','normalized','backgroundcolor',[1 1 1],'foregroundcolor',[0.1 0.1 0.1],...
-%             'position',[0.8 0.9 0.2 0.05],'string','Graph');
-        
-%         uicontrol('parent',settings_hnd ,'style','checkbox','units','normalized','Position', [0.93 0.97 0.28 0.03],...
-%             'callback','director(''toggle settings'')','Value',1)
-%         
-        
-        
-    case 'update model'   % used by tabbed director version
-        
-    case 'save'
-        
-        switch currentobject
-            case 'bargraph'
-                bargraphfxn('save');
-            case 'internal image'
-                grips('save internal image');
-            case 'accessory'
-                accessoryfxn('save');
-            case 'special object'
-                specialobject('save');
-            case 'props'
-                props('save');
-        end
-        
-    case 'clear all objects'
-        ax = finddobj('axes');
-        delete(findobj(ax,'type','patch'));
-        delete(findobj(ax,'type','surface'));
-        % director('cleanup')
-        
-    case 'delete graph'
-        
-        set(findobj('type','uicontrol','tag','data list'),'Visible','off');
-        set(findobj('type','axes','tag','data display'),'Visible','off');
-        ln = get(findobj('type','axes','tag','data display'),'Children');
-        
-        if~isempty(ln)
-            delete(ln);
-            delete(findobj('tag','graph legend'));
-        end
-        uicontrol('style','pushbutton','units','centimeters','backgroundcolor',[.1 .1 .1],'foregroundcolor',[1 1 1],...
-            'tag','open graph','position',[3.5 .7 3 .5],'string','Open Graph','callback','director(''open graph'')','Visible','on');
-        set(findobj('tag','delete graph'),'Visible','off');
-        
-    case 'open graph'
-        
-        set(findobj('type','uicontrol','tag','data list'),'Visible','on');
-        set(findobj('type','axes','tag','data display'),'Visible','on');
-        set(findobj('tag','open graph'),'Visible','off');
-        set(findobj('tag','delete graph'),'Visible','on');
-        
-    case 'close'
-        
-        % find existing director figure
-        %
-        fig = finddobj('figure');
-        
-        patch_hnd = findobj(fig,'type','patch');
-        delete(patch_hnd)
-        
-        set(findobj('tag','first position'),'visible','off')
-        set(findobj('tag','play'),'visible','off')
-        set(findobj('tag','load zoo','string','Load File'),'visible','on')
-        set(findobj('tag','load zoo','string','Close File'),'visible','off')
-        set(findobj('type','uicontrol','string',f),'string','none')
-        delete(findobj('style','slider'))
-        delete(findobj('style','listbox'))
-        delete(findobj('tag','data display'))
-        
-    case 'open'
-        [~,phnd] = finddobj('figure');
-        director('clear all objects')
-        director('load bones');       % loads the bone props
-        foundProps = findobj('Type', 'axes', 'Tag', 'space')
-
-        [f,p] = uigetfile({'*.zoo;*.c3d'},'Pick a file');   % default is c3d or zoo file
-        cd(p);
-        
-        if f == 0
-            return
-        end
-        
-        ext = extension(f);
-        hnd = [];
-        delete(finddobj('graph'));
-        
-        set(findobj('tag','open graph'),'Visible','off');
-        
-        switch lower(ext)
-            
-            case {'.zoo','.c3d'}
-                
-                data = marker('load file',[p,f]);
-             
-                video_chns = data.zoosystem.Video.Channels;
-                %all_chns = setdiff(fieldnames(data),'zoosystem');
-                
-                % Attempt to limit marker list to 'true' markers
-                %
-                %all = cell(size(all_chns));
-                
-                %for i = 1:length(all_chns)
-                %    
-                %    if ~isin(all_chns{i},{'star'})
-                %         all{i} = all_chns{i};
-                %    end
-                %    
-                % end
-                
-                % all(cellfun(@isempty,all)) = [];
-                % all_chns = all;
-                
-                % update visibility of play buttons
-                %
-                set(findobj('tag','first position'),'visible','on')
-                set(findobj('tag','play'),'visible','on')
-                set(findobj('tag','load zoo','string','Close File'),'visible','on')
-                set(findobj('tag','load zoo','string','Load File'),'visible','off')
-                
-                
-                uicontrol('parent',phnd,'style','slider','units','normalized','position',[0.425 y_baseline 0.4 0.025],...
-                    'Min',0,'Max',length(data.(video_chns{1}).line),'SliderStep',[1/length(data.(video_chns{1}).line) 10/length(data.(video_chns{1}).line)],'tag','slider','callback',...
-                    'director(''slider'')','backgroundcolor',button_col,'foregroundcolor',[0.1 0.1 0.1]);
-                
-                
-                panel_hnd = findobj('type','uipanel','Tag','options panel');
-
-                % Create UI tree
-                uitree_director(panel_hnd,data);
-                
-                % create graph display
-                ax = axes('parent',phnd,'units','normalized','position',[0.18 0.15 0.2 0.3],'tag','data display','Color',[0.8 0.8 0.8],'XColor',lbl_col,'YColor',lbl_col);
-
-                
-            case '.bmp'
-                hnd = grips('image',[p,f]);
-            case '.avi'
-                hnd = grips('avi',[p,f]);
-            case '.ort'
-                actor('load orientation',[p,f]);
-            case '.body'
-                [hnd,f] = actor('create',[p,f]);
-            case '.dis'
-                actor('load displacement',[p,f]);
-            case '.cam'
-                cameraman('load',[p,f]);
-            case '.iim'
-                grips('load internal image',[p,f])
-            case '.acs'
-                accessoryfxn('load',[p,f]);
-            case '.spo'
-                costume('load special',[p,f]);
-            case '.cos'
-                costume('load',[p,f]);
-            case '.tool'
-                sculpttool('load',[p,f]);
-            case '.cdata'
-                actor('load cdata',[p,f]);
-            case '.grip'
-                grips('load',[p,f]);
-            case '.light'
-                lightman('load',[p,f]);
-            case '.prop'
-                props('load',[p,f]);
-            case '.z3d'
-                marker('load z3d',[p,f]);
-        end
-        
-        if ~isempty(hnd)
-            set(finddobj('current object'),'string',f);
-        end
-        %set(gcf,'name',f);
-        
-        cameraman('new film');
-        %director('first position');
-        mark('goto',1);
-        
-        % add name to spacer 
-        %
-        shnd = findobj('tag','file info');
-        set(shnd,'String',f)
-        
-    case 'data display'        
-        %data_list = get(findobj('tag','data list'),'String');
-        %ch = data_list{get(findobj('tag','data list'),'Value')};
-      
-        display_director_graph(data,ch)
-      
-    case 'resize'
-        
-        fig = finddobj('figure');
-        ax = finddobj('orientation window');
-        fpos = get(fig,'position');
-        apos = get(ax,'position');
-        
-        if isempty(apos)
-            apos(1) = fpos(3);
-            apos(2) = fpos(4);
-        else
-            apos(1) = fpos(3)-apos(3);
-            apos(2) = fpos(4)-apos(4);
-        end
-        
-        set(ax,'position',apos);
-        
-    case 'reload markers'
-        
-        marker('load zoo',[p,f])
-        
-    case 'load bones'
-        s = filesep;    % determine slash direction based on computer type
-        
-        d = which('director'); % returns path to ensemlber
-        path = pathname(d) ;  % local folder where director resides
-        
-        bones = [path,'Cinema objects',s,'bones',s,'golembones'];
-        openall(bones);
-
-        
-        
-        % director('first position');
-        
-    case 'multi open'
-        
-        fld = uigetfolder;
-        if isempty(fld)
-            return
-        end
-        cd(fld)
-        multiopen(fld)
+    % Obtain the coordinates of the mouse relative to the figure 
+    currentPoint = ax.CurrentPoint;
+    x = currentPoint(1, 1);
+    y = currentPoint(1, 2);
     
-    case 'speed'
-        [unt,all] = finddobj('speed');
-        set(all,'value',0,'backgroundcolor',[.8 .8 .8]);
-        set(gcbo,'value',1,'backgroundcolor',[.9 .9 .9]);
-        figure(gcf);
-        
-    case 'units'
-        
-        [unt,all] = finddobj('units');
-        set(all,'value',0,'backgroundcolor',button_col);
-        set(gcbo,'value',1,'backgroundcolor',[.9 .9 .9]);
-        figure(gcf);
-        
-    case 'change units'
-        
-        unt = get(gco,'string');
-        if strfind(unt, 'speed')
-            untdlg = 'speed';
-        else
-            indx = findstr(unt,' ');
-            untdlg = unt(indx:end);
+    % Définissez les coordonnées minimales et maximales de la zone de zoom
+    xMin = zoomArea(1);
+    xMax = zoomArea(2);
+    yMin = zoomArea(3);
+    yMax = zoomArea(4);
+    
+    % Vérifiez si la souris est dans la zone de zoom
+    if x >= xMin && x <= xMax && y >= yMin && y <= yMax
+        if event.VerticalScrollCount > 0
+            % Zoom arrière
+            camzoom(ax, 1/zoomLevel);
+        elseif event.VerticalScrollCount < 0
+            % Zoom avant
+            camzoom(ax, zoomLevel);
         end
-        answer = inputdlg(untdlg, get(gco,'tag'));
-        if isempty(answer)
-            return
-        elseif isempty(answer{1})
-            return
-        end
-        num = str2num(answer{1});
-        if isempty(num)
-            return
-        end
-        
-        if strfind(unt, 'speed')
-            set(gco,'userdata',num,'string',['speed = ', num2str(round(num)),'x']);
-            producer.speed = round(num);
-        else
-            set(gco,'userdata',num,'string',[num2str(num),unt]);
-        end
-        
-    case 'units delete'
-        
-        global unitvar
-        [~,all] = finddobj('units');
-        lvar = length(unitvar)+1;
-        
-        unitvar(lvar).tag = get(gcbo,'tag');
-        unitvar(lvar).userdata = get(gcbo,'userdata');
-        unitvar(lvar).string = get(gcbo,'string');
-        
-        if length(all) == 1
-            fl = which('unitmenu.prf');
-            save(fl,'unitvar');
-            clear global unitvar
-        end
-        
-    case 'units load'
-        
-        fl = which('unitmenu.prf');
-        
-        if isempty(fl)
-            error('missing unitmenu.prf file')
-        end
-        
-        t = load(fl,'-mat');
-        [~,all] = finddobj('units');
-        for i = 1:length(t.unitvar)
-            obj = findobj(all,'tag',t.unitvar(i).tag);
-            set(obj,'userdata',t.unitvar(i).userdata,'string',t.unitvar(i).string);
-        end
-        
-    case 'person'
-        
-        pt = finddobj('person menu');
-        if nargin == 1
-            cblb = get(gcbo,'label');
-        else
-            cblb = varargin{1};
-        end
-        
-        set(pt,'label',cblb);
-        menu(cblb);
-        
-    case 'contextmenu'
-        
-        delete(get(gcbo,'children'));
-        [~,all] = finddobj('units');
-        if actor('verify',gco)
-            uimenu(gcbo,'label','next','callback','actor(''next sequence'')');
-            uimenu(gcbo,'label','prev','callback','actor(''prev sequence'')');
-            uimenu(gcbo,'label','load sequence','callback','actor(''load sequence'')');
-        elseif ~isempty(intersect(gco,all))
-            uimenu(gcbo,'label','change','callback','director(''change units'')');
-        end
-        
-    case 'colorpallete'
-        
-        if ~isempty(finddobj('colorpallete'))
-            delete(finddobj('colorpallete'));
-            return
-        end
-        [tp,hnd] = currentobject;
-        
-        switch tp
-            case 'actor'
-                clr = get(hnd(1),'facecolor');
-            case 'bargraph'
-                clr = get(hnd,'facecolor');
-            otherwise
-                clr = [.8 .8 .8];
-        end
-        uicontrol('style','pushbutton','tag','color','units','centimeters','position',[.1 .7 1.5 .5],'backgroundcolor',clr,'callback','director(''color callback'')');
-        
-    case 'color callback'
-        
-        clr = colorpallete(get(gcbo,'backgroundcolor'));
-        set(finddobj('colorpallete'),'backgroundcolor',clr);
-        
-    case 'preview'
-        
-        producer.cut = 0;
-        tp = finddobj('top menu');
-        set(tp,'enable','off');
-        cameraman('new film');
-        index = finddobj('frame','number');
-        hnd = finddobj('frame');
-        
-        flength = length(data.zoosystem.Video.Indx);
-        av_ratio = data.zoosystem.AVR;
-        
-        set(findobj('type','uicontrol','tag','button stop'),'visible','on');
-        
-        while producer.cut == 0
-            index = index + producer.speed;  % increase step length to speed up
-            mark('next',flength,av_ratio);
-            if index >= flength
-                producer.cut = 1;
-                set(hnd,'string',num2str(flength));
-                set(gcf,'name',['preview: frame ',num2str(flength)]);
-                set(findobj('tag','button stop'),'visible','off');
-            else
-                set(hnd,'string',num2str(index));
-                set(gcf,'name',['preview: frame ',num2str(index)]);
-                set(findobj('type','uicontrol','tag','slider'),'Value',index);
-            end
-            pause(0.015)  % needed to allow button stop to stop animation
-        end
-        
-        set(finddobj('top menu'),'enable','on');
-        set(gcf,'name','director');
-        
-    case 'preview cut'
-        %set(gcbo,'label','practice','callback','director(''preview'')');
-        producer.cut = 1;
-        
-    case 'button stop'
-        set(findobj('type','uicontrol','tag','button stop'),'visible','off');
-        producer.cut = 1;
-        
-    case 'slider'
-        index = get(findobj('tag','slider'),'Value');
-        
-        index = round(index);
-        hnd = finddobj('frame');
-        set(hnd,'string',num2str(index));
-        flength = length(data.zoosystem.Video.Indx);
-        av_ratio = data.zoosystem.AVR;
-        mark('goto',index,av_ratio,flength);
-        
-    case 'action'
-        producer.cut = 0;
-        set(finddobj('top menu'),'enable','off');
-        set(gcbo,'label',' cut  ','callback','director(''cut'')','enable','on');
-        cameraman('new film');
-        uic = findobj(gcf,'type','uicontrol','visible','on');
-        set(uic,'visible','off');
-        cameraman('record');
-        index = 1;
-        hnd = finddobj('frame');
-        
-        while ~producer.cut
-            index = index+1;
-            mark('next');
-            cameraman('record');
-            set(gcf,'name',['preview: frame ',num2str(index)]);
-            set(hnd,'string',num2str(index));
-        end
-        
-        set(uic,'visible','on');
-        set(finddobj('top menu'),'enable','on');
-        
-    case 'cut'
-        set(gcbo,'label','action','callback','director(''action'')');
-        producer.cut = 1;
-             
-    case 'first position'
-        cameraman('new film');
-        mark('goto',1);
-        delete(findobj(finddobj('axes'),'tag','trace'));
-        
-        if ~isempty(findobj('tag','slider'))
-            set(findobj('tag','slider'),'Value',1);
-        end
-        
-    case 'goto'
-        mark('goto',varargin{1});
-        
-    case 'next frame'
-        mark('next');
-        
-    case 'prev frame'
-        mark('prev');
-        
-    case 'cleanup'
-        set(gcf,'windowbuttondownfcn','');
-        uic = findobj(gcf,'type','uicontextmenu');
-        uic = setdiff(uic,finddobj('contextmenu'));
-        for i = 1:length(uic)
-            set(findobj('uicontextmenu',uic(i)),'uicontextmenu',[]);
-            delete(uic(i));
-        end
-        delete(finddobj('garbage'));
-        set(finddobj('actor'),'buttondownfcn','actor(''buttondown'')');
-        
-    case 'next person'
-        nextperson(varargin{1});
-        
-    case 'next mark'
-        mark('next');
-        
-    case 'prev mark'
-        mark('prev');
-        
-    case 'refresh'
-        mark('refresh');
-        
-    case 'clean object'
-        [tp,hnd] = currentobject;
-        switch tp
-            case 'costume'
-                costume('clean',hnd);
-        end
-        
-    case 'gravity'
-        
-        switch get(gcbo,'checked')
-            case 'on'
-                set(gcbo,'checked','off');
-                producer.gravity = 0;
-            case 'off'
-                set(gcbo,'checked','on');
-                producer.gravity = 1;
-        end
-        
-    case 'orientation buttondown'
-        
-        tg = get(gcbo,'tag');
-        switch get(gcf,'selectiontype')
-            case 'alt'
-                move(tg,'neg');
-            case 'normal'
-                move(tg);
-        end
-        
-    case 'goto callback'
-        
-        frm = inputdlg({'goto frame'},'goto');
-        director('goto',str2num(frm{1}));
-        delete(findobj(finddobj('axes'),'tag','trace'));
-        
-end
-
-
-%===EMBEDDED FUNCTIONS==================================================
-
-
-function menu(action)
-
-fig = finddobj('figure');
-mn = finddobj('person menu');
-delete(setdiff(findobj('type','uimenu','parent',fig),mn));
-delete(finddobj('controls'));
-delete(finddobj('bomb'));
-delete(finddobj('costume pointer'));
-set(finddobj('actor'),'facealpha',1,'edgecolor','none');
-controls(action);
-
-switch action
-    case 'director'
-        
-        if isgravity
-            chk = 'on';
-        else
-            chk = 'off';
-        end
-        
-    case 'cameraman'
-        mn = uimenu(fig,'label','file');
-        uimenu(mn,'label','open','callback','director(''open'')');
-        uimenu(mn,'label','save','callback','cameraman(''save'')');
-        mn = uimenu(fig,'label','tools');
-        uimenu(mn,'label','make first position','callback','cameraman(''make first position'')');
-        uimenu(mn,'label','clear','callback','cameraman(''clear'')');
-        uimenu(fig,'label','practice','callback','director(''preview'')');
-        uimenu(fig,'label','first position','callback','director(''first position'')');
-        set(gcf,'name','cameraman');
-        
-    case 'actor'
-        mn = uimenu(fig,'label','file');
-        uimenu(mn,'label','save displacement','callback','actor(''save displacement'')');
-        uimenu(mn,'label','save orientation','callback','actor(''save orientation'')');
-        uimenu(mn,'label','save color data','callback','actor(''save cdata'')');
-        
-        mn = uimenu(fig,'label','filter','callback','filtermenu(''start'')');
-        uimenu(mn,'label','orientation','callback','actor(''filter orientation'')');
-        uimenu(mn,'label','displacement','callback','actor(''filter displacement'')');
-        
-        mn = uimenu(fig,'label','rotate');
-        mn2 = uimenu(mn,'label','body');
-        uimenu(mn2,'label','90','callback','actor(''rotate body'',str2num(get(gcbo,''label'')))');
-        uimenu(mn2,'label','180','callback','actor(''rotate body'',str2num(get(gcbo,''label'')))');
-        uimenu(mn2,'label','270','callback','actor(''rotate body'',str2num(get(gcbo,''label'')))');
-        
-        mn2 = uimenu(mn,'label','orientation');
-        uimenu(mn2,'label','90','callback','actor(''rotate ort'',str2num(get(gcbo,''label'')))');
-        uimenu(mn2,'label','180','callback','actor(''rotate ort'',str2num(get(gcbo,''label'')))');
-        uimenu(mn2,'label','270','callback','actor(''rotate ort'',str2num(get(gcbo,''label'')))');
-        
-        mn2 = uimenu(mn,'label','flip orientation');
-        uimenu(mn2,'label','x','callback','actor(''flip ort'',get(gcbo,''label''))');
-        uimenu(mn2,'label','y','callback','actor(''flip ort'',get(gcbo,''label''))');
-        uimenu(mn2,'label','z','callback','actor(''flip ort'',get(gcbo,''label''))');
-        
-        mn = uimenu(fig,'label','special object');
-        uimenu(mn,'label','create','callback','specialobject(''setup'')');
-        uimenu(mn,'label','copy','callback','specialobject(''copy'')');
-        uimenu(mn,'label','copy all','callback','specialobject(''copy all'')');
-        uimenu(mn,'label','edit bargraph','callback','specialobject(''edit bargraph'')');
-        uimenu(mn,'label','ramp speed','callback','actor(''ramp speed'')')
-        
-    case 'lighting'
-        uimenu(fig,'label','create','callback','lightman(''create'')');
-        uimenu(fig,'label','save','callback','lightman(''save'')');
-        set(gcf,'name','lighting');
-        
-    case 'costume'
-        mn = uimenu(fig,'label','file');
-        uimenu(mn,'label','open','callback','director(''open'')');
-        uimenu(mn,'label','open all','callback','costume(''quick load'')');
-        uimenu(mn,'label','save','callback','costume(''save'')');
-        mn = uimenu(fig,'label','object');
-        uimenu(mn,'label','fabric','callback','costume(''fabric'')');
-        uimenu(mn,'label','clean','callback','director(''clean object'')');
-        uimenu(mn,'label','delete','callback','costume(''delete'')','separator','on');
-        
-        mn = uimenu(fig,'label','tool');
-        uimenu(mn,'label','rasp','callback','sculpttool(''rasp'')');
-        uimenu(mn,'label','plane','callback','sculpttool(''plane'')');
-        
-    case 'grips'
-        mn = uimenu(fig,'label','file');
-        uimenu(mn,'label','open','callback','director(''open'')');
-        uimenu(mn,'label','save','callback','grips(''save'')');
-        uimenu('parent',fig,'label','bind','callback','grips(''bind'')');
-        
-    case 'props'
-        mn = uimenu(fig,'label','file');
-        uimenu(mn,'label','open','callback','director(''open'')');
-        uimenu(mn,'label','open with markers','callback','props(''load with markers'')');
-        uimenu(mn,'label','save','callback','props(''save'')');
-        
-        mn = uimenu(fig,'label','tools');
-        uimenu(mn,'label','associate markers','callback','props(''associate marker'')');
-        uimenu(mn,'label','puck trajectory','callback','props(''puck trajectory'')');
-end
-director('cleanup');
-set(gcf,'name',action);
-
-function nextperson(action)
-
-ordr = {'director','cameraman','actor','lighting','costume'};
-cindx = find(strcmp(ordr,{currentperson}));
-
-switch action
-    case 'next'
-        cindx = cindx+1;
-    case 'prev'
-        cindx = cindx-1;
-end
-
-if cindx >length(ordr)
-    cindx = 1;
-elseif cindx <1
-    cindx = length(ordr);
-end
-director('person',ordr{cindx});
-
-
-
-
-
-function move(d,varargin)
-val = get(finddobj('units','displacement'),'userdata');
-if nargin == 2
-    val = -val;
-end
-[tp,hnd] = currentobject;
-switch tp
-    case 'props'
-        switch currentunits
-            case 'displacement'
-                switch d
-                    case 'x'
-                        vec = [val 0 0];
-                    case 'y'
-                        vec = [0 val 0];
-                    case 'z'
-                        vec = [0 0 val];
-                end
-                props('displace',vec)
-            case 'rotation'
-                val = get(finddobj('units','rotation'),'userdata');
-                if nargin == 2
-                    val = -val;
-                end
-                props('rotate',hnd,val,d);
-        end
-        
-    case 'marker'
-        switch d
-            case 'x'
-                vec = [val 0 0];
-            case 'y'
-                vec = [0 val 0];
-            case 'z'
-                vec = [0 0 val];
-        end
-        vr = get(hnd,'vertices');
-        vr = displace(vr,vec);
-        set(hnd,'vertices',vr);
-    case 'prop marker'
-        switch d
-            case 'x'
-                vec = [val 0 0];
-            case 'y'
-                vec = [0 val 0];
-            case 'z'
-                vec = [0 0 val];
-        end
-        target = get(hnd,'userdata');
-        tg = get(hnd,'tag');
-        ud = get(target,'userdata');
-        indx = find(strcmp(tg,ud.mname));
-        %gunit = [1 0 0;0 1 0;0 0 1];
-        ud.mvertices(indx,:) = ud.mvertices(indx,:)+vec;
-        set(target,'userdata',ud);
-        props('goto',finddobj('frame','number'));
-        
-end
-
-function multiopen(fld)
-
-fl = engine('path',fld,'extension','c3d');
-
-for i = 1:length(fl)
-    marker('load c3d',fl{i});
-    puck = findobj(finddobj('axes'),'tag','puck');
-    pud = get(puck,'userdata');
-    mxfrm = length(pud.dis(:,1));
-    for j = 1:mxfrm
-        mark('goto',j);
     end
 end
 
-% function distributedata(fl,type)  % possibly obsolete
-%
-% t = load(fl,'-mat');
-%
-% switch type
-%
-%     case 'zoo'
-%
-%         data = t.data;
-%         fld = setdiff(fieldnames(data),'zoosystem');
-%         cos = finddobj('costume');
-%         hd = findpart('all','head');
-%         for i = 1:length(fld)
-%             hnd = findobj(cos,'tag',fld{i});
-%             if ~isempty(hnd)
-%                 hud = get(hnd,'userdata');
-%                 if isfield(hud,'ydata')
-%                     hud.ydata = data.(fld{i}).line;
-%                     set(hnd,'userdata',hud);
-%                 end
-%             end
-%             insertcdata(hd,fld{i},data.(fld{i}).line);
-%         end
-% end
+% Fonctions pour la rotation
+function rotateStart(fig, ax,ax2)
+    global isRotating;
+    global lastPoint;
+    isRotating = true;
+    lastPoint = fig.CurrentPoint;
+end
 
-% function insertcdata(hd,fld,yd)
-%
-% for i = 1:length(hd)
-%     hud = get(hd(i),'userdata');
-%     if isfield(hud,'cdata');
-%         if isfield(hud.cdata,fld);
-%             hud.cdata.(fld).cdata = yd/max(yd);
-%         end
-%     end
-%     set(hd(i),'userdata',hud);
-% end
+function rotating(fig, ax, ax2)
+    global isRotating;
+    global lastPoint;
+    if isRotating
+        currentPoint = fig.CurrentPoint;
+        dx = currentPoint(1) - lastPoint(1);
+        dy = currentPoint(2) - lastPoint(2);
+         sensitivity = 0.2; 
+        viewAngle = [dx * sensitivity, dy * sensitivity];
+        camorbit(ax, -viewAngle(1), -viewAngle(2), 'data', [0 0 1]);
+         camorbit(ax2, -viewAngle(1), -viewAngle(2), 'data', [0 0 1]);
+        lastPoint = currentPoint;
+    end
+end
+
+function rotateEnd(fig)
+    global isRotating;
+    isRotating = false;
+end
+
+
+%%%%%%% Callbacks %%%%%%%
+    function BonesCallback (source, ~)
+
+         state_bones = get(source, 'Value');
+  if state_bones == 1
+        %clear Bones
+bonesToClear = {'LeftClavicle','LeftHumerus', 'LeftRadius','LeftHand','LeftFemur', 'LeftTibia','LeftFoot','LeftToe', 'Pelvis','RightClavicle','RightHumerus', 'RightRadius','RightHand', 'RightFemur', 'RightTibia','RightFoot','RightToe', 'Thorax', 'Head'};
+
+% Loop through each bone and clear its patch
+for i = 1:length(bonesToClear)
+    bonePatch = findobj('Tag', bonesToClear{i});
+    delete(bonePatch);
+end
+    s = filesep;    % determine slash direction based on computer type
+        d = which('director'); % returns path to ensemlber
+        path = pathname(d) ;  % local folder where director resides
+        bones = [path,'Cinema objects',s,'bones',s,'golembones'];
+        openBones(bones);  
+        
+        DisplayBones;
+        Show_Bones = 1;
+        set(speedSlider,'value',3);
+        btnBones = findobj('String', 'Show Bones');
+        if ~isempty(btnBones)
+            set(btnBones, 'String', 'Hide Bones');
+        end
+    else
+        Show_Bones = 0;
+        btnBones = findobj('String', 'Hide Bones');
+        if ~isempty(btnBones)
+            set(btnBones, 'String', 'Show Bones');
+        end
+             %clear Bones
+bonesToClear = {'LeftClavicleBis','LeftHumerusBis', 'LeftRadiusBis','LeftHandBis','LeftFemurBis', 'LeftTibiaBis','LeftFootBis','LeftToeBis', 'PelvisBis','RightClavicleBis','RightHumerusBis', 'RightRadiusBis','RightHandBis', 'RightFemurBis', 'RightTibiaBis','RightFootBis','RightToeBis', 'ThoraxBis', 'HeadBis'};
+
+% Loop through each bone and clear its patch
+for i = 1:length(bonesToClear)
+    bonePatch = findobj('Tag', bonesToClear{i});
+    delete(bonePatch);
+end
+s = filesep;    % determine slash direction based on computer type
+        d = which('director'); % returns path to ensemlber
+        path = pathname(d) ;  % local folder where director resides
+        bones = [path,'Cinema objects',s,'bones',s,'golembones'];
+        openBones(bones); 
+        clear manipulateBoneByName
+        set(speedSlider,'value',1);
+  end
+    end
+
+
+function resetCallback(~, ~)
+    textNames = {};
+    selectedCellsData = {};
+    cla(ax3); % Clear the specified axes
+end
+
+function toggleSelectionMode(source, ~)
+    textNames = {};
+    selectedCellsData = {};
+    smallGraph = findobj(fig, 'Tag', 'SmallGraph');
+    if ~isempty(smallGraph)
+        cla(ax3); % Clear the specified axes
+    end
+
+    button_state = get(source, 'Value');
+
+    if button_state == 1
+        selectionMode = 'multiple';
+        btnCompare = findobj('String', 'Compare off');
+        if ~isempty(btnCompare)
+            set(btnCompare, 'String', 'Compare on');
+        end
+    else
+        selectionMode = 'single';
+        btnCompare = findobj('String', 'Compare on');
+        if ~isempty(btnCompare)
+            set(btnCompare, 'String', 'Compare off');
+        end
+    end
+end
+
+function toggleGraphCallback(src, ~)
+    button_state = get(src, 'Value');
+    
+    if button_state == get(src, 'Max')
+        btnShow = findobj('String', 'Show Graph');
+        if ~isempty(btnShow)
+            set(btnShow, 'String', 'Hide Graph');
+        end
+        showGraph(); % Show the graph when the button is pressed
+        set(reset, 'visible', 'on');
+       
+    elseif button_state == get(src, 'Min')
+        btnHide = findobj('String', 'Hide Graph');
+        if ~isempty(btnHide)
+            set(btnHide, 'String', 'Show Graph');
+        end
+        hideGraph(); % Hide the graph when the button is released
+        set(reset, 'visible', 'off');
+    end
+end
+
+
+    function popMenuCallback(~, ~)
+    selectedOption = get(popMenu, 'Value');
+    if selectedOption == 1  %  "Markers" 
+        markerList.Visible = 'on';  
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'off';
+         set(markerList, 'CellSelectionCallback', {@cellSelected, markerList.Data});
+
+elseif selectedOption == 2  %  "Analog" 
+        markerList.Visible = 'off';  
+        markerList2.Visible = 'on';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'off';
+         set(markerList2, 'CellSelectionCallback', {@cellSelected, markerList2.Data});
+
+    elseif selectedOption == 3  %  "Angles" 
+        markerList.Visible = 'off';  
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'on';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'off';
+         set(markerList3, 'CellSelectionCallback', {@cellSelected, markerList3.Data});
+   
+    elseif selectedOption == 4  %  "Forces" 
+        markerList.Visible = 'off';  
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'on';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'off';
+         set(markerList4, 'CellSelectionCallback', {@cellSelected, markerList4.Data});
+    
+    elseif selectedOption == 5  %  "Powers" 
+        markerList.Visible = 'off';  
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'on';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'off';
+         set(markerList5, 'CellSelectionCallback', {@cellSelected, markerList5.Data});
+   
+    elseif selectedOption == 6  %  "Moments" 
+        markerList.Visible = 'off';  
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'on';
+        markerList7.Visible = 'off';
+         set(markerList6, 'CellSelectionCallback', {@cellSelected, markerList6.Data});
+    
+    elseif selectedOption == 7  %  "Scalars" 
+        markerList.Visible = 'off';  
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'on';
+         set(markerList7, 'CellSelectionCallback', {@cellSelected, markerList7.Data});
+    else
+         markerList.Visible = 'off';  
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'off';
+    end
+end
+
+
+function selectAllCallback(src, ~)
+  
+    btnString = src.String;
+    databox = markerList.Data;
+    
+    if strcmp(btnString, 'Deselect All')
+        
+        for i = 1:size(databox, 1)
+            databox{i, 1} = false;
+        end
+        src.String = 'Select All';  
+    else
+      
+        for i = 1:size(databox, 1)
+            databox{i, 1} = true;
+        end
+        src.String = 'Deselect All'; 
+    end
+    
+    set(markerList, 'Data', databox);
+end
+
+
+function checkBoxCallback(~, ~)
+    
+    DataBox = markerList.Data;
+    checkedItems = [DataBox{:,1}];  
+    activeMarkers = zeros(size(Markers_names));
+    activeMarkers(checkedItems) = 1;
+    updateFrameDisplay();
+end
+
+function playCallback(~, ~)
+    playing = ~playing;
+
+    if playing
+        btnPlay = findobj('String', 'Play');
+        if ~isempty(btnPlay)
+            set(btnPlay, 'String', 'Pause');
+        end
+        updateAnimation();
+    else
+        btnPause = findobj('String', 'Pause');
+        if ~isempty(btnPause)
+            set(btnPause, 'String', 'Play');
+        end
+    end
+end
+
+function closeCallback(~, ~)
+    stopLoop = true;
+    closereq;
+end
+
+function speedCallback(~, ~)
+    
+end
+
+%%%%%%%%%% load %%%%%%%%%%
+
+function loadCallback(~, ~)
+
+    [file, path] = uigetfile({'*.zoo;*.c3d'}, 'Sélectionnez un fichier ZOO ou C3D');
+
+    if ~isempty(my3DArrow) && isvalid(my3DArrow)
+        delete(my3DArrow);
+        my3DArrow = [];
+    end
+
+     if ~isempty(my3DArrow2) && isvalid(my3DArrow2)
+        delete(my3DArrow2);
+        my3DArrow2 = [];
+     end
+
+
+for h = lineHandles'
+    try
+        if ishandle(h) && h ~= 0  
+            delete(h);  
+        end
+    catch 
+        
+    end
+end
+lineHandles = [];  
+
+for h = textHandles'
+    try
+        if ishandle(h) && h ~= 0
+            delete(h);
+        end
+    catch 
+        
+    end
+end
+textHandles = [];  
+
+    if file
+        filepath = fullfile(path, file);
+        loadZooData(filepath);
+
+        %clear Bones
+bonesToClear = {'LeftClavicle','LeftHumerus', 'LeftRadius','LeftHand','LeftFemur', 'LeftTibia','LeftFoot','LeftToe', 'Pelvis','RightClavicle','RightHumerus', 'RightRadius','RightHand', 'RightFemur', 'RightTibia','RightFoot','RightToe', 'Thorax', 'Head'};
+
+% Loop through each bone and clear its patch
+for i = 1:length(bonesToClear)
+    bonePatch = findobj('Tag', bonesToClear{i});
+    delete(bonePatch);
+end
+s = filesep;    % determine slash direction based on computer type
+        d = which('director'); % returns path to ensemlber
+        path = pathname(d) ;  % local folder where director resides
+        bones = [path,'Cinema objects',s,'bones',s,'golembones'];
+        openBones(bones);
+
+        clear manipulateBoneByName;
+        updateFrameDisplay();
+        if Show_Bones ==1
+        DisplayBones;
+        end
+
+        zoomArea = [-10000 10000 -10000 10000]; % Spécifiez les coordonnées de la zone de zoom
+set(fig, 'WindowScrollWheelFcn', @(src, event) zoomFcn(event, ax, zoomArea));
+
+        ListName1 = Markers_names;
+        ListName2 = AnalogName;
+        ListName3 = AnglesName;
+        ListName4 = ForcesName;
+        ListName5 = PowersName;
+        ListName6 = MomentsName;
+        ListName7 = ScalarsName;
+
+          markerList = ListCheckBox(fig, [15 125 146.35 530], ListName1);
+ 
+    if ~isempty (ListName2)
+          markerList2 = ListCheckBox(fig, [15 125 146.35 530], ListName2);  
+    end
+  
+   if ~isempty (ListName3)
+          markerList3 = ListCheckBox(fig, [15 125 146.35 530], ListName3);  
+   end
+
+     if ~isempty (ListName4)
+          markerList4 = ListCheckBox(fig, [15 125 146.35 530], ListName4);  
+     end
+      
+     if ~isempty (ListName5)
+          markerList5 = ListCheckBox(fig, [15 125 146.35 530], ListName5);  
+     end
+        
+     if ~isempty (ListName6)
+          markerList6 = ListCheckBox(fig, [15 125 146.35 530], ListName6);  
+     end
+
+     if ~isempty (ListName7)
+          markerList7 = ListCheckBox(fig, [15 125 146.35 530], ListName7);  
+     end
+       
+  activeMarkers = ones(1, numel(Markers_names));
+        set(fileDisplayName, 'String', ['Load file : ', file]);
+        markerList.Visible = 'on';
+        markerList2.Visible = 'off';
+        markerList3.Visible = 'off';
+        markerList4.Visible = 'off';
+        markerList5.Visible = 'off';
+        markerList6.Visible = 'off';
+        markerList7.Visible = 'off';
+         set(markerList, 'CellSelectionCallback', {@cellSelected, markerList.Data});
+            
+
+         % Obtient le texte du bouton
+    btnString = findobj('String', 'Select All');
+    
+    % Obtient les données actuelles de markerList
+    databox = markerList.Data;
+         
+    if strcmp(btnString, 'Select All')
+            
+        for i = 1:size(databox, 1)
+            databox{i, 1} = true;
+        end
+    else
+        
+        for i = 1:size(databox, 1)
+            databox{i, 1} = false;
+        end
+    end
+         
+databoxTable = cell2table(databox, 'VariableNames', {'Value', 'Name'});
+databoxTableall = cell2table(databox, 'VariableNames', {'Value', 'Name'});
+
+indicesToRemove = ismember(databoxTable.Name, AnglesName);
+indicesToRemove2 = ismember(databoxTable.Name, ForcesName);
+indicesToRemove3 = ismember(databoxTable.Name, MomentsName);
+indicesToRemove4 = ismember(databoxTable.Name, PowersName);
+indicesToRemove5 = ismember(databoxTable.Name, ScalarsName);
+
+allIndicesToRemove = indicesToRemove | indicesToRemove2 | indicesToRemove3 | indicesToRemove4 | indicesToRemove5;
+
+databoxTable(allIndicesToRemove, :) = [];
+
+index = ismember(databoxTableall, databoxTable);
+
+Lines = find(index);
+    
+for i = 1:length(Lines)
+    indexLine = Lines(i);
+    databox{indexLine, 1} = true;
+end
+
+    checkedItems = [databox{:,1}];  
+    activeMarkers = zeros(size(Markers_names));
+    activeMarkers(checkedItems) = 1;
+    updateFrameDisplay();
+
+    set(markerList, 'Data', databox);
+    updateFrameDisplay();
+    end
+    
+end
+
+function progressBarCallback(~, ~)
+    if ~playing
+        
+        percentage_progress = get(progressBar, 'Value');
+        current_frame = floor(percentage_progress);
+        updateFrameDisplay();
+        if Show_Bones ==1
+        DisplayBones;
+        end
+
+    end
+end
+
+
+function updateTable(src, ~, ListName1, ListName2, ListName3, ListName4, ListName5, ListName6, ListName7)
+    % Get the string from the search box
+    fig = ancestor(src, 'figure');
+    searchStr = get(findobj(fig, 'Tag', 'searchBox'), 'String');
+
+    % Determine which marker list is visible and filter items based on the search string
+    visibleMarkerLists = {markerList, markerList2, markerList3, markerList4, markerList5, markerList6, markerList7};
+    listNames = {ListName1, ListName2, ListName3, ListName4, ListName5, ListName6, ListName7};
+
+    for i = 1:length(visibleMarkerLists)
+        if strcmp(visibleMarkerLists{i}.Visible, 'on')
+            % Filter items based on the search string for the visible list
+            filteredItems = listNames{i}(contains(listNames{i}, searchStr, 'IgnoreCase', true));
+
+            % Update the visible list with filtered items
+            databox = cell(numel(filteredItems), 2);
+            databox(:, 1) = {false};
+            databox(:, 2) = filteredItems';
+            set(visibleMarkerLists{i}, 'Data', databox);
+            break;
+        end
+    end
+end
+
+
+function cellSelected(~, event, dataCell)
+    
+    if ~isempty(event.Indices)
+        row = event.Indices(1);
+        col = event.Indices(2);
+        selectedData = dataCell{row, col};       
+ smallGraph = findobj(fig, 'Tag', 'SmallGraph');
+
+    if ~isempty(smallGraph)      
+        try
+            selectedData = dataCell{row, col};
+              x_values = 1:n_frames;
+
+   if strcmp(markerList.Visible, 'on')
+   plot(ax3, x_values, data.(num2str(selectedData)).line(:,1), 'r', ... % rouge
+          x_values, data.(num2str(selectedData)).line(:,2), 'g', ... % vert
+          x_values, data.(num2str(selectedData)).line(:,3), 'b');    % bleu
+  
+    elseif strcmp(markerList2.Visible, 'on')
+       
+        if strcmp(selectionMode, 'multiple')
+            if isfield(data, 'ForceFx1') == 1
+            index = 1:10:length(data.(num2str(selectedData)).line);
+            elseif isfield(data, 'fx1') == 1
+                index = 1:length(data.(num2str(selectedData)).line);
+            end
+            selectedCellsData{end+1} = selectedData;  % Ajouter les données à la liste
+           
+    hold(ax3, 'on'); 
+    colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k']; 
+  
+    for i = 1:length(selectedCellsData)
+        colorIndex = mod(i-1, length(colors)) + 1;  
+        currentColor = colors(colorIndex);
+        plot(ax3, x_values, data.(num2str(selectedCellsData{i})).line(index,1), currentColor);
+        
+    end
+
+    hold(ax3, 'off');
+     
+        elseif strcmp(selectionMode, 'single')
+            if isfield(data, 'ForceFx1') == 1
+            index = 1:10:length(data.(num2str(selectedData)).line);
+            elseif isfield(data, 'fx1') == 1
+                index = 1:length(data.(num2str(selectedData)).line);
+            end
+             plot(ax3, x_values, data.(num2str(selectedData)).line(index,1), 'r');
+        end
+
+  elseif strcmp(markerList3.Visible, 'on')
+    
+    if strcmp(selectionMode, 'multiple')
+        
+        index = 1:length(data.(num2str(selectedData)).line); 
+        selectedCellsData{end+1} = selectedData;  % Add data to the list   
+        hold(ax3, 'on'); 
+        colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k']; 
+      
+        for i = 1:length(selectedCellsData)
+            colorIndex = mod(i-1, length(colors)) + 1;  
+            currentColor = colors(colorIndex);
+            plot(ax3, x_values, data.(num2str(selectedCellsData{i})).line(index,1), currentColor);
+            
+        end
+
+        hold(ax3, 'off');
+     
+    elseif strcmp(selectionMode, 'single')
+      
+        index = 1:length(data.(num2str(selectedData)).line);       
+         plot(ax3, x_values, data.(num2str(selectedData)).line(index,1), 'r');
+    end
+
+elseif strcmp(markerList4.Visible, 'on')
+   
+    if strcmp(selectionMode, 'multiple')
+       
+        index = 1:length(data.(num2str(selectedData)).line);  
+        selectedCellsData{end+1} = selectedData;  % Add data to the list   
+        hold(ax3, 'on'); 
+        colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k']; 
+      
+        for i = 1:length(selectedCellsData)
+            colorIndex = mod(i-1, length(colors)) + 1;  
+            currentColor = colors(colorIndex);
+            plot(ax3, x_values, data.(num2str(selectedCellsData{i})).line(index,1), currentColor);
+            
+        end
+
+        hold(ax3, 'off');
+     
+    elseif strcmp(selectionMode, 'single')
+  
+        index = 1:length(data.(num2str(selectedData)).line);     
+         plot(ax3, x_values, data.(num2str(selectedData)).line(index,1), 'r');
+    end
+
+elseif strcmp(markerList5.Visible, 'on')
+   
+    if strcmp(selectionMode, 'multiple')
+        index = 1:length(data.(num2str(selectedData)).line);    
+       selectedCellsData{end+1} = selectedData;  % Add data to the list       
+        hold(ax3, 'on'); 
+        colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k']; 
+     
+        for i = 1:length(selectedCellsData)
+            colorIndex = mod(i-1, length(colors)) + 1;  
+            currentColor = colors(colorIndex);
+            plot(ax3, x_values, data.(num2str(selectedCellsData{i})).line(index,1), currentColor);
+            
+        end
+
+        hold(ax3, 'off');
+     
+    elseif strcmp(selectionMode, 'single')
+        index = 1:length(data.(num2str(selectedData)).line);     
+         plot(ax3, x_values, data.(num2str(selectedData)).line(index,1), 'r');
+    end
+
+elseif strcmp(markerList6.Visible, 'on')
+   
+    if strcmp(selectionMode, 'multiple')
+    
+        index = 1:length(data.(num2str(selectedData)).line);      
+        selectedCellsData{end+1} = selectedData;  % Add data to the list      
+        hold(ax3, 'on'); 
+       colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k']; 
+       
+        for i = 1:length(selectedCellsData)
+            colorIndex = mod(i-1, length(colors)) + 1;  
+            currentColor = colors(colorIndex);
+            plot(ax3, x_values, data.(num2str(selectedCellsData{i})).line(index,1), currentColor);
+            
+        end
+
+        hold(ax3, 'off');
+     
+    elseif strcmp(selectionMode, 'single')
+        index = 1:length(data.(num2str(selectedData)).line);
+         plot(ax3, x_values, data.(num2str(selectedData)).line(index,1), 'r');
+    end
+
+elseif strcmp(markerList7.Visible, 'on')
+   
+    if strcmp(selectionMode, 'multiple')
+  
+        index = 1:length(data.(num2str(selectedData)).line);
+        selectedCellsData{end+1} = selectedData;  % Add data to the list
+        hold(ax3, 'on'); 
+      colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k']; 
+   
+    for i = 1:length(selectedCellsData)
+        colorIndex = mod(i-1, length(colors)) + 1;  
+        currentColor = colors(colorIndex);
+        plot(ax3, x_values, data.(num2str(selectedCellsData{i})).line(index,1), currentColor);      
+    end
+
+    hold(ax3, 'off');
+     
+        elseif strcmp(selectionMode, 'single')
+                index = 1:length(data.(num2str(selectedData)).line);
+                plot(ax3, x_values, data.(num2str(selectedData)).line(index,1), 'r');
+    end
+  end
+ 
+ set(ax3, 'Tag', 'SmallGraph','HitTest','off');
+
+xlim = get(ax3, 'XLim'); 
+ylim = get(ax3, 'YLim');  
+totalHeight = ylim(2) - ylim(1);
+
+  % Calculate top right corner position
+posX = xlim(2); 
+posY = ylim(2); 
+spacing = totalHeight* 0.064;
+textNames = {};
+
+if ~isempty(selectedCellsData)
+    oldTextObjects = findall(ax3, 'Type', 'text');
+    delete(oldTextObjects);
+    for i = 1:length(selectedCellsData)
+        % Sélection de la couleur en fonction de l'index
+        colorIndex = mod(i-1, length(colors)) + 1;  
+        currentColor = colors(colorIndex);  
+        set(ax3, 'Tag', 'SmallGraph', 'HitTest', 'off');
+
+         % Calculate Y position for each text, assuming vertical spacing
+        currentPosY = posY - (i-1) * spacing;
+
+        str = sprintf('%s', num2str(selectedCellsData{i}));
+        textNames{end+1} = str;
+
+        hText = text(posX, currentPosY, str, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+        set(hText, 'Color', currentColor); 
+        set(hText, 'FontSize', 10);  
+    end
+else
+    set(ax3, 'Tag', 'SmallGraph', 'HitTest', 'off');
+    hText = text(posX, posY, selectedData,'color','r', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+    set(hText, 'FontSize', 10,'color','k');  
+
+end
+        end
+ 
+    xlabel(ax3, 'Frames');
+  grid on;
+ax3.XMinorGrid = 'on';
+ax3.YMinorGrid = 'on';
+     ax3.GridColor = [0 0 0];   
+    ax3.MinorGridColor = [0.1 0.1 0.1];
+    ax3.XColor = 'white';
+    ax3.YColor = 'white';
+          
+    hold(ax3, 'on'); 
+    currentFrameLine = line(ax3, [current_frame, current_frame], ax3.YLim, 'Color', 'k', 'LineWidth', 1);
+    set(currentFrameLine, 'Tag', 'CurrentFrameLine'); 
+    hold(ax3, 'off'); 
+    else
+
+    end
+   end
+end
+
+%%%%%%% Markers names %%%%%%%
+
+Markers_names = {};
+Markers = struct();
+
+dcm_obj = datacursormode(fig);
+set(dcm_obj, 'UpdateFcn', @myDataCursorFunc);
+
+function txt = myDataCursorFunc(~, event_obj)
+    pos = get(event_obj, 'Position');
+    markerName = findMarkerNameByPosition(pos);
+    txt = markerName;
+end
+
+function name = findMarkerNameByPosition(position)
+    name = 'Unknown'; % Default name is 'Unknown'
+
+    % Iterate through marker names
+    for i = 1:numel(Markers_names)
+        marker = Markers_names{i};
+        if isequal(Markers.(marker)(current_frame, :), position)
+            name = marker;
+            return;
+        end
+    end
+end
+
+
+%%%%%%%% Load zoo %%%%%%%%
+
+function loadZooData(filepath)
+    % Determine the file extension
+    [~,~,ext] = fileparts(filepath);
+    if strcmp(ext,'.c3d')
+       data = c3d2zoo(filepath); % Convert c3d to zoo format
+    else
+        data = zload(filepath); % Load zoo format
+    end
+
+    % Get channel names excluding 'zoosystem'
+    ch_names = setdiff(fieldnames(data), 'zoosystem');
+
+    % Initialize an empty cell array to store marker names
+    Markers_names = {};
+
+    % Loop through each field in 'ch_names'
+    for i = 1:length(ch_names)
+        name = ch_names{i}; % Extract the current field name
+
+        % Check if the 'line' field in the current structure has exactly 3 columns
+        if isfield(data.(ch_names{i}), 'line')
+            if size(data.(ch_names{i}).line, 2) == 3
+                % If true, add the field name to 'Markers_names'
+                Markers_names{end + 1} = name;
+            end
+        end
+    end
+
+    % Initialize the Markers structure outside the loop
+    Markers = struct();
+
+    for i = 1:numel(Markers_names)
+        Markers.(Markers_names{i}) = data.(Markers_names{i}).line;
+    end
+
+    % Set initial state of playback and frame information
+    playing = false;
+    current_frame = 1;
+    n_frames = size(data.(Markers_names{1}).line, 1);
+
+    % Update activeMarkers to match the new Marker_names
+    activeMarkers = ones(1, numel(Markers_names));
+    
+xFP = [];
+yFP = [];
+zFP = [];
+xFP2 = [];
+yFP2 = [];
+zFP2 = [];
+ xF1 = [];
+ yF1 = [];
+ zF1 = [];
+ xF2 = [];
+ yF2 = [];
+ zF2 = [];
+ OxF1 = [];
+ OyF1 = [];
+ OyF1 = [];
+ OxF2 = [];
+ OyF2 = [];
+ OyF2 = [];
+
+       if isfield(data.zoosystem.Analog, 'Channels') == 0
+           AnalogName = data.zoosystem.Analog;
+       else
+           AnalogName = data.zoosystem.Analog.Channels;
+       end
+
+              Angles = data.zoosystem.OtherMetaInfo.Parameter.POINT.ANGLES.data';
+[nRows, ~] = size(Angles); % Obtenir le nombre de lignes dans Angles
+AnglesName = cell(nRows, 1); % Initialiser un cell array vide
+
+for i = 1:nRows
+    AnglesName{i} = strtrim(Angles(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
+end
+
+  Forces = data.zoosystem.OtherMetaInfo.Parameter.POINT.FORCES.data';
+[nRows, ~] = size(Forces); % Obtenir le nombre de lignes dans Angles
+ForcesName = cell(nRows, 1); % Initialiser un cell array vide
+
+for i = 1:nRows
+    ForcesName{i} = strtrim(Forces(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
+end
+
+  Moments = data.zoosystem.OtherMetaInfo.Parameter.POINT.MOMENTS.data';
+[nRows, ~] = size(Moments); % Obtenir le nombre de lignes dans Angles
+MomentsName = cell(nRows, 1); % Initialiser un cell array vide
+
+for i = 1:nRows
+    MomentsName{i} = strtrim(Moments(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
+end
+
+  Powers = data.zoosystem.OtherMetaInfo.Parameter.POINT.POWERS.data';
+[nRows, ~] = size(Powers); % Obtenir le nombre de lignes dans Angles
+PowersName = cell(nRows, 1); % Initialiser un cell array vide
+
+for i = 1:nRows
+    PowersName{i} = strtrim(Powers(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
+end
+
+  Scalars = data.zoosystem.OtherMetaInfo.Parameter.POINT.SCALARS.data';
+[nRows, ~] = size(Scalars); % Obtenir le nombre de lignes dans Angles
+ScalarsName = cell(nRows, 1); % Initialiser un cell array vide
+
+for i = 1:nRows
+    ScalarsName{i} = strtrim(Scalars(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
+end
+
+
+set(progressBar, 'Max', n_frames,'sliderstep',[1/(n_frames-1) 10/(n_frames-1)]);
+
+uicontrol( 'Style', 'text', 'Position', [795 65 35 15], 'String', [num2str(floor(n_frames))], 'FontSize', 10.5);
+  
+xpos = 352.5;
+for i = 1:1:9
+uicontrol( 'Style', 'text', 'Position', [xpos 19.5 35 14], 'String', [num2str(round((i*n_frames)/10))], 'FontSize', 10);
+    xpos = xpos + 47;
+end
+     
+ if isfield(data.zoosystem.Analog, 'FPlates') == 1 && isfield(data.zoosystem.Analog.FPlates,'CORNERS') == 1 && ~isempty(data.zoosystem.Analog.FPlates.CORNERS)
+
+xFP = [data.zoosystem.Analog.FPlates.CORNERS(1,1,1) data.zoosystem.Analog.FPlates.CORNERS(1,2,1) data.zoosystem.Analog.FPlates.CORNERS(1,3,1) data.zoosystem.Analog.FPlates.CORNERS(1,4,1)]; 
+yFP = [data.zoosystem.Analog.FPlates.CORNERS(2,1,1) data.zoosystem.Analog.FPlates.CORNERS(2,2,1) data.zoosystem.Analog.FPlates.CORNERS(2,3,1) data.zoosystem.Analog.FPlates.CORNERS(2,4,1)];
+zFP = [data.zoosystem.Analog.FPlates.CORNERS(3,1,1) data.zoosystem.Analog.FPlates.CORNERS(3,2,1) data.zoosystem.Analog.FPlates.CORNERS(3,3,1) data.zoosystem.Analog.FPlates.CORNERS(3,4,1)]; 
+
+xFP2 = [data.zoosystem.Analog.FPlates.CORNERS(1,1,2) data.zoosystem.Analog.FPlates.CORNERS(1,2,2) data.zoosystem.Analog.FPlates.CORNERS(1,3,2) data.zoosystem.Analog.FPlates.CORNERS(1,4,2)]; 
+yFP2 = [data.zoosystem.Analog.FPlates.CORNERS(2,1,2) data.zoosystem.Analog.FPlates.CORNERS(2,2,2) data.zoosystem.Analog.FPlates.CORNERS(2,3,2) data.zoosystem.Analog.FPlates.CORNERS(2,4,2)];
+zFP2 = [data.zoosystem.Analog.FPlates.CORNERS(3,1,2) data.zoosystem.Analog.FPlates.CORNERS(3,2,2) data.zoosystem.Analog.FPlates.CORNERS(3,3,2) data.zoosystem.Analog.FPlates.CORNERS(3,4,2)]; 
+
+OxF1 = (data.zoosystem.Analog.FPlates.CORNERS(1,1,1) + data.zoosystem.Analog.FPlates.CORNERS(1,2,1))/2;
+OyF1 = (data.zoosystem.Analog.FPlates.CORNERS(2,2,1) + data.zoosystem.Analog.FPlates.CORNERS(2,3,1))/2;
+OzF1 = 0;
+OxF2 = (data.zoosystem.Analog.FPlates.CORNERS(1,1,2) + data.zoosystem.Analog.FPlates.CORNERS(1,2,2))/2;
+OyF2 = (data.zoosystem.Analog.FPlates.CORNERS(2,2,2) + data.zoosystem.Analog.FPlates.CORNERS(2,3,2))/2;
+OzF2 = 0;
+
+elseif isfield(data.zoosystem, 'Parameter') == 1
+
+    if isfield(data.zoosystem.Parameter, 'FORCE_PLATFORM') == 1
+
+xFP = [data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(1, :)  data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(4, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(7, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(10, :)]; 
+yFP = [data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(2, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(5, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(8, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(11, :)];
+zFP = [data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(3, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(6, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(9, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(12, :)]; 
+
+xFP2 = [data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(13, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(16, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(19, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(22, :)]; 
+yFP2 = [data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(14, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(17, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(20, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(23, :)];
+zFP2 = [data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(15, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(18, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(21, :) data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(24, :)]; 
+
+OxF1 = (data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(1, :) + data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(4, :))/2;
+OyF1 = (data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(5, :) + data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(8, :))/2;
+OzF1 = 0;
+OxF2 = (data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(13, :) + data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(16, :))/2;
+OyF2 = (data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(17, :) + data.zoosystem.Parameter.FORCE_PLATFORM.CORNERS.data(20, :))/2;
+OzF2 = 0;
+
+    end
+end
+
+if isfield(data, 'ForceFx1') == 1
+
+    xF1 = data.ForceFx1.line;
+    yF1 = data.ForceFy1.line;
+    zF1 = data.ForceFz1.line;
+    xF2 = data.ForceFx2.line;
+    yF2 = data.ForceFy2.line;
+    zF2 = data.ForceFz2.line;
+      Force_arrow = [xF1 yF1 zF1];
+    Force_arrow2 = [xF2 yF2 zF2];
+     Force_arrow_sampled = Force_arrow(1:10:end, :);
+    Force_arrow_sampled2 = Force_arrow2(1:10:end, :);  
+
+elseif isfield(data, 'fx1') == 1
+
+    xF1 = data.fx1.line;
+    yF1 = data.fy1.line;
+    zF1 = data.fz1.line;
+    xF2 = data.fx2.line;
+    yF2 = data.fy2.line;
+    zF2 = data.fz2.line;
+      Force_arrow = [xF1 yF1 zF1];
+    Force_arrow2 = [xF2 yF2 zF2]; 
+      Force_arrow_sampled = Force_arrow(1:end, :);
+    Force_arrow_sampled2 = Force_arrow2(1:end, :); 
+
+end
+
+    if ~isempty(my3DArrow) && isvalid(my3DArrow)
+        delete(my3DArrow);
+        my3DArrow = [];
+    end
+
+     if ~isempty(my3DArrow2) && isvalid(my3DArrow2)
+        delete(my3DArrow2);
+        my3DArrow2 = [];
+    end
+
+end
+
+
+%%%%%%% Show/Hide Graph %%%%%%%
+
+function showGraph()
+    str = 'Select data';
+    ax3 = axes('Parent', fig, 'Position', [0.2 0.7 0.28 0.28], 'Box', 'on');
+    set(ax3, 'Tag', 'SmallGraph', 'HitTest', 'off');
+
+    % Get the current x and y axis limits
+    xlim = get(ax3, 'XLim'); 
+    ylim = get(ax3, 'YLim'); 
+
+    % Calculate the top right corner position
+    posX = xlim(2); % Upper limit of the x-axis
+    posY = ylim(2); % Upper limit of the y-axis
+    hText = text(posX, posY, str, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+
+    % Modify the font size of the text
+    set(hText, 'FontSize', 14); 
+
+    % Adjust the margin for better text positioning
+    set(hText, 'Units', 'normalized', 'Position', [0.98, 0.98, 0]); % Values can be adjusted for better positioning
+
+    % Set grid properties
+    grid on;
+    ax3.XMinorGrid = 'on';
+    ax3.YMinorGrid = 'on';
+    ax3.GridColor = [0 0 0];   
+    ax3.MinorGridColor = [0.1 0.1 0.1];
+    ax3.XColor = 'white';
+    ax3.YColor = 'white';
+    title(ax3, 'My Graph');
+    xlabel(ax3, 'Frames');
+    ylabel(ax3, 'Y-axis');
+
+    % Add a vertical line at the current frame's X position
+    hold(ax3, 'on'); % Keep the current graph and add the line
+    currentFrameLine = line(ax3, [current_frame, current_frame], ax3.YLim, 'Color', 'k', 'LineWidth', 1);
+    set(currentFrameLine, 'Tag', 'CurrentFrameLine'); % Tag for easy identification
+    hold(ax3, 'off'); % Release the graph
+end
+
+function hideGraph()
+    % Code to hide the graph.
+    % Find the axis with the tag and delete it.
+    smallGraph = findobj(fig, 'Tag', 'SmallGraph');
+    if ~isempty(smallGraph)
+        delete(smallGraph);
+    end
+end
+
+function updateGraph()
+    currentFrameLine = findobj(ax3, 'Tag', 'CurrentFrameLine');
+    if ~isempty(currentFrameLine)
+        set(currentFrameLine, 'XData', [current_frame, current_frame]);
+    end
+end
+
+%%%%%%% Bones %%%%%%%
+
+  function DisplayBones
+
+  AxBones = findobj('Tag','3Dspace');
+
+% Manipulate bones by name using loop
+bonesToManipulate = {'LeftClavicle','LeftHumerus', 'LeftRadius','LeftHand','LeftFemur', 'LeftTibia','LeftFoot','LeftToe', 'Pelvis','RightClavicle','RightHumerus', 'RightRadius','RightHand', 'RightFemur', 'RightTibia','RightFoot','RightToe', 'Thorax', 'Head'};
+for i = 1:length(bonesToManipulate)
+    manipulateBoneByName(AxBones, bonesToManipulate{i},filepath,current_frame);
+end  
+    
+  end
+
+
+%%%%%%% Animation %%%%%%%
+
+function updateAnimation()
+    speed = get(speedSlider, 'Value');
+
+    while ~stopLoop
+        if playing
+            current_frame = min(current_frame + ceil(1*speed), n_frames);
+            updateFrameDisplay();
+            if Show_Bones == 1
+            DisplayBones;
+            end
+            
+            if current_frame >= n_frames
+                playing = false;
+                btnPause = findobj('String', 'Pause');
+                if ~isempty(btnPause)
+                    set(btnPause, 'String', 'Play');
+                end
+            else
+                pause(0.00001);
+            end
+        else
+            pause(0.01);
+        end
+    end
+end
+
+    function updateFrameDisplay()
+    
+        persistent sc hFP hFP2 
+ 
+hold(ax, 'on');
+
+      % Update arrow
+      
+ if current_frame <= size(Force_arrow_sampled, 1) 
+        position_actuelle = Force_arrow_sampled(current_frame, :);
+        
+        xF1_actuel = -position_actuelle(1);
+        yF1_actuel = -position_actuelle(2);
+        zF1_actuel = -position_actuelle(3);
+
+        u = xF1_actuel ;
+        v = yF1_actuel ;
+        w = zF1_actuel ;  
+        
+    if ~isempty(xFP)
+        if zF1_actuel ~= 0
+            if isempty(my3DArrow) || ~isvalid(my3DArrow)
+                my3DArrow = quiver3(ax, OxF1, OyF1, OzF1, u, v, w,'Color', [1, 0.5, 0], 'LineWidth', 3.2);
+            else
+                if ~isequal([u, v, w], get(my3DArrow, {'UData', 'VData', 'WData'}))
+                set(my3DArrow, 'UData', u, 'VData', v, 'WData', w);
+                 end
+            end
+        end
+    end
+ end
+
+
+  if current_frame <= size(Force_arrow_sampled2, 1) 
+        position_actuelle2 = Force_arrow_sampled2(current_frame, :);
+    
+        xF2_actuel = -position_actuelle2(1);
+        yF2_actuel = -position_actuelle2(2);
+        zF2_actuel = -position_actuelle2(3);
+
+        u2 = xF2_actuel ;
+        v2 = yF2_actuel ;
+        w2 = zF2_actuel ;
+    if ~isempty(xFP2)
+        if zF2_actuel ~= 0
+            if isempty(my3DArrow2) || ~isvalid(my3DArrow2)
+                my3DArrow2 = quiver3(ax, OxF2, OyF2, OzF2, u2, v2, w2, 'Color',[1, 0.5, 0], 'LineWidth', 3.2);
+            else
+                if ~isequal([u2, v2, w2], get(my3DArrow2, {'UData', 'VData', 'WData'}))
+                set(my3DArrow2, 'UData', u2, 'VData', v2, 'WData', w2);
+                 end
+            end
+        end
+    end
+ end
+
+     if ~isempty(my3DArrow) && isvalid(my3DArrow) && zF1_actuel == 0
+        delete(my3DArrow);  
+         my3DArrow = [];
+     end
+
+       if ~isempty(my3DArrow2) && isvalid(my3DArrow2) && zF2_actuel == 0
+        delete(my3DArrow2); 
+         my3DArrow2 = [];
+       end
+   
+    coords = extractActiveMarkerCoordinates(); 
+    colors = color();  
+
+    if isempty(sc) || ~isvalid(sc) || ~isequal(size_factor, previous_size_factor) || ~isequal(colors, previous_colors)
+       delete(sc)
+       if size_factor == 0
+       else
+        sc = scatter3(ax, coords(:, 1), coords(:, 2), coords(:, 3), size_factor, colors, 'filled');
+        previous_size_factor = size_factor;
+        previous_colors = colors;
+
+       end
+    else
+        set(sc, 'XData', coords(:, 1), 'YData', coords(:, 2), 'ZData', coords(:, 3));
+    end
+
+    % Update patch
+    if isempty(hFP) || ~isvalid(hFP)
+        hFP = patch(ax, 'XData', xFP, 'YData', yFP, 'ZData', zFP, 'FaceColor', 'yellow');
+        hFP.FaceAlpha = 0.7;
+        quiver3(ax, OxF1, OyF1, OzF1, 0, 0, -250, 'b', 'LineWidth', 1.7);
+        quiver3(ax, OxF1, OyF1, OzF1, 0, 300, 0, 'g', 'LineWidth', 1.7); 
+        quiver3(ax, OxF1, OyF1, OzF1, 300, 0, 0, 'r', 'LineWidth', 1.7); 
+    else
+        set(hFP, 'XData', xFP, 'YData', yFP, 'ZData', zFP);
+        hFP.FaceAlpha = 0.7; 
+    end
+    
+    set(hFP, 'PickableParts', 'none');
+  
+    if isempty(hFP2) || ~isvalid(hFP2)
+        hFP2 = patch(ax, 'XData', xFP2, 'YData', yFP2, 'ZData', zFP2, 'FaceColor', 'yellow');
+         hFP2.FaceAlpha = 0.7;
+            quiver3(ax, OxF2, OyF2, OzF2, 0, 0, -250, 'b', 'LineWidth', 1.7);
+            quiver3(ax, OxF2, OyF2, OzF2, 0, 300, 0, 'g', 'LineWidth', 1.7); 
+            quiver3(ax, OxF2, OyF2, OzF2, 300, 0, 0, 'r', 'LineWidth', 1.7); 
+    else
+        set(hFP2, 'XData', xFP2, 'YData', yFP2, 'ZData', zFP2);
+        hFP2.FaceAlpha = 0.7;
+    end
+  
+    set(hFP2, 'PickableParts', 'none'); 
+   percentage_progress = floor(current_frame);  
+    set(progressBar, 'Value', percentage_progress); 
+    set(frameLabel, 'String', ['Frame: ' num2str(floor(current_frame))]); 
+    updateGraph(); 
+  
+    if ~isempty(Markers_names)  
+        events = extractEventsForAllMarkers();  
+        plotEventsOnBar(events); 
+    end
+end
+
+
+%%%%%%% Events Function %%%%%%%
+
+function events = extractEventsForAllMarkers()
+    % Pre-allocate with an estimated size (adjust based on data)
+    estimated_num_events = 100; 
+    events(estimated_num_events) = struct('marker', [], 'event', [], 'frame', []);
+    
+    event_count = 0;
+    for i = 1:numel(Markers_names)
+        marker = Markers_names{i};
+        marker_data = data.(marker); % Access once and use multiple times
+
+        if isfield(marker_data, 'event')
+            markerEvents = fieldnames(marker_data.event);
+
+            for j = 1:numel(markerEvents)
+                event_count = event_count + 1;
+                events(event_count) = struct('marker', marker, 'event', markerEvents{j}, 'frame', marker_data.event.(markerEvents{j}));
+            end
+        end
+    end
+    
+    % Remove unused entries after the loop
+    events(event_count+1:end) = [];
+end
+
+function plotEventsOnBar(events)
+    num_events = numel(events);
+    if isempty(lineHandles) || length(lineHandles) ~= num_events
+        % Delete old handles to prevent memory clutter
+        delete(lineHandles);
+        delete(textHandles);
+
+        % Create new handles
+        lineHandles = gobjects(num_events, 1);
+        textHandles = gobjects(num_events, 1);
+
+        for i = 1:num_events
+            event = events(i);
+            x_event = event.frame / n_frames;
+            lineHandles(i) = line(axBar, [x_event(1, 1), x_event(1, 1)], [0, 4], 'Color', 'red', 'LineWidth', 2);
+            textHandles(i) = text(axBar, x_event(1, 1), 5.55, event.event, 'HorizontalAlignment', 'center', 'Visible', 'off');
+            
+            % Use an anonymous function to minimize function calls
+            set(lineHandles(i), 'ButtonDownFcn', @(src,evt) toggleTextVisibility(event.event));
+        end
+    else
+        % Update existing handles
+        for i = 1:num_events
+            event = events(i);
+            x_event = event.frame / n_frames;
+            set(lineHandles(i), 'XData', [x_event(1, 1), x_event(1, 1)]);
+            set(textHandles(i), 'Position', [x_event(1, 1), 5.55], 'String', event.event);
+        end
+    end
+end
+
+function toggleTextVisibility(eventName)
+    textHandle = findobj(axBar, 'Type', 'Text', 'String', eventName);
+    currentVisibility = get(textHandle, 'Visible');
+    if strcmp(currentVisibility, 'on')
+        set(textHandle, 'Visible', 'off');
+    else
+        set(textHandle, 'Visible', 'on');
+    end
+end
+
+function coords = extractActiveMarkerCoordinates()
+    activeIdx = find(activeMarkers);
+    validIdx = activeIdx <= numel(Markers_names); % Logical array: true for valid, false for invalid
+    
+    if any(~validIdx)
+        warning('Invalid indices detected and will be ignored: %s', mat2str(activeIdx(~validIdx)));
+        activeIdx = activeIdx(validIdx); % Keep only valid indices
+    end
+    
+    coords = zeros(numel(activeIdx), 3);
+    for i = 1:numel(activeIdx)
+        marker = Markers_names{activeIdx(i)};
+        coords(i, :) = Markers.(marker)(current_frame, :);
+    end
+end
+
+function showAddEventWindow(~, ~)
+    selectedMarkerName = selectedData;
+
+    % Create a new window
+    h = figure('Position', [500 500 300 200], 'MenuBar', 'none', 'Name', 'Add Event', 'NumberTitle', 'off');
+
+    % Display the selected marker name
+    uicontrol(h, 'Style', 'text', 'Position', [10 160 280 20], 'String', ['Marker: ', selectedMarkerName]);
+
+    % Two text boxes for the event name and frame
+    uicontrol(h, 'Style', 'text', 'Position', [10 120 100 20], 'String', 'Event Name:');
+    eventNameEdit = uicontrol(h, 'Style', 'edit', 'Position', [120 120 160 25]);
+
+    uicontrol(h, 'Style', 'text', 'Position', [10 80 100 20], 'String', 'Frame:');
+    frameEdit = uicontrol(h, 'Style', 'edit', 'Position', [120 80 160 25], 'String', num2str(current_frame));
+
+    % Button to save
+    uicontrol(h, 'Style', 'pushbutton', 'Position', [100 20 100 40], 'String', 'Save', 'Callback', @saveEventData);
+
+    function saveEventData(~, ~)
+        eventName = get(eventNameEdit, 'String');
+        frameNum = str2double(get(frameEdit, 'String'));
+
+        if isempty(eventName) || isnan(frameNum)
+            msgbox('Please enter a valid name and frame number.', 'Error', 'error');
+            return;
+        end
+
+        if ~isfield(data, selectedMarkerName)
+            data.(selectedMarkerName) = struct();
+        end
+        if ~isfield(data.(selectedMarkerName), 'event')
+            data.(selectedMarkerName).event = struct();
+        end
+
+        data.(selectedMarkerName).event.(eventName) = frameNum;
+
+        zsave(filepath, data);
+
+        close(h);
+        msgbox('Event saved!', 'Success');
+    end
+end
+
+function showDeleteEventWindow(~, ~)
+    % Create a new window
+    h = figure('Position', [500 500 350 300], 'MenuBar', 'none', 'Name', 'Delete Event', 'NumberTitle', 'off', 'CloseRequestFcn', @onClose);
+
+    % ListBox showing all events
+    eventList = uicontrol(h, 'Style', 'listbox', 'Position', [10 50 330 240], 'String', getEventNames(), 'Value', 1); 
+
+    % Button to delete the selected event
+    uicontrol(h, 'Style', 'pushbutton', 'Position', [125 10 100 30], 'String', 'Delete', 'Callback', @deleteEvent);
+
+    function eventNames = getEventNames()
+        eventNames = {};
+        for i = 1:numel(Markers_names)
+            marker = Markers_names{i};
+            if isfield(data.(marker), 'event')
+                markerEvents = fieldnames(data.(marker).event);
+                for j = 1:numel(markerEvents)
+                    eventNames{end + 1} = sprintf('%s: %s', marker, markerEvents{j});
+                end
+            end
+        end
+    end
+
+    function deleteEvent(~, ~)
+        selectedIndex = get(eventList, 'Value');
+        eventNames = get(eventList, 'String');
+        if selectedIndex > 0 % Ensure an item is selected
+            fullEventName = eventNames{selectedIndex};
+            [marker, eventName] = strtok(fullEventName, ':');
+            eventName = strtrim(eventName(2:end)); % Remove space and colon
+            
+            % Delete the event from the data structure
+            if isfield(data.(marker), 'event') && isfield(data.(marker).event, eventName)
+                data.(marker).event = rmfield(data.(marker).event, eventName);
+                zsave(filepath, data); % Assuming 'zsave' is your custom save function
+            end
+            cla(axBar);
+
+            % Redefine axBar properties if altered by cla()
+            set(axBar, 'Visible', 'off', 'XLim', [0, 1], 'YLim', [-2, 5], 'HitTest', 'off');
+
+            % Recreate necessary graphical elements
+            for i = 0:0.1:1
+                line([i i], [-2 5], 'Color', 'k', 'Parent', axBar);
+            end 
+            
+            events = extractEventsForAllMarkers(); % Retrieve current events after deletion
+            plotEventsOnBar(events); % Redraw the event bar with current events
+
+            % Update the event list
+            set(eventList, 'String', getEventNames());
+            set(eventList, 'Value', max(1, selectedIndex - 1));
+        end
+    end
+
+    function onClose(~, ~)
+        delete(h);  
+    end
+end
+
+
+%%%%%% Option Button %%%%%%%
+
+function editAppearanceCallback(~, ~)
+    h = figure('Position', [500 500 300 200], 'MenuBar', 'none', 'Name', 'Edit Appearance', 'NumberTitle', 'off');
+
+    % Marker Size controls
+    uicontrol(h, 'Style', 'text', 'Position', [10 160 100 20], 'String', 'Marker Size:');
+    markerSizeEdit = uicontrol(h, 'Style', 'slider', 'Position', [120 160 120 25], 'Backgroundcolor', [1 1 1], 'Min', 0, 'Max', 30, 'Value', size_factor, 'SliderStep', [1/(31-1) 2/(31-1)], 'Callback', @sizeCallback);
+    sizeLabel = uicontrol(h, 'Style', 'text', 'Position', [245 160 30 25], 'String', num2str(floor(get(markerSizeEdit, 'Value'))), 'FontSize', 11);
+    
+    function sizeCallback(~, ~)
+        set(sizeLabel, 'String', num2str(floor(get(markerSizeEdit, 'Value'))));
+    end
+
+    % Marker Color controls
+    uicontrol(h, 'Style', 'text', 'Position', [10 120 100 20], 'String', 'Marker Color:');
+    markerColorEdit = uicontrol(h, 'Style', 'edit', 'Position', [120 120 160 25],'String', color);
+
+    % Apply button
+    uicontrol(h, 'Style', 'pushbutton', 'Position', [100 20 100 40], 'String', 'Apply', 'Callback', @applyAppearance);
+
+    function applyAppearance(~, ~)
+        markerSize = get(markerSizeEdit, 'Value');
+        markerColor = get(markerColorEdit, 'String');
+        
+        if isnan(markerSize) || isempty(markerColor)
+            msgbox('Please enter a valid size and color.', 'Error', 'error');
+            return;
+        end
+
+        size_factor = markerSize;
+        color = markerColor;
+        close(h);
+        updateFrameDisplay();
+    end
+end
+
+end
 
 

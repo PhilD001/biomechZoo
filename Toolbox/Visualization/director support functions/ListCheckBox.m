@@ -1,18 +1,18 @@
 function t = ListCheckBox(fig, pos, items)
-    % S'assure que la figure est en avant et active
+    % Makes sure the figure is always "in front" and active
     figure(fig);
     
-    % Prépare les données pour la uitable
+    % Prepare data for uitable
     databox = cell(numel(items), 2);
-    databox(:, 1) = {false};  % Toutes les cases à cocher non cochées par défaut
-    databox(:, 2) = items;   % Les noms des items
+    databox(:, 1) = {false};  % all boxes to tick, unticked by default
+    databox(:, 2) = items;   % name of all items
     
-    % Crée une uitable avec une barre de défilement verticale
+    % Creates a uitable with a vertical bar
     t = uitable(fig, 'Data', databox, 'ColumnName', {'','Name'}, 'ColumnEditable', [true false], ...
                 'RowName', [], 'Position', pos, 'ColumnWidth', {25, 120}, 'Units', 'normalized');
     
 
-     % Stocke databox dans UserData pour un accès ultérieur
+     % Store databox in UserData to keep accessible for user
     set(fig, 'UserData', databox);
 
 end
