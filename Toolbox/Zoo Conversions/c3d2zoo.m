@@ -275,18 +275,18 @@ end
 function FPlates = setFPinfo(r)
 
 if isfield(r.Parameter,'FORCE_PLATFORM')
-    a =r.Parameter.FORCE_PLATFORM.CORNERS.data;
-    a= reshape(a,3,[]);
-    ln = length(a);
-    
-    b = zeros(3,4,ln/4);
-    
-    for j = 1:ln/4
-        
-        if j ==1
-            b(:,:,1) = a(:,1:4);
-        else
-            b(:,:,j) = a(:,4*(j-1)+1:4*j);
+    b = [];
+    if isfield(r.Parameter.FORCE_PLATFORM, 'CORNERS')
+        a =r.Parameter.FORCE_PLATFORM.CORNERS.data;
+        a= reshape(a,3,[]);
+        ln = length(a);
+        b = zeros(3,4,ln/4);
+        for j = 1:ln/4
+            if j ==1
+                b(:,:,1) = a(:,1:4);
+            else
+                b(:,:,j) = a(:,4*(j-1)+1:4*j);
+            end
         end
     end
     
