@@ -72,15 +72,22 @@ else
         ch = ch(2:end);
     end
 
+    % if first digit is not a letter add a prefix
+    if ~isletter(ch(1))
+        ch = ['mrk_', ch];
+    end
+
     % Check if the string starts with a letter (A-Z or a-z)
     isValid = isletter(ch(1));
-
+    
     if isValid
         % Check if the string contains only ASCII letters, digits, and underscores
         isValid = all(isletter(ch) | ismember(ch, '0123456789_'));
     end
+    
+    % final chance to try something
     if ~isValid
-        disp(['invalid field name ', ch, ' ...converting it to its hexadecimal representation'])
+        disp(['invalid field name ', ch, ' ... converting it to its hexadecimal representation'])
         ch = dec2hex(uint16(ch));
     end
     
