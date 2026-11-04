@@ -73,11 +73,15 @@ for  i = 1:2
     end
     
     
-    if ~data.zoosystem.(section{i}).Sync
+    if isfield(data.zoosystem.(section{i}), 'Sync') && ...
+            ~data.zoosystem.(section{i}).Sync
+
         disp('*********WARNING**************')
-        disp(['there may be a sync problem with your ',section{i}, 'channels: after combining data are of different lengths'])
+        disp(['there may be a sync problem with your ', section{i}, ...
+            ' channels: after combining data are of different lengths'])
         disp(' ')
     end
+
 end
 
 

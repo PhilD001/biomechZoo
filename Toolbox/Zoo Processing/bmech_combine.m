@@ -99,7 +99,7 @@ end
 a = ismember(stk1,stk2);
 b = find(a==0);     %different files
 
-if ~isempty(b);
+if ~isempty(b)
     
     for l = 1:length(b)
         disp([stk1{b(l)},' and ', stk2{b(l)}, ' have different file names'])

@@ -1014,14 +1014,14 @@ PowersName = cell(nRows, 1); % Initialiser un cell array vide
 for i = 1:nRows
     PowersName{i} = strtrim(Powers(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
 end
+% 
+%   Scalars = data.zoosystem.OtherMetaInfo.Parameter.POINT.SCALARS.data';
+% [nRows, ~] = size(Scalars); % Obtenir le nombre de lignes dans Angles
+% ScalarsName = cell(nRows, 1); % Initialiser un cell array vide
 
-  Scalars = data.zoosystem.OtherMetaInfo.Parameter.POINT.SCALARS.data';
-[nRows, ~] = size(Scalars); % Obtenir le nombre de lignes dans Angles
-ScalarsName = cell(nRows, 1); % Initialiser un cell array vide
-
-for i = 1:nRows
-    ScalarsName{i} = strtrim(Scalars(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
-end
+% for i = 1:nRows
+%     ScalarsName{i} = strtrim(Scalars(i, :)); % Extraire chaque ligne et la mettre dans une cellule, en supprimant les espaces de fin
+% end
 
 
 set(progressBar, 'Max', n_frames,'sliderstep',[1/(n_frames-1) 10/(n_frames-1)]);

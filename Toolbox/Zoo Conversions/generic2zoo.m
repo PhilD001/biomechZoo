@@ -84,14 +84,15 @@ for i = 1:length(fl)
     header = textscan(fid,'%s',nHeaderLines,'Delimiter',delim); % header is first nHeaderLines
     header = header{:};                                         % cleanup header
     
-    chnames = textscan(fid,'%s',1,'Delimiter',delim);           % channel names are next
-    chnames = strsplit(char(chnames{:}));                       % clean channel names
-    
-    r = textscan(fid, '%f', 'delimiter', '\n');                 % data cols are next
-    r = r{:};                                                   % clean up data 
-    cols = length(chnames);                                     % reshape data
-    rows = length(r)/cols;                                      % to correct size
-    r = reshape(r,cols,rows)';
+    chnames = textscan(fid, '%s', 1, 'Delimiter', '\n');
+    chnames = strsplit(char(chnames{:}), delim);
+
+    cols = length(chnames);
+    format = repmat('%f', 1, cols);
+
+    r = textscan(fid, format, 'Delimiter', delim, ...
+    'CollectOutput', true);
+    r = r{1};
    
     st = fclose(fid);                                           % close file
     if st
